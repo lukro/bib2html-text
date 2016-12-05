@@ -1,11 +1,13 @@
 package server.modules;
 
 import client.controller.ConnectionPoint;
+import global.model.ClientRequest;
 import global.model.Entry;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
+import org.apache.commons.lang3.SerializationUtils;
 import server.events.Event;
 import server.events.EventListener;
 import server.events.EventManager;
@@ -113,6 +115,9 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-
+        ClientRequest deliveredClientRequest = (ClientRequest) SerializationUtils.deserialize(bytes);
+        for (Entry currentEntry : deliveredClientRequest.getEntries()) {
+            //TODO: publish entries so microservices
+        }
     }
 }
