@@ -3,6 +3,7 @@ package client.view;
 import client.controller.Client;
 import client.controller.ClientFileHandler;
 import client.model.ClientRequest;
+import client.model.Entry;
 import org.jbibtex.*;
 
 import java.io.File;
@@ -47,9 +48,13 @@ public class Gui {
         testClient.getClientFileModel().addBibFile(bibFile1);
         testClient.getClientFileModel().addBibFile(bibFile2);
         ClientRequest clientRequest = testClient.createClientRequest();
-        for (int i = 0; i < clientRequest.getEntries().size(); i++) {
-            System.out.println("Entry " + (i + 1) + " " + clientRequest.getEntries().get(i).getContent());
-        }
+
+        System.out.println(clientRequest.toString());
+        System.out.println(testClient.getClientFileModel().toString());
+
+//        for (Entry currentEntry : clientRequest.getEntries()) {
+//            System.out.println(currentEntry.toString());
+//        }
 //        ArrayList<Entry> testList = testClient.getBibTeXEntryFormatter().createBibTeXEntryObjectListFromClientFileModel(testClient.getClientFileModel());
 //        for (int i = 0; i < testList.size(); i++) {
 //            System.out.println("BEGIN " + (i + 1) + ". Entry: ");

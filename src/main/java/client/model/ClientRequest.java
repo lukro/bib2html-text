@@ -25,4 +25,10 @@ public class ClientRequest implements Serializable {
         return entries;
     }
 
+    public String toString() {
+        return (System.lineSeparator() +
+                "ClientRequest '" + clientID + "' has " + entries.size() + " entries."
+                + System.lineSeparator());
+    }
+
 }
