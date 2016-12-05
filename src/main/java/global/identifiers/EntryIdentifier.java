@@ -49,11 +49,10 @@ public class EntryIdentifier implements Identifier {
     @Override
     public String getIdentificationSequence() {
         StringBuilder idSeq = new StringBuilder();
-        idSeq.append(clientID+bibFileId);
+        idSeq.append(clientID+";"+bibFileId+";");
+        cslFileIds.forEach(id -> idSeq.append(id+","));
         idSeq.append(";");
-        cslFileIds.forEach(id -> idSeq.append(id));
-        idSeq.append(";");
-        templateIds.forEach(id -> idSeq.append(id));
+        templateIds.forEach(id -> idSeq.append(id+","));
         return idSeq.toString();
     }
 }
