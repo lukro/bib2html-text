@@ -1,13 +1,11 @@
 package server.modules;
 
 import server.events.*;
-import global.model.PartialResult;
-import global.model.Result;
+import server.events.EventListener;
+import server.model.PartialResult;
+import server.model.Result;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Maximilian Schirm (denkbares GmbH)
@@ -27,23 +25,15 @@ public class PartialResultCollector implements EventListener {
         mappingClientIDtoFinishedPartialResults = new HashMap<>();
 
         //Starts the update loop
-        Runnable updateLoop = new Runnable() {
+        TimerTask updateLoop = new TimerTask() {
             @Override
             public void run() {
-                while (true) {
-                    try {
-                        update();
-                        wait(500);
-                        System.out.println("Update thread finished another pass.");
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        System.out.println("FATAL ERROR : Update loop thread was interrupted!");
-                    }
-                }
+                update();
+                System.out.println("LOG: Partial Result Collector - Update task did another run.");
             }
         };
-        Thread updateThread = new Thread(updateLoop);
-        updateThread.run();
+        Timer timer = new Timer();
+        timer.schedule(updateLoop, 0, 1000);
     }
 
     public static PartialResultCollector getInstance() {
