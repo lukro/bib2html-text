@@ -1,12 +1,13 @@
 package client.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
 /**
  * Created by daan on 11/30/16.
  */
-public class Entry {
+public class Entry implements Serializable{
 
     //TODO : Replace with EntryIdentifier?
     private final String clientID;

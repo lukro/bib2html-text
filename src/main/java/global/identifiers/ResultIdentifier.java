@@ -3,6 +3,8 @@ package global.identifiers;
 /**
  * @author Maximilian Schirm (denkbares GmbH)
  * @created 05.12.2016
+ *
+ * Identifies a Result
  */
 
 public class ResultIdentifier implements Identifier {
@@ -40,6 +42,6 @@ public class ResultIdentifier implements Identifier {
 
     @Override
     public String getIdentificationSequence() {
-        return null;
+        return clientID+bibFileID+cslFileID+templateID+((hasErrors)?"YES":"NO");
     }
 }

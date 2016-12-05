@@ -1,5 +1,7 @@
 package server.model;
 
+import global.identifiers.ResultIdentifier;
+
 import java.util.Objects;
 import java.util.UUID;
 
@@ -11,26 +13,25 @@ import java.util.UUID;
 public class PartialResult {
 
     private final String content;
-    //TODO : Replace with Entry Identifier?
-    private final String clientID;
+    private final ResultIdentifier identifier;
     private final String modeIdentifier;
 
-    public PartialResult(String content, String clientID, String modeIdentifier){
+    public PartialResult(String content, ResultIdentifier identifier, String modeIdentifier){
         Objects.requireNonNull(content);
-        Objects.requireNonNull(clientID);
+        Objects.requireNonNull(identifier);
         Objects.requireNonNull(modeIdentifier);
 
         this.content = content;
-        this.clientID = clientID;
+        this.identifier = identifier;
         this.modeIdentifier = modeIdentifier;
+    }
+
+    public ResultIdentifier getIdentifier() {
+        return identifier;
     }
 
     public String getContent() {
         return content;
-    }
-
-    public String getClientID() {
-        return clientID;
     }
 
     public String getModeIdentifier() {

@@ -1,7 +1,9 @@
 package server.model;
 
+import global.identifiers.Identifier;
 import global.identifiers.ResultIdentifier;
 
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -28,5 +30,22 @@ public class Result {
 
     public String getContent() {
         return content;
+    }
+
+    /**
+     * Creates a new Result from a Collection of PartialResults.
+     *
+     * @param partials
+     * @return
+     */
+    public static Result fromPartials(Collection<PartialResult> partials){
+        Objects.requireNonNull(partials);
+
+        PartialResult firstPartial = partials.stream().findFirst().get();
+        ResultIdentifier identifier = firstPartial.getIdentifier();
+        StringBuilder contentBuilder = new StringBuilder();
+        partials.forEach(partial -> contentBuilder.append(partial.getContent()));
+
+        return new Result(identifier, contentBuilder.toString());
     }
 }

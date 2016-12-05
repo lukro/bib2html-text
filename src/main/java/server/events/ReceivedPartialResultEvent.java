@@ -1,5 +1,6 @@
 package server.events;
 
+import global.identifiers.ResultIdentifier;
 import server.model.PartialResult;
 
 /**
@@ -15,7 +16,7 @@ public class ReceivedPartialResultEvent implements Event {
         this.result = result;
     }
 
-    public PartialResult getResult() {
+    public PartialResult getPartialResult() {
         return result;
     }
 }

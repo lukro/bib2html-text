@@ -1,10 +1,9 @@
 package global.identifiers;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 /**
- * @author Maximilian Schirm (denkbares GmbH)
+ * @author Maximilian Schirm
  * @created 05.12.2016
  *
  * Identifies an Entry precisely

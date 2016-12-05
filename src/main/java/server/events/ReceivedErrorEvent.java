@@ -6,4 +6,14 @@ package server.events;
  */
 
 public class ReceivedErrorEvent implements Event{
+
+    private final String requestID;
+
+    public ReceivedErrorEvent(String requestID) {
+        this.requestID = requestID;
+    }
+
+    public String getResultID() {
+        return requestID;
+    }
 }
