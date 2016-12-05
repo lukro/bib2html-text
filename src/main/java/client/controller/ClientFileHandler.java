@@ -20,8 +20,7 @@ public final class ClientFileHandler {
     }
 
     public static String readStringFromFile(File file) throws IOException {
-        if (!Objects.nonNull(file))
-            throw new NullPointerException("(file == null) in ClientFileHandler.readStringFromFile()");
+        Objects.requireNonNull(file, "(file == null) in ClientFileHandler.readStringFromFile()");
         FileInputStream fis = new FileInputStream(file);
         InputStreamReader isr = new InputStreamReader(fis);
         BufferedReader br = new BufferedReader(isr);
@@ -39,8 +38,7 @@ public final class ClientFileHandler {
     }
 
     public static BibTeXDatabase getBibTeXDatabaseObjectFromFile(File bibFile) throws FileNotFoundException {
-        if (!Objects.nonNull(bibFile))
-            throw new NullPointerException("(bibFile == null) in ClientFileHandler.getBibTeXDatabaseObjectFromFile()");
+        Objects.requireNonNull(bibFile, "(bibFile == null) in ClientFileHandler.getBibTeXDatabaseObjectFromFile()");
         FileReader fileReader = new FileReader(bibFile);
         BibTeXDatabase result = null;
         try {
@@ -54,18 +52,19 @@ public final class ClientFileHandler {
     }
 
     public static boolean isValidBibFile(File bibFile) throws FileNotFoundException {
-        if (!Objects.nonNull(bibFile))
-            throw new NullPointerException("(bibFile == null) in ClientFileHandler.isValidBibFile().");
+        Objects.requireNonNull(bibFile, "(bibFile == null) in ClientFileHandler.isValidBibFile().");
         return (getBibTeXDatabaseObjectFromFile(bibFile) != null);
 
     }
 
     public static boolean isValidCslFile(File cslFile) throws ParserConfigurationException, IOException, SAXException {
-        if (!Objects.nonNull(cslFile))
-            throw new NullPointerException("(cslFile == null) in ClientFileHandler.isValidCslFile().");
+        Objects.requireNonNull(cslFile, "(cslFile == null) in ClientFileHandler.isValidCslFile().");
         DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document document = dBuilder.parse(cslFile);
         //TODO: implement algorithm to validate cslFile/xmlFile
+        if (true) {
+            return true;
+        }
         return false;
     }
 

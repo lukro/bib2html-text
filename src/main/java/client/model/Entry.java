@@ -7,7 +7,7 @@ import java.util.Collection;
 /**
  * Created by daan on 11/30/16.
  */
-public class Entry implements Serializable{
+public class Entry implements Serializable {
 
     //TODO : Replace with EntryIdentifier?
     private final String clientID;
@@ -37,5 +37,11 @@ public class Entry implements Serializable{
     public ArrayList<String> getTemplateFiles() {
         return templateFiles;
     }
-    
+
+    public String toString() {
+        return (System.lineSeparator() + "Entry with clientID '" + clientID + "' and content: "
+                + System.lineSeparator() + content + System.lineSeparator() +
+                "must be converted with " + cslFiles.size() + " cslFiles and " +
+                templateFiles.size() + " templateFiles." + System.lineSeparator());
+    }
 }
