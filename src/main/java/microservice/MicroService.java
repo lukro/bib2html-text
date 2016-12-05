@@ -1,8 +1,8 @@
 package microservice;
 
-import client.model.Entry;
 import global.identifiers.ResultIdentifier;
-import server.model.PartialResult;
+import global.model.Entry;
+import global.model.PartialResult;
 
 import java.io.File;
 import java.io.IOException;

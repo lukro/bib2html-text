@@ -1,9 +1,9 @@
 package server.modules;
 
+import global.model.Result;
 import server.events.*;
 import server.events.EventListener;
-import server.model.PartialResult;
-import server.model.Result;
+import global.model.PartialResult;
 
 import java.util.*;
 
@@ -70,7 +70,7 @@ public class PartialResultCollector implements EventListener {
     private synchronized void update() {
         mappingClientIDtoExpectedResultsSize.forEach((key, size) -> {
             Collection<PartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
-            if(parts.size() == size)
+            if (parts.size() == size)
                 EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(Result.fromPartials(parts)));
         });
     }
