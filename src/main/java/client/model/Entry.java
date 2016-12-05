@@ -8,6 +8,7 @@ import java.util.Collection;
  */
 public class Entry {
 
+    //TODO : Replace with EntryIdentifier?
     private final String clientID;
     private final String content;
     private final ArrayList<String> cslFiles;
