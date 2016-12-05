@@ -1,4 +1,4 @@
-package client.model;
+package global.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;

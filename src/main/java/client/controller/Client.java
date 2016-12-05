@@ -5,11 +5,10 @@ import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
 import client.model.ClientFileModel;
-import client.model.ClientRequest;
+import global.model.ClientRequest;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 

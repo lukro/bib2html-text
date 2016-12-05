@@ -1,6 +1,6 @@
 package server.events;
 
-import server.model.Result;
+import global.model.Result;
 
 /**
  * @author Maximilian Schirm (denkbares GmbH)

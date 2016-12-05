@@ -1,7 +1,6 @@
 package server.events;
 
-import global.identifiers.ResultIdentifier;
-import server.model.PartialResult;
+import global.model.PartialResult;
 
 /**
  * @author Maximilian Schirm

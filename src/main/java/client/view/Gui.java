@@ -2,13 +2,11 @@ package client.view;
 
 import client.controller.Client;
 import client.controller.ClientFileHandler;
-import client.model.ClientRequest;
-import client.model.Entry;
+import global.model.ClientRequest;
 import org.jbibtex.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 
 /**

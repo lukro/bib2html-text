@@ -1,8 +1,8 @@
 package server.modules;
 
 import server.events.*;
-import server.model.PartialResult;
-import server.model.Result;
+import global.model.PartialResult;
+import global.model.Result;
 
 import java.util.Collection;
 import java.util.HashMap;

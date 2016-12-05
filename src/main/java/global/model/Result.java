@@ -1,6 +1,5 @@
-package server.model;
+package global.model;
 
-import global.identifiers.Identifier;
 import global.identifiers.ResultIdentifier;
 
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package server.model;
+package global.model;
 
 import global.identifiers.ResultIdentifier;
 

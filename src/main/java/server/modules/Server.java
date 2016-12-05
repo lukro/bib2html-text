@@ -1,23 +1,20 @@
-package server;
+package server.modules;
 
 import client.controller.ConnectionPoint;
-import client.model.Entry;
+import global.model.Entry;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
-import org.apache.commons.io.IOUtils;
 import server.events.Event;
 import server.events.EventListener;
 import server.events.EventManager;
 import server.events.FinishedCollectingResultEvent;
-import server.model.Result;
+import global.model.Result;
 import server.modules.MicroServiceManager;
 import server.modules.PartialResultCollector;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;;
-import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,10 +26,10 @@ import java.util.concurrent.TimeoutException;
  * @created 05.12.2016
  */
 
-public class Server extends ConnectionPoint implements EventListener, Runnable, Consumer{
+public class Server extends ConnectionPoint implements EventListener, Runnable, Consumer {
 
-    private static final String microServicePubQueueName = "MS_PUB_QUEUE";
-    private static final String microServiceSubQueueName = "MS_SUB_QUEUE";
+    private static final String MICRO_SERVICE_PUB_QUEUE_NAME = "msPubQueueName";
+    private static final String MICRO_SERVICE_SUB_QUEUE_NAME = "msSubQueueName";
 
     private ArrayList<String> invalidClientIDs = new ArrayList<>();
 
@@ -50,14 +47,13 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
         EventManager.getInstance().registerListener(this);
     }
 
-    public boolean sendEntryToMicroServices(Entry entry){
+    public boolean sendEntryToMicroServices(Entry entry) {
         try {
             //TODO : Implement properly after checking out how the rabbitmq publish works
             String microServiceKey = MicroServiceManager.getInstance().getFreeMicroServiceKey();
 
             return true;
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -67,12 +63,16 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
 
     @Override
     public void run() {
-
+        try {
+            channel.basicConsume(QUEUE_TO_SERVER_NAME, false, this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void notify(Event toNotify) {
-        if(toNotify instanceof FinishedCollectingResultEvent){
+        if (toNotify instanceof FinishedCollectingResultEvent) {
             Result eventResult = ((FinishedCollectingResultEvent) toNotify).getResult();
             String clientID = eventResult.getIdentifier().getClientID();
             //TODO : Publish to client

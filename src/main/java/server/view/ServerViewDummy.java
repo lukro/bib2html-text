@@ -1,6 +1,6 @@
 package server.view;
 
-import server.Server;
+import server.modules.Server;
 
 /**
  * @author Maximilian Schirm (denkbares GmbH)

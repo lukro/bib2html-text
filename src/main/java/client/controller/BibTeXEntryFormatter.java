@@ -1,7 +1,7 @@
 package client.controller;
 
 import client.model.ClientFileModel;
-import client.model.Entry;
+import global.model.Entry;
 import org.jbibtex.*;
 
 import java.io.*;
@@ -25,7 +25,7 @@ public class BibTeXEntryFormatter extends BibTeXFormatter {
     }
 
     private ArrayList<String> createBibTeXEntryContentList(File bibFile) throws IOException {
-        Objects.requireNonNull(bibFile, "(bibFile == null) in BibTexEntryFormatter.createBibTeXEntryContentList().");
+        Objects.requireNonNull(bibFile, "(bibFile == null) in BibTexEntryFormatter.createBibTeXEntryContentList()");
         BibTeXDatabase bibTeXDatabase = ClientFileHandler.getBibTeXDatabaseObjectFromFile(bibFile);
         if (bibTeXDatabase != null) {
             ArrayList<String> entryContentList = new ArrayList<>();
@@ -41,7 +41,7 @@ public class BibTeXEntryFormatter extends BibTeXFormatter {
     }
 
     public ArrayList<Entry> createBibTeXEntryObjectListFromClientFileModel(ClientFileModel clientFileModel) throws IOException {
-        Objects.requireNonNull(clientFileModel, "(clientFileModel == null) in BibTexEntryFormatter.createBibTeXEntryObjectListFromClientFileModel().");
+        Objects.requireNonNull(clientFileModel, "(clientFileModel == null) in BibTexEntryFormatter.createBibTeXEntryObjectListFromClientFileModel()");
         ArrayList<Entry> entryObjectList = new ArrayList<>();
         for (File currentFile : clientFileModel.getBibFiles()) {
             ArrayList<String> entryContentList = this.createBibTeXEntryContentList(currentFile);

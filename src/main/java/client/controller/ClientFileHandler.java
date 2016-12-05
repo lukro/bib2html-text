@@ -52,13 +52,13 @@ public final class ClientFileHandler {
     }
 
     public static boolean isValidBibFile(File bibFile) throws FileNotFoundException {
-        Objects.requireNonNull(bibFile, "(bibFile == null) in ClientFileHandler.isValidBibFile().");
+        Objects.requireNonNull(bibFile, "(bibFile == null) in ClientFileHandler.isValidBibFile()");
         return (getBibTeXDatabaseObjectFromFile(bibFile) != null);
 
     }
 
     public static boolean isValidCslFile(File cslFile) throws ParserConfigurationException, IOException, SAXException {
-        Objects.requireNonNull(cslFile, "(cslFile == null) in ClientFileHandler.isValidCslFile().");
+        Objects.requireNonNull(cslFile, "(cslFile == null) in ClientFileHandler.isValidCslFile()");
         DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document document = dBuilder.parse(cslFile);
         //TODO: implement algorithm to validate cslFile/xmlFile
