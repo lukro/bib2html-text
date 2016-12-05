@@ -11,6 +11,7 @@ import java.util.UUID;
 public class PartialResult {
 
     private final String content;
+    //TODO : Replace with Entry Identifier?
     private final String clientID;
     private final String modeIdentifier;
 

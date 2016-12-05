@@ -1,5 +1,7 @@
 package client.model;
 
+import java.util.Collection;
+
 /**
  * @author Maximilian Schirm (denkbares GmbH)
  * @created 05.12.2016
@@ -9,14 +11,15 @@ package client.model;
 
 public class EntryIdentifier {
 
-    private final String clientID, bibFileId, cslFileId, templateId;
+    private final String clientID, bibFileId;
+    private final Collection<String> cslFileIds, templateIds;
     private boolean hasErrors = false;
 
-    public EntryIdentifier(String clientID, String bibFileId, String cslFileId, String templateId) {
+    public EntryIdentifier(String clientID, String bibFileId, Collection<String> cslFileIds, Collection<String> templateIds) {
         this.clientID = clientID;
         this.bibFileId = bibFileId;
-        this.cslFileId = cslFileId;
-        this.templateId = templateId;
+        this.cslFileIds = cslFileIds;
+        this.templateIds = templateIds;
     }
 
     public boolean isHasErrors() {
@@ -35,11 +38,11 @@ public class EntryIdentifier {
         return bibFileId;
     }
 
-    public String getCslFileId() {
-        return cslFileId;
+    public Collection<String> getCslFileId() {
+        return cslFileIds;
     }
 
-    public String getTemplateId() {
-        return templateId;
+    public Collection<String> getTemplateId() {
+        return templateIds;
     }
 }
