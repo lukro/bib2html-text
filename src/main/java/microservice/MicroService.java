@@ -1,5 +1,7 @@
 package microservice;
 
+import client.controller.ConnectionPoint;
+import com.rabbitmq.client.Consumer;
 import global.identifiers.ResultIdentifier;
 import global.model.Entry;
 import global.model.PartialResult;
@@ -8,18 +10,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author Maximilian Schirm (denkbares GmbH)
  * @created 05.12.2016
  */
-
-public class MicroService {
+//TODO: Extends ConnectionPoint, Implements Consumer
+public class MicroService{
     //TODO : Fill...
     private final String routingKey;
     private final String registerQueueName;
 
-    public MicroService(String routingKey, String registerQueueName) {
+    public MicroService(String routingKey, String registerQueueName) throws IOException, TimeoutException {
+        super();
         this.routingKey = routingKey;
         this.registerQueueName = registerQueueName;
     }
