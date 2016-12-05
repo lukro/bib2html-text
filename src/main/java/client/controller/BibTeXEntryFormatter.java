@@ -7,6 +7,7 @@ import org.jbibtex.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by daan on 12/4/16.
@@ -24,6 +25,8 @@ public class BibTeXEntryFormatter extends BibTeXFormatter {
     }
 
     public ArrayList<String> createBibTeXEntryContentList(File bibFile) throws IOException {
+        if (!Objects.nonNull(bibFile))
+            throw new NullPointerException("(bibFile == null) in BibTexEntryFormatter.createBibTeXEntryContentList().");
         BibTeXDatabase bibTeXDatabase = ClientFileHandler.getBibTeXDatabaseObjectFromFile(bibFile);
         if (bibTeXDatabase != null) {
             ArrayList<String> entryContentList = new ArrayList<>();
@@ -39,6 +42,8 @@ public class BibTeXEntryFormatter extends BibTeXFormatter {
     }
 
     public ArrayList<Entry> createBibTeXEntryObjectListFromClientFileModel(ClientFileModel clientFileModel) throws IOException {
+        if (!Objects.nonNull(clientFileModel))
+            throw new NullPointerException("(clientFileModel == null) in BibTexEntryFormatter.createBibTeXEntryObjectListFromClientFileModel().");
         ArrayList<Entry> entryObjectList = new ArrayList<>();
         for (File currentFile : clientFileModel.getBibFiles()) {
             ArrayList<String> entryContentList = this.createBibTeXEntryContentList(currentFile);

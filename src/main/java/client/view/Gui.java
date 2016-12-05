@@ -37,7 +37,7 @@ public class Gui {
 
         File bibFile1 = new File("/home/daan/Coding/Java/Client/test_data/mybib2.bib");
         File bibFile2 = new File("/home/daan/Coding/Java/Client/test_data/xampl.bib");
-
+//        ClientFileHandler.readStringFromFile(null);
 
         System.out.println("isvalid(): " + ClientFileHandler.isValidBibFile(bibFile1));
         System.out.println("isvalid(): " + ClientFileHandler.isValidBibFile(bibFile2));
