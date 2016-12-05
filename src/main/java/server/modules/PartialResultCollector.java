@@ -24,8 +24,6 @@ public class PartialResultCollector implements EventListener {
         return INSTANCE;
     }
 
-
-
     @Override
     public void notify(Event toNotify) {
         if(toNotify instanceof ReceivedPartialResultEvent){
