@@ -1,5 +1,6 @@
 package global.identifiers;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -50,7 +51,9 @@ public class EntryIdentifier implements Identifier {
     public String getIdentificationSequence() {
         StringBuilder idSeq = new StringBuilder();
         idSeq.append(clientID+bibFileId);
+        idSeq.append(";");
         cslFileIds.forEach(id -> idSeq.append(id));
+        idSeq.append(";");
         templateIds.forEach(id -> idSeq.append(id));
         return idSeq.toString();
     }
