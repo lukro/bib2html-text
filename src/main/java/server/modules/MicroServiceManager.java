@@ -38,7 +38,7 @@ public class MicroServiceManager {
 
     public String getFreeMicroServiceKey(){
         //TODO : Fill...
-        return null;
+        return "banana";
     }
 
 }

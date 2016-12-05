@@ -35,7 +35,7 @@ public class MicroService {
     private PartialResult convertEntry(Entry toConvert){
         //TODO : Replace Dummy code
         String
-                conversionResult = "Dummy Conversion Result",
+                conversionResult = toConvert.getContent(),
                 fauxClientId = "0123456789",
                 bibFileId = "b",
                 cslFileId = "c",
@@ -43,7 +43,7 @@ public class MicroService {
         //Simulating 20% error rate
         boolean hasErrors = (Math.random() > 0.8)?true:false;
         ResultIdentifier partialIdentifier = new ResultIdentifier(fauxClientId, bibFileId, cslFileId, templateId, hasErrors);
-        return new PartialResult("Dummy Conversion Result", partialIdentifier, "HTML");
+        return new PartialResult(conversionResult, partialIdentifier, "HTML");
     }
 
     private boolean[] validateTempaltes(Entry defaultEntry, HashSet<byte[]> templateFiles){
