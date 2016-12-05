@@ -1,4 +1,4 @@
-package client.model;
+package global.identifiers;
 
 import java.util.Collection;
 
@@ -9,7 +9,7 @@ import java.util.Collection;
  * Identifies an Entry precisely
  */
 
-public class EntryIdentifier {
+public class EntryIdentifier implements Identifier {
 
     private final String clientID, bibFileId;
     private final Collection<String> cslFileIds, templateIds;
@@ -44,5 +44,14 @@ public class EntryIdentifier {
 
     public Collection<String> getTemplateId() {
         return templateIds;
+    }
+
+    @Override
+    public String getIdentificationSequence() {
+        StringBuilder idSeq = new StringBuilder();
+        idSeq.append(clientID+bibFileId);
+        cslFileIds.forEach(id -> idSeq.append(id));
+        templateIds.forEach(id -> idSeq.append(id));
+        return idSeq.toString();
     }
 }
