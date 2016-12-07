@@ -1,4 +1,4 @@
-package client.controller;
+package global.controller;
 
 /**
  * Created by daan on 12/7/16.

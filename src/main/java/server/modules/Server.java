@@ -1,20 +1,18 @@
 package server.modules;
 
 import client.controller.ConnectionPoint;
-import global.model.ClientRequest;
-import global.model.Entry;
+import global.model.DefaultClientRequest;
+import global.model.DefaultEntry;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
+import global.model.DefaultResult;
 import org.apache.commons.lang3.SerializationUtils;
 import server.events.Event;
 import server.events.EventListener;
 import server.events.EventManager;
 import server.events.FinishedCollectingResultEvent;
-import global.model.Result;
-import server.modules.MicroServiceManager;
-import server.modules.PartialResultCollector;
 
 import java.io.IOException;;
 import java.net.URI;
@@ -49,7 +47,7 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
         EventManager.getInstance().registerListener(this);
     }
 
-    public boolean sendEntryToMicroServices(Entry entry) {
+    public boolean sendEntryToMicroServices(DefaultEntry entry) {
         try {
             //TODO : Implement properly after checking out how the rabbitmq publish works
             String microServiceKey = MicroServiceManager.getInstance().getFreeMicroServiceKey();
@@ -75,7 +73,7 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
     @Override
     public void notify(Event toNotify) {
         if (toNotify instanceof FinishedCollectingResultEvent) {
-            Result eventResult = ((FinishedCollectingResultEvent) toNotify).getResult();
+            DefaultResult eventResult = ((FinishedCollectingResultEvent) toNotify).getResult();
             String clientID = eventResult.getIdentifier().getClientID();
             //TODO : Publish to client
         }
@@ -115,8 +113,8 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        ClientRequest deliveredClientRequest = (ClientRequest) SerializationUtils.deserialize(bytes);
-        for(Entry currentEntry : deliveredClientRequest.getEntries()){
+        DefaultClientRequest deliveredClientRequest = (DefaultClientRequest) SerializationUtils.deserialize(bytes);
+        for(DefaultEntry currentEntry : deliveredClientRequest.getEntries()){
             //TODO: publish entries so microservices
         }
     }

@@ -1,7 +1,7 @@
 package client.controller;
 
 import client.model.ClientFileModel;
-import global.model.Entry;
+import global.model.DefaultEntry;
 import org.jbibtex.*;
 
 import java.io.*;
@@ -40,13 +40,13 @@ public class BibTeXEntryFormatter extends BibTeXFormatter {
         return null;
     }
 
-    public ArrayList<Entry> createBibTeXEntryObjectListFromClientFileModel(ClientFileModel clientFileModel) throws IOException {
+    public ArrayList<DefaultEntry> createBibTeXEntryObjectListFromClientFileModel(ClientFileModel clientFileModel) throws IOException {
         Objects.requireNonNull(clientFileModel, "(clientFileModel == null) in BibTexEntryFormatter.createBibTeXEntryObjectListFromClientFileModel()");
-        ArrayList<Entry> entryObjectList = new ArrayList<>();
+        ArrayList<DefaultEntry> entryObjectList = new ArrayList<>();
         for (File currentFile : clientFileModel.getBibFiles()) {
             ArrayList<String> entryContentList = this.createBibTeXEntryContentList(currentFile);
             for (String currentEntryContent : entryContentList) {
-                Entry currentEntryObject = new Entry(clientFileModel.getClientID(),
+                DefaultEntry currentEntryObject = new DefaultEntry(clientFileModel.getClientID(),
                         currentEntryContent, clientFileModel.getCslFilesAsStrings(),
                         clientFileModel.getTemplateFilesAsStrings());
                 entryObjectList.add(currentEntryObject);

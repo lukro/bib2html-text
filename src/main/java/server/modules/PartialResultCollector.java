@@ -1,9 +1,9 @@
 package server.modules;
 
-import global.model.Result;
+import global.model.DefaultResult;
 import server.events.*;
 import server.events.EventListener;
-import global.model.PartialResult;
+import global.model.DefaultPartialResult;
 
 import java.util.*;
 
@@ -16,7 +16,7 @@ import java.util.*;
 public class PartialResultCollector implements EventListener {
 
     private static final PartialResultCollector INSTANCE = new PartialResultCollector();
-    private HashMap<String, Collection<PartialResult>> mappingClientIDtoFinishedPartialResults;
+    private HashMap<String, Collection<DefaultPartialResult>> mappingClientIDtoFinishedPartialResults;
     private HashMap<String, Integer> mappingClientIDtoExpectedResultsSize;
 
     private PartialResultCollector() {
@@ -29,7 +29,7 @@ public class PartialResultCollector implements EventListener {
             @Override
             public void run() {
                 update();
-                System.out.println("LOG: Partial Result Collector - Update task did another run.");
+                System.out.println("LOG: Partial DefaultResult Collector - Update task did another run.");
             }
         };
         Timer timer = new Timer();
@@ -44,9 +44,9 @@ public class PartialResultCollector implements EventListener {
     public void notify(Event toNotify) {
         if (toNotify instanceof ReceivedPartialResultEvent) {
             ReceivedPartialResultEvent tempEvent = (ReceivedPartialResultEvent) toNotify;
-            PartialResult partialResult = tempEvent.getPartialResult();
+            DefaultPartialResult partialResult = tempEvent.getPartialResult();
             String id = partialResult.getIdentifier().getIdentificationSequence();
-            Collection<PartialResult> presentResults = mappingClientIDtoFinishedPartialResults.get(id);
+            Collection<DefaultPartialResult> presentResults = mappingClientIDtoFinishedPartialResults.get(id);
             presentResults.add(partialResult);
             mappingClientIDtoFinishedPartialResults.put(id, presentResults);
 
@@ -69,9 +69,9 @@ public class PartialResultCollector implements EventListener {
      */
     private synchronized void update() {
         mappingClientIDtoExpectedResultsSize.forEach((key, size) -> {
-            Collection<PartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
+            Collection<DefaultPartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
             if (parts.size() == size)
-                EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(Result.fromPartials(parts)));
+                EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(DefaultResult.fromPartials(parts)));
         });
     }
 

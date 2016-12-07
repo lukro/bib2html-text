@@ -1,9 +1,6 @@
 package client.view;
 
 import client.controller.Client;
-import client.controller.ClientFileHandler;
-import global.model.ClientRequest;
-import global.model.Entry;
 import org.jbibtex.*;
 import server.modules.Server;
 

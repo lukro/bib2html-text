@@ -1,6 +1,6 @@
 package server.events;
 
-import global.model.PartialResult;
+import global.model.DefaultPartialResult;
 
 /**
  * @author Maximilian Schirm
@@ -9,13 +9,13 @@ import global.model.PartialResult;
 
 public class ReceivedPartialResultEvent implements Event {
 
-    private final PartialResult result;
+    private final DefaultPartialResult result;
 
-    public ReceivedPartialResultEvent(PartialResult result) {
+    public ReceivedPartialResultEvent(DefaultPartialResult result) {
         this.result = result;
     }
 
-    public PartialResult getPartialResult() {
+    public DefaultPartialResult getPartialResult() {
         return result;
     }
 }

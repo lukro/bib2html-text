@@ -1,10 +1,8 @@
 package microservice;
 
-import client.controller.ConnectionPoint;
-import com.rabbitmq.client.Consumer;
 import global.identifiers.ResultIdentifier;
-import global.model.Entry;
-import global.model.PartialResult;
+import global.model.DefaultEntry;
+import global.model.DefaultPartialResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +34,7 @@ public class MicroService{
         return registerQueueName;
     }
 
-    private PartialResult convertEntry(Entry toConvert){
+    private DefaultPartialResult convertEntry(DefaultEntry toConvert){
         //TODO : Replace Dummy code
         String
                 conversionResult = toConvert.getContent(),
@@ -47,10 +45,10 @@ public class MicroService{
         //Simulating 20% error rate
         boolean hasErrors = (Math.random() > 0.8)?true:false;
         ResultIdentifier partialIdentifier = new ResultIdentifier(fauxClientId, bibFileId, cslFileId, templateId, hasErrors);
-        return new PartialResult(conversionResult, partialIdentifier, "HTML");
+        return new DefaultPartialResult(conversionResult, partialIdentifier, "HTML");
     }
 
-    private boolean[] validateTempaltes(Entry defaultEntry, HashSet<byte[]> templateFiles){
+    private boolean[] validateTempaltes(DefaultEntry defaultEntry, HashSet<byte[]> templateFiles){
         boolean[] output = new boolean[templateFiles.size()];
         for(int i = 0; i < templateFiles.size(); i++){
             //TODO : Use pandocDoWork(..) to retrieve execution success.

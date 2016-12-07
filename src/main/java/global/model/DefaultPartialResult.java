@@ -3,20 +3,19 @@ package global.model;
 import global.identifiers.ResultIdentifier;
 
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * @author Maximilian Schirm (denkbares GmbH)
  * @created 05.12.2016
  */
 
-public class PartialResult {
+public class DefaultPartialResult implements IPartialResult {
 
     private final String content;
     private final ResultIdentifier identifier;
     private final String modeIdentifier;
 
-    public PartialResult(String content, ResultIdentifier identifier, String modeIdentifier){
+    public DefaultPartialResult(String content, ResultIdentifier identifier, String modeIdentifier) {
         Objects.requireNonNull(content);
         Objects.requireNonNull(identifier);
         Objects.requireNonNull(modeIdentifier);

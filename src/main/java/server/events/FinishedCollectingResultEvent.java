@@ -1,6 +1,6 @@
 package server.events;
 
-import global.model.Result;
+import global.model.DefaultResult;
 
 /**
  * @author Maximilian Schirm (denkbares GmbH)
@@ -9,13 +9,13 @@ import global.model.Result;
 
 public class FinishedCollectingResultEvent implements Event {
 
-    private final Result result;
+    private final DefaultResult result;
 
-    public FinishedCollectingResultEvent(Result result) {
+    public FinishedCollectingResultEvent(DefaultResult result) {
         this.result = result;
     }
 
-    public Result getResult() {
+    public DefaultResult getResult() {
         return result;
     }
 }
