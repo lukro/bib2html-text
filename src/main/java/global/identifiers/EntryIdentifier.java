@@ -6,7 +6,7 @@ import java.util.Collection;
  * @author Maximilian Schirm
  * @created 05.12.2016
  * <p>
- * Identifies an Entry precisely
+ * Identifies an DefaultEntry precisely
  */
 
 public class EntryIdentifier implements Identifier {

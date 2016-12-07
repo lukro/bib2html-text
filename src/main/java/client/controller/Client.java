@@ -5,7 +5,7 @@ import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
 import client.model.ClientFileModel;
-import global.model.ClientRequest;
+import global.model.DefaultClientRequest;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
@@ -88,7 +88,7 @@ public class Client extends ConnectionPoint implements Runnable, Consumer {
         return bibTeXEntryFormatter;
     }
 
-    public ClientRequest createClientRequest() throws IOException {
-        return new ClientRequest(this.clientID, bibTeXEntryFormatter.createBibTeXEntryObjectListFromClientFileModel(this.clientFileModel));
+    public DefaultClientRequest createClientRequest() throws IOException {
+        return new DefaultClientRequest(this.clientID, bibTeXEntryFormatter.createBibTeXEntryObjectListFromClientFileModel(this.clientFileModel));
     }
 }

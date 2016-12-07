@@ -4,7 +4,7 @@ package global.identifiers;
  * @author Maximilian Schirm (denkbares GmbH)
  * @created 05.12.2016
  *
- * Identifies a Result
+ * Identifies a DefaultResult
  */
 
 public class ResultIdentifier implements Identifier {

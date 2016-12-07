@@ -10,12 +10,12 @@ import java.util.Objects;
  * @created 05.12.2016
  */
 
-public class Result {
+public class DefaultResult implements IResult {
 
     private final ResultIdentifier identifier;
     private final String content;
 
-    public Result(ResultIdentifier identifier, String content) {
+    public DefaultResult(ResultIdentifier identifier, String content) {
         Objects.requireNonNull(identifier);
         Objects.requireNonNull(content);
 
@@ -32,19 +32,19 @@ public class Result {
     }
 
     /**
-     * Creates a new Result from a Collection of PartialResults.
+     * Creates a new DefaultResult from a Collection of PartialResults.
      *
      * @param partials
      * @return
      */
-    public static Result fromPartials(Collection<PartialResult> partials){
+    public static DefaultResult fromPartials(Collection<DefaultPartialResult> partials) {
         Objects.requireNonNull(partials);
 
-        PartialResult firstPartial = partials.stream().findFirst().get();
+        DefaultPartialResult firstPartial = partials.stream().findFirst().get();
         ResultIdentifier identifier = firstPartial.getIdentifier();
         StringBuilder contentBuilder = new StringBuilder();
         partials.forEach(partial -> contentBuilder.append(partial.getContent()));
 
-        return new Result(identifier, contentBuilder.toString());
+        return new DefaultResult(identifier, contentBuilder.toString());
     }
 }

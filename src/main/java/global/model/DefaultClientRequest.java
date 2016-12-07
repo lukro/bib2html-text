@@ -1,18 +1,17 @@
 package global.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
 /**
  * Created by daan on 11/30/16.
  */
-public class ClientRequest implements IClientRequest, Serializable {
+public class DefaultClientRequest implements IClientRequest {
 
     private final String clientID;
-    private final ArrayList<Entry> entries;
+    private final ArrayList<DefaultEntry> entries;
 
-    public ClientRequest(String clientID, Collection<Entry> entries) {
+    public DefaultClientRequest(String clientID, Collection<DefaultEntry> entries) {
         this.clientID = clientID;
         this.entries = new ArrayList<>(entries);
     }
@@ -23,14 +22,14 @@ public class ClientRequest implements IClientRequest, Serializable {
     }
 
     @Override
-    public ArrayList<Entry> getEntries() {
+    public ArrayList<DefaultEntry> getEntries() {
         return entries;
     }
 
     @Override
     public String toString() {
         return (System.lineSeparator() +
-                "ClientRequest '" + clientID + "' has " + entries.size() + " entries."
+                "DefaultClientRequest '" + clientID + "' has " + entries.size() + " entries."
                 + System.lineSeparator());
     }
 

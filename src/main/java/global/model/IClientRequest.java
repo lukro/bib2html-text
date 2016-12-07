@@ -10,7 +10,7 @@ public interface IClientRequest extends Serializable {
 
     String getClientID();
 
-    ArrayList<Entry> getEntries();
+    ArrayList<DefaultEntry> getEntries();
 
     String toString();
 
