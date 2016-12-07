@@ -1,12 +1,7 @@
 package client.controller;
 
 import org.jbibtex.*;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.Objects;
 
@@ -37,7 +32,7 @@ public final class ClientFileHandler {
         return sb.toString();
     }
 
-    public static BibTeXDatabase getBibTeXDatabaseObjectFromFile(File bibFile) throws FileNotFoundException {
+    static BibTeXDatabase getBibTeXDatabaseObjectFromFile(File bibFile) throws FileNotFoundException {
         Objects.requireNonNull(bibFile, "(bibFile == null) in ClientFileHandler.getBibTeXDatabaseObjectFromFile()");
         FileReader fileReader = new FileReader(bibFile);
         BibTeXDatabase result = null;
@@ -57,10 +52,8 @@ public final class ClientFileHandler {
 
     }
 
-    public static boolean isValidCslFile(File cslFile) throws ParserConfigurationException, IOException, SAXException {
+    public static boolean isValidCslFile(File cslFile) {
         Objects.requireNonNull(cslFile, "(cslFile == null) in ClientFileHandler.isValidCslFile()");
-        DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document document = dBuilder.parse(cslFile);
         //TODO: implement algorithm to validate cslFile/xmlFile
         if (true) {
             return true;

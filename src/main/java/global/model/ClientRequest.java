@@ -7,7 +7,7 @@ import java.util.Collection;
 /**
  * Created by daan on 11/30/16.
  */
-public class ClientRequest implements Serializable {
+public class ClientRequest implements IClientRequest, Serializable {
 
     private final String clientID;
     private final ArrayList<Entry> entries;
@@ -17,14 +17,17 @@ public class ClientRequest implements Serializable {
         this.entries = new ArrayList<>(entries);
     }
 
+    @Override
     public String getClientID() {
         return clientID;
     }
 
+    @Override
     public ArrayList<Entry> getEntries() {
         return entries;
     }
 
+    @Override
     public String toString() {
         return (System.lineSeparator() +
                 "ClientRequest '" + clientID + "' has " + entries.size() + " entries."
