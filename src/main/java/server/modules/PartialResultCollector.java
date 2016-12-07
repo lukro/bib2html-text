@@ -29,7 +29,7 @@ public class PartialResultCollector implements EventListener {
             @Override
             public void run() {
                 update();
-                System.out.println("LOG: Partial DefaultResult Collector - Update task did another run.");
+//                System.out.println("LOG: Partial DefaultResult Collector - Update task did another run.");
             }
         };
         Timer timer = new Timer();

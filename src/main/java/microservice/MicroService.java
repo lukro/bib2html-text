@@ -1,8 +1,16 @@
 package microservice;
 
+import client.controller.ConnectionPoint;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Consumer;
+import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.ShutdownSignalException;
 import global.identifiers.ResultIdentifier;
+import global.model.DefaultClientRequest;
 import global.model.DefaultEntry;
 import global.model.DefaultPartialResult;
+import org.apache.commons.lang3.SerializationUtils;
+import sun.text.resources.no.CollationData_no;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,11 +19,11 @@ import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 
 /**
- * @author Maximilian Schirm (denkbares GmbH)
+ * @author Maximilian Schirm, Karsten Schaefers
  * @created 05.12.2016
+ * @edited 7.12.2016
  */
-//TODO: Extends ConnectionPoint, Implements Consumer
-public class MicroService{
+public class MicroService extends ConnectionPoint implements Consumer, Runnable {
     //TODO : Fill...
     private final String routingKey;
     private final String registerQueueName;
@@ -72,5 +80,44 @@ public class MicroService{
 
         String command = "pandoc --filter=pandoc-citeproc --csl="+cslName+".csl --standalone " + wrapperName + ".md -o "+cslName+".HTML";
         return Runtime.getRuntime().exec(command, null, directory).waitFor();
+    }
+
+    @Override
+    public void handleConsumeOk(String s) {
+
+    }
+
+    @Override
+    public void handleCancelOk(String s) {
+
+    }
+
+    @Override
+    public void handleCancel(String s) throws IOException {
+
+    }
+
+    @Override
+    public void handleShutdownSignal(String s, ShutdownSignalException e) {
+
+    }
+
+    @Override
+    public void handleRecoverOk(String s) {
+
+    }
+
+    @Override
+    public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
+        System.out.println("MicroService received message");
+    }
+
+    @Override
+    public void run() {
+        try {
+            channel.basicConsume(routingKey, true, this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

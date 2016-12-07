@@ -39,6 +39,7 @@ public class Client extends ConnectionPoint implements Runnable, Consumer {
     }
 
     public void sendClientRequest() throws IOException {
+        System.out.println("request sent");
         channel.basicPublish("", QUEUE_TO_SERVER_NAME, null, SerializationUtils.serialize(this.createClientRequest()));
     }
 

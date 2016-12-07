@@ -45,7 +45,7 @@ public abstract class ConnectionPoint {
 
     private void initConnectionPoint() throws IOException {
 //        channel.exchangeDeclare(CENTRAL_EXCHANGE_NAME, EXCHANGE_TYPE);
-        channel.queueDeclare("queue0", false, false, false, null);
+        channel.queueDeclare(QUEUE_TO_SERVER_NAME, false, false, false, null);
 //        channel.queueBind(callbackQueueName, CENTRAL_EXCHANGE_NAME, routingKey);
     }
 

@@ -64,7 +64,7 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
     @Override
     public void run() {
         try {
-            channel.basicConsume(QUEUE_TO_SERVER_NAME, false, this);
+            channel.basicConsume(QUEUE_TO_SERVER_NAME, true, this);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -117,5 +117,8 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
         for(DefaultEntry currentEntry : deliveredClientRequest.getEntries()){
             //TODO: publish entries so microservices
         }
+        System.out.println("Server received message");
+        channel.queueDeclare(MICRO_SERVICE_PUB_QUEUE_NAME, false, false, false, null);
+        channel.basicPublish("", MICRO_SERVICE_PUB_QUEUE_NAME, null, bytes);
     }
 }
