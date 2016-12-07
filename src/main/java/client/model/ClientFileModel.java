@@ -1,7 +1,9 @@
 package client.model;
 
 import client.controller.ClientFileHandler;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,9 +48,11 @@ public class ClientFileModel {
 
     public void addCslFileAsString(File cslFile) throws IOException {
         Objects.requireNonNull(cslFile, "(cslFile == null) in clientFileModel.addCslFileAsString()");
-        String cslFileAsString = ClientFileHandler.readStringFromFile(cslFile);
-        if (!cslFilesAsStrings.contains(cslFileAsString))
-            cslFilesAsStrings.add(cslFileAsString);
+        if (ClientFileHandler.isValidCslFile(cslFile)) {
+            String cslFileAsString = ClientFileHandler.readStringFromFile(cslFile);
+            if (!cslFilesAsStrings.contains(cslFileAsString))
+                cslFilesAsStrings.add(cslFileAsString);
+        }
     }
 
     public void addTemplateFileAsString(File templateFile) throws IOException {

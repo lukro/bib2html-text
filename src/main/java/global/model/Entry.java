@@ -7,7 +7,7 @@ import java.util.Collection;
 /**
  * Created by daan on 11/30/16.
  */
-public class Entry implements Serializable {
+public class Entry implements IEntry, Serializable {
 
     //TODO : Replace with EntryIdentifier?
     private final String clientID;
@@ -26,18 +26,22 @@ public class Entry implements Serializable {
         return clientID;
     }
 
+    @Override
     public String getContent() {
         return content;
     }
 
+    @Override
     public ArrayList<String> getCslFiles() {
         return cslFiles;
     }
 
+    @Override
     public ArrayList<String> getTemplateFiles() {
         return templateFiles;
     }
 
+    @Override
     public String toString() {
         return (System.lineSeparator() + "Entry with clientID '" + clientID + "' and content: "
                 + System.lineSeparator() + content + System.lineSeparator() +

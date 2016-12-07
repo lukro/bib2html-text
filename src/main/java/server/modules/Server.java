@@ -116,7 +116,7 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
         ClientRequest deliveredClientRequest = (ClientRequest) SerializationUtils.deserialize(bytes);
-        for (Entry currentEntry : deliveredClientRequest.getEntries()) {
+        for(Entry currentEntry : deliveredClientRequest.getEntries()){
             //TODO: publish entries so microservices
         }
     }

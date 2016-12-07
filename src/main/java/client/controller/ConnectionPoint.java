@@ -35,7 +35,7 @@ public abstract class ConnectionPoint {
         this.channel = connection.createChannel();
         this.callbackQueueName = channel.queueDeclare().getQueue();
         this.routingKey = UUID.randomUUID().toString();
-//        initConnectionPoint();
+        initConnectionPoint();
     }
 
     public void closeConnection() throws IOException, TimeoutException {
@@ -45,7 +45,7 @@ public abstract class ConnectionPoint {
 
     private void initConnectionPoint() throws IOException {
 //        channel.exchangeDeclare(CENTRAL_EXCHANGE_NAME, EXCHANGE_TYPE);
-        channel.queueDeclare(callbackQueueName, false, false, false, null);
+//        channel.queueDeclare(callbackQueueName, false, false, false, null);
 //        channel.queueBind(callbackQueueName, CENTRAL_EXCHANGE_NAME, routingKey);
     }
 
