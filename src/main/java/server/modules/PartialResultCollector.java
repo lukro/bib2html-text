@@ -2,7 +2,6 @@ package server.modules;
 
 import global.logging.Log;
 import global.logging.LogLevel;
-import global.model.Result;
 import global.model.DefaultResult;
 import server.events.*;
 import server.events.EventListener;

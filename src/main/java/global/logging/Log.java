@@ -14,7 +14,7 @@ public class Log {
     private static LogLevel minimumRequiredLevel = LogLevel.LOW;
     private PrintStream outputStream;
 
-    public Log() {
+    private Log() {
         this.outputStream = System.out;
     }
 
@@ -64,11 +64,9 @@ public class Log {
             outputStream.println(level + ": " + message);
     }
 
-    public static Log getInstance() {
-        return INSTANCE;
-    }
-
     public static LogLevel getMinimumRequiredLevel() {
+        if(INSTANCE != null)
+            return INSTANCE.minimumRequiredLevel;
         return minimumRequiredLevel;
     }
 
