@@ -31,7 +31,7 @@ public class EventManager{
 	}
 
 	public void publishEvent(Event toPublish){
-		eventMap.get(toPublish).forEach(listener -> {
+		eventMap.get(toPublish.getClass()).forEach(listener -> {
 			try {
 				listener.notify(toPublish);
 			} catch (NullPointerException e) {
