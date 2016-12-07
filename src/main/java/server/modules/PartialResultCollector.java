@@ -1,5 +1,7 @@
 package server.modules;
 
+import global.logging.Log;
+import global.logging.LogLevel;
 import global.model.Result;
 import server.events.*;
 import server.events.EventListener;
@@ -8,7 +10,7 @@ import global.model.PartialResult;
 import java.util.*;
 
 /**
- * @author Maximilian Schirm (denkbares GmbH)
+ * @author Maximilian Schirm
  * @created 05.12.2016
  * <p>
  * This is a Singleton class with immediate instantiation
@@ -29,7 +31,7 @@ public class PartialResultCollector implements EventListener {
             @Override
             public void run() {
                 update();
-                System.out.println("LOG: Partial Result Collector - Update task did another run.");
+                Log.log("Partial Result Collector - Update task did another run.", LogLevel.LOW);
             }
         };
         Timer timer = new Timer();

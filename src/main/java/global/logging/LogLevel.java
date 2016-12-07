@@ -5,6 +5,6 @@ package global.logging;
  */
 public enum LogLevel {
 
-    SEVERE , INFO , LOW , WARNING;
+    LOW, INFO, WARNING, SEVERE, ERROR;
 
 }

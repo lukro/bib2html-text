@@ -4,7 +4,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 /**
- * @author Maximilian Schirm (denkbares GmbH)
+ * @author Maximilian Schirm
  * @created 07.12.2016
  */
 
@@ -18,16 +18,49 @@ public class Log {
         this.outputStream = System.out;
     }
 
-    public static void log(String message){
-        if(INSTANCE != null)
-            INSTANCE.log(message, LogLevel.INFO);
+    /**
+     * Logs the message and the exception at the ERROR level - if the minimum level permits it.
+     *
+     * @param message
+     * @param t
+     */
+    public static void log(String message, Throwable t){
+        log(message, LogLevel.ERROR);
+        log(t.getMessage(), LogLevel.ERROR);
     }
 
-    public void log(String message, LogLevel level){
-        int ordLev = level.ordinal();
-        int maxLev = minimumRequiredLevel.ordinal();
+    /**
+     * Logs the message at the default (INFO) level  - if the minimum level permits it.
+     *
+     * @param message
+     */
+    public static void log(String message){
+        if(INSTANCE != null)
+            INSTANCE.printOut(message, LogLevel.INFO);
+    }
 
-        if(ordLev <= maxLev)
+    /**
+     * Logs the message at the supplied level - if the minimum level permits it.
+     *
+     * @param message
+     * @param level
+     */
+    public static void log(String message, LogLevel level){
+        if(INSTANCE != null)
+            INSTANCE.printOut(message, level);
+    }
+
+    /**
+     * Prints the String if the level is at least at the minimum required level.
+     *
+     * @param message
+     * @param level
+     */
+    private void printOut(String message, LogLevel level){
+        int ordLev = level.ordinal();
+        int minLev = minimumRequiredLevel.ordinal();
+
+        if(minLev <= ordLev)
             outputStream.println(level + ": " + message);
     }
 
@@ -39,8 +72,13 @@ public class Log {
         return minimumRequiredLevel;
     }
 
-    public static void setMinimumRequiredLevel(LogLevel minimumRequiredLevel) {
-        Log.minimumRequiredLevel = minimumRequiredLevel;
+    private void setMinimumRequiredLevel(LogLevel minimumRequiredLevel){
+        this.minimumRequiredLevel = minimumRequiredLevel;
+    }
+
+    public static void alterMinimumRequiredLevel(LogLevel minimumRequiredLevel) {
+        if(INSTANCE != null)
+            INSTANCE.setMinimumRequiredLevel(minimumRequiredLevel);
     }
 
     public OutputStream getOutputStream() {
