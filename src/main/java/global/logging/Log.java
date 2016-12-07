@@ -18,8 +18,9 @@ public class Log {
         this.outputStream = System.out;
     }
 
-    public void log(String message){
-        log(message, LogLevel.INFO);
+    public static void log(String message){
+        if(INSTANCE != null)
+            INSTANCE.log(message, LogLevel.INFO);
     }
 
     public void log(String message, LogLevel level){
