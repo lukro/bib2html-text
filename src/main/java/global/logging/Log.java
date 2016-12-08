@@ -3,6 +3,7 @@ package global.logging;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.stream.Collectors;
 
 /**
  * @author Maximilian Schirm
@@ -63,10 +64,11 @@ public class Log {
 
         if (minLev <= ordLev){
             try {
-                message.chars().forEach(integer -> outputStream.write(integer));
+                for(char c : message.toCharArray())
+                    outputStream.write(c);
                 outputStream.write("\n".getBytes());
             } catch (IOException e) {
-                Log.log("Error printing message : ", e);
+                e.printStackTrace();
             }
         }
     }

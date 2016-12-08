@@ -20,7 +20,7 @@ import java.io.PrintStream;
 
 public class ServerController {
 
-    private class Console extends OutputStream{
+    public class Console extends OutputStream{
 
         TextArea textArea;
 
@@ -30,7 +30,7 @@ public class ServerController {
 
         @Override
         public void write(int b) throws IOException {
-            Platform.runLater( -> textArea.appendText(String.valueOf((char)b)));
+            textArea.appendText(String.valueOf((char)b));
         }
     }
 
@@ -63,8 +63,8 @@ public class ServerController {
 
     }
 
-    public PrintStream getConsolePrintStream(){
-
+    public OutputStream getConsolePrintStream(){
+        return consoleStream;
     }
 
 }
