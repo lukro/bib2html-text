@@ -14,14 +14,14 @@ import java.util.Objects;
  */
 public class BibTeXEntryFormatter extends BibTeXFormatter {
 
-    private static BibTeXEntryFormatter instance = new BibTeXEntryFormatter();
+    private static BibTeXEntryFormatter INSTANCE = new BibTeXEntryFormatter();
 
     private BibTeXEntryFormatter() {
         //singleton
     }
 
-    public static BibTeXEntryFormatter getInstance() {
-        return instance;
+    public static BibTeXEntryFormatter getINSTANCE() {
+        return INSTANCE;
     }
 
     private ArrayList<String> createBibTeXEntryContentList(File bibFile) throws IOException {
@@ -43,11 +43,20 @@ public class BibTeXEntryFormatter extends BibTeXFormatter {
     public ArrayList<DefaultEntry> createBibTeXEntryObjectListFromClientFileModel(ClientFileModel clientFileModel) throws IOException {
         Objects.requireNonNull(clientFileModel, "(clientFileModel == null) in BibTexEntryFormatter.createBibTeXEntryObjectListFromClientFileModel()");
         ArrayList<DefaultEntry> entryObjectList = new ArrayList<>();
-        for (File currentFile : clientFileModel.getBibFiles()) {
-            ArrayList<String> entryContentList = this.createBibTeXEntryContentList(currentFile);
-            for (String currentEntryContent : entryContentList) {
+//        for (File currentFile : clientFileModel.getBibFiles()) {
+//            ArrayList<String> entryContentList = this.createBibTeXEntryContentList(currentFile);
+//            for (String currentEntryContent : entryContentList) {
+//                DefaultEntry currentEntryObject = new DefaultEntry(clientFileModel.getClientID(),
+//                        currentEntryContent, clientFileModel.getCslFilesAsStrings(),
+//                        clientFileModel.getTemplateFilesAsStrings());
+//                entryObjectList.add(currentEntryObject);
+//            }
+//        }
+        for (int bibFileIndex = 0; bibFileIndex < clientFileModel.getBibFiles().size(); bibFileIndex++) {
+            ArrayList<String> entryContentList = this.createBibTeXEntryContentList(clientFileModel.getBibFiles().get(bibFileIndex));
+            for (int positionInBibFile = 0; positionInBibFile < entryContentList.size(); positionInBibFile++) {
                 DefaultEntry currentEntryObject = new DefaultEntry(clientFileModel.getClientID(),
-                        currentEntryContent, clientFileModel.getCslFilesAsStrings(),
+                        entryContentList.get(positionInBibFile), bibFileIndex, positionInBibFile, clientFileModel.getCslFilesAsStrings(),
                         clientFileModel.getTemplateFilesAsStrings());
                 entryObjectList.add(currentEntryObject);
             }

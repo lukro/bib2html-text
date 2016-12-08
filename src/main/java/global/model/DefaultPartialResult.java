@@ -1,6 +1,6 @@
 package global.model;
 
-import global.identifiers.ResultIdentifier;
+import global.identifiers.PartialResultIdentifier;
 
 import java.util.Objects;
 
@@ -12,20 +12,17 @@ import java.util.Objects;
 public class DefaultPartialResult implements IPartialResult {
 
     private final String content;
-    private final ResultIdentifier identifier;
-    private final String modeIdentifier;
+    private final PartialResultIdentifier identifier;
 
-    public DefaultPartialResult(String content, ResultIdentifier identifier, String modeIdentifier) {
+    public DefaultPartialResult(String content, PartialResultIdentifier identifier) {
         Objects.requireNonNull(content);
         Objects.requireNonNull(identifier);
-        Objects.requireNonNull(modeIdentifier);
 
         this.content = content;
         this.identifier = identifier;
-        this.modeIdentifier = modeIdentifier;
     }
 
-    public ResultIdentifier getIdentifier() {
+    public PartialResultIdentifier getIdentifier() {
         return identifier;
     }
 
@@ -33,7 +30,4 @@ public class DefaultPartialResult implements IPartialResult {
         return content;
     }
 
-    public String getModeIdentifier() {
-        return modeIdentifier;
-    }
 }

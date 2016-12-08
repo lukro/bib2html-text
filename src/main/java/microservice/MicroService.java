@@ -5,12 +5,8 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
-import global.identifiers.ResultIdentifier;
-import global.model.DefaultClientRequest;
 import global.model.DefaultEntry;
 import global.model.DefaultPartialResult;
-import org.apache.commons.lang3.SerializationUtils;
-import sun.text.resources.no.CollationData_no;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,27 +38,18 @@ public class MicroService extends ConnectionPoint implements Consumer, Runnable 
         return registerQueueName;
     }
 
-    private DefaultPartialResult convertEntry(DefaultEntry toConvert){
+    private DefaultPartialResult convertEntry(DefaultEntry toConvert) {
         //TODO : Replace Dummy code
-        String
-                conversionResult = toConvert.getContent(),
-                fauxClientId = "0123456789",
-                bibFileId = "b",
-                cslFileId = "c",
-                templateId = "0";
-        //Simulating 20% error rate
-        boolean hasErrors = (Math.random() > 0.8)?true:false;
-        ResultIdentifier partialIdentifier = new ResultIdentifier(fauxClientId, bibFileId, cslFileId, templateId, hasErrors);
-        return new DefaultPartialResult(conversionResult, partialIdentifier, "HTML");
+        return null;
     }
 
-    private boolean[] validateTempaltes(DefaultEntry defaultEntry, HashSet<byte[]> templateFiles){
+    private boolean[] validateTempaltes(DefaultEntry defaultEntry, HashSet<byte[]> templateFiles) {
         boolean[] output = new boolean[templateFiles.size()];
-        for(int i = 0; i < templateFiles.size(); i++){
+        for (int i = 0; i < templateFiles.size(); i++) {
             //TODO : Use pandocDoWork(..) to retrieve execution success.
             //Simulating 30% error rate
-            int conversionResultState = (Math.random() > 0.7)?1:0;
-            output[i] =  (conversionResultState > 0)?false:true;
+            int conversionResultState = (Math.random() > 0.7) ? 1 : 0;
+            output[i] = (conversionResultState > 0) ? false : true;
         }
         return output;
     }
@@ -75,10 +62,10 @@ public class MicroService extends ConnectionPoint implements Consumer, Runnable 
         File cslFile = new File(directory, cslName);
         File wrapperFile = new File(directory, wrapperName);
 
-        if(!cslFile.exists() || !wrapperFile.exists())
+        if (!cslFile.exists() || !wrapperFile.exists())
             throw new IllegalArgumentException("A file with that name might not exist!");
 
-        String command = "pandoc --filter=pandoc-citeproc --csl="+cslName+".csl --standalone " + wrapperName + ".md -o "+cslName+".HTML";
+        String command = "pandoc --filter=pandoc-citeproc --csl=" + cslName + ".csl --standalone " + wrapperName + ".md -o " + cslName + ".HTML";
         return Runtime.getRuntime().exec(command, null, directory).waitFor();
     }
 

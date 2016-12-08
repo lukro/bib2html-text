@@ -1,6 +1,6 @@
 package global.model;
 
-import global.identifiers.ResultIdentifier;
+import global.identifiers.PartialResultIdentifier;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -12,10 +12,10 @@ import java.util.Objects;
 
 public class DefaultResult implements IResult {
 
-    private final ResultIdentifier identifier;
+    private final PartialResultIdentifier identifier;
     private final String content;
 
-    public DefaultResult(ResultIdentifier identifier, String content) {
+    public DefaultResult(PartialResultIdentifier identifier, String content) {
         Objects.requireNonNull(identifier);
         Objects.requireNonNull(content);
 
@@ -23,7 +23,7 @@ public class DefaultResult implements IResult {
         this.content = content;
     }
 
-    public ResultIdentifier getIdentifier() {
+    public PartialResultIdentifier getIdentifier() {
         return identifier;
     }
 
@@ -41,7 +41,7 @@ public class DefaultResult implements IResult {
         Objects.requireNonNull(partials);
 
         DefaultPartialResult firstPartial = partials.stream().findFirst().get();
-        ResultIdentifier identifier = firstPartial.getIdentifier();
+        PartialResultIdentifier identifier = firstPartial.getIdentifier();
         StringBuilder contentBuilder = new StringBuilder();
         partials.forEach(partial -> contentBuilder.append(partial.getContent()));
 

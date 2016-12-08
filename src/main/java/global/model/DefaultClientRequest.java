@@ -28,9 +28,7 @@ public class DefaultClientRequest implements IClientRequest {
 
     @Override
     public String toString() {
-        return (System.lineSeparator() +
-                "DefaultClientRequest '" + clientID + "' has " + entries.size() + " entries."
-                + System.lineSeparator());
+        return ("DefaultClientRequest " + clientID + " has " + entries.size() + " entries.");
     }
 
 }

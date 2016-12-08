@@ -7,10 +7,10 @@ public interface IConnectionPoint {
 
     void closeConnection();
 
+    void initConnectionPoint();
+
     String getHostIP();
 
-    String getCallbackQueueName();
-
-    String getQUEUE_TO_SERVER_NAME();
+    String getID();
 
 }

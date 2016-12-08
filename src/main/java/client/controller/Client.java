@@ -18,7 +18,7 @@ import java.util.concurrent.TimeoutException;
 public class Client extends ConnectionPoint implements Runnable, Consumer {
 
     private final String clientID = UUID.randomUUID().toString();
-    private final BibTeXEntryFormatter bibTeXEntryFormatter = BibTeXEntryFormatter.getInstance();
+    private final BibTeXEntryFormatter bibTeXEntryFormatter = BibTeXEntryFormatter.getINSTANCE();
     private ClientFileModel clientFileModel = new ClientFileModel(clientID);
 
     public Client() throws IOException, TimeoutException {

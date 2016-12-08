@@ -80,6 +80,7 @@ public class ClientFileModel {
             addTemplateFileAsString(currentTemplateFile);
     }
 
+    @Override
     public String toString() {
         return (System.lineSeparator() + "ClientFileModel '" + clientID + "' has " + bibFiles.size() +
                 " bibFiles, " + cslFilesAsStrings.size() + " cslFiles and "

@@ -47,7 +47,7 @@ public class PartialResultCollector implements EventListener {
         if (toNotify instanceof ReceivedPartialResultEvent) {
             ReceivedPartialResultEvent tempEvent = (ReceivedPartialResultEvent) toNotify;
             DefaultPartialResult partialResult = tempEvent.getPartialResult();
-            String id = partialResult.getIdentifier().getIdentificationSequence();
+            String id = partialResult.getIdentifier().getClientID();
             Collection<DefaultPartialResult> presentResults = mappingClientIDtoFinishedPartialResults.get(id);
             presentResults.add(partialResult);
             mappingClientIDtoFinishedPartialResults.put(id, presentResults);
