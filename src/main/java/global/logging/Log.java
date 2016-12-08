@@ -1,5 +1,6 @@
 package global.logging;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
@@ -12,7 +13,7 @@ public class Log {
 
     private static final Log INSTANCE = new Log();
     private static LogLevel minimumRequiredLevel = LogLevel.LOW;
-    private PrintStream outputStream;
+    private OutputStream outputStream;
 
     private Log() {
         this.outputStream = System.out;
@@ -56,12 +57,18 @@ public class Log {
      * @param message
      * @param level
      */
-    private void printOut(String message, LogLevel level){
+    private void printOut(String message, LogLevel level) {
         int ordLev = level.ordinal();
         int minLev = minimumRequiredLevel.ordinal();
 
-        if(minLev <= ordLev)
-            outputStream.println(level + ": " + message);
+        if (minLev <= ordLev){
+            try {
+                message.chars().forEach(integer -> outputStream.write(integer));
+                outputStream.write("\n".getBytes());
+            } catch (IOException e) {
+                Log.log("Error printing message : ", e);
+            }
+        }
     }
 
     public static LogLevel getMinimumRequiredLevel() {
@@ -79,11 +86,16 @@ public class Log {
             INSTANCE.setMinimumRequiredLevel(minimumRequiredLevel);
     }
 
+    public static void alterOutputStream(OutputStream newOutputStream){
+        if(INSTANCE != null)
+            INSTANCE.setOutputStream(newOutputStream);
+    }
+
     public OutputStream getOutputStream() {
         return outputStream;
     }
 
-    public void setOutputStream(PrintStream outputStream) {
+    public void setOutputStream(OutputStream outputStream) {
         this.outputStream = outputStream;
     }
 }
