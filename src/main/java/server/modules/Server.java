@@ -14,7 +14,7 @@ import server.events.EventListener;
 import server.events.EventManager;
 import server.events.FinishedCollectingResultEvent;
 
-import java.io.IOException;;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;

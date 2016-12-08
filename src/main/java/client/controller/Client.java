@@ -103,12 +103,12 @@ public class Client implements Runnable, Consumer, IConnectionPoint {
 
     @Override
     public String getHostIP() {
-        return this.hostIP;
+        return hostIP;
     }
 
     @Override
     public String getID() {
-        return this.clientID;
+        return clientID;
     }
 
     public String getCallbackQueueName() {

@@ -28,17 +28,17 @@ public class PartialResultIdentifier implements IIdentifier {
 
     @Override
     public String getClientID() {
-        return this.entryIdentifier.getClientID();
+        return entryIdentifier.getClientID();
     }
 
     @Override
     public int getBibFileIndex() {
-        return this.entryIdentifier.getBibFileIndex();
+        return entryIdentifier.getBibFileIndex();
     }
 
     @Override
     public int getPositionInBibFile() {
-        return this.entryIdentifier.getPositionInBibFile();
+        return entryIdentifier.getPositionInBibFile();
     }
 
     @Override

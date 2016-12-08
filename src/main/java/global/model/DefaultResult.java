@@ -2,6 +2,7 @@ package global.model;
 
 import global.identifiers.PartialResultIdentifier;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -12,39 +13,31 @@ import java.util.Objects;
 
 public class DefaultResult implements IResult {
 
-    private final PartialResultIdentifier identifier;
-    private final String content;
+    private final String clientID;
+    private final ArrayList<String> fileContents;
 
-    public DefaultResult(PartialResultIdentifier identifier, String content) {
-        Objects.requireNonNull(identifier);
-        Objects.requireNonNull(content);
-
-        this.identifier = identifier;
-        this.content = content;
+    public DefaultResult(String clientID, Collection<String> fileContents) {
+        this.clientID = clientID;
+        this.fileContents = new ArrayList<>(fileContents);
     }
 
-    public PartialResultIdentifier getIdentifier() {
-        return identifier;
+    @Override
+    public String getClientID() {
+        return clientID;
     }
 
-    public String getContent() {
-        return content;
+    @Override
+    public ArrayList<String> getFileContents() {
+        return fileContents;
     }
 
-    /**
-     * Creates a new DefaultResult from a Collection of PartialResults.
-     *
-     * @param partials
-     * @return
-     */
-    public static DefaultResult fromPartials(Collection<DefaultPartialResult> partials) {
-        Objects.requireNonNull(partials);
+    @Override
+    public String toString() {
+        return ("DefaultResult " + clientID + " has " + fileContents.size() + " outputFiles.");
+    }
 
-        DefaultPartialResult firstPartial = partials.stream().findFirst().get();
-        PartialResultIdentifier identifier = firstPartial.getIdentifier();
-        StringBuilder contentBuilder = new StringBuilder();
-        partials.forEach(partial -> contentBuilder.append(partial.getContent()));
-
-        return new DefaultResult(identifier, contentBuilder.toString());
+    public static DefaultResult buildResultfromPartials(Collection<DefaultPartialResult> partials) {
+        //TODO: implement build DefaultResult from Partials
+        return null;
     }
 }

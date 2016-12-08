@@ -25,7 +25,7 @@ public class DefaultEntry implements IEntry {
 
     @Override
     public EntryIdentifier getEntryIdentifier() {
-        return this.entryIdentifier;
+        return entryIdentifier;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class DefaultEntry implements IEntry {
     @Override
     public String toString() {
         return (System.lineSeparator() + "Entry with clientID '" +
-                this.entryIdentifier.getClientID() + "' and content: "
+                entryIdentifier.getClientID() + "' and content: "
                 + System.lineSeparator() + content + System.lineSeparator() +
                 "from .bib-file " + entryIdentifier.getBibFileIndex() + " at position "
                 + entryIdentifier.getPositionInBibFile() + " must be converted with " + cslFiles.size() +

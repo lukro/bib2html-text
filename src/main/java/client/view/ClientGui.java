@@ -13,7 +13,7 @@ import java.util.concurrent.TimeoutException;
  * @author daan
  *         created on 11/30/16.
  */
-public class Gui {
+public class ClientGui {
 
     public static void main(String[] args) throws IOException, TimeoutException, ParseException {
 //        String serverIPv4_2 = "192.168.137.171";

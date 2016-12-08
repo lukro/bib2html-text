@@ -73,7 +73,7 @@ public class PartialResultCollector implements EventListener {
         mappingClientIDtoExpectedResultsSize.forEach((key, size) -> {
             Collection<DefaultPartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
             if (parts.size() == size)
-                EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(DefaultResult.fromPartials(parts)));
+                EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(DefaultResult.buildResultfromPartials(parts)));
         });
     }
 
