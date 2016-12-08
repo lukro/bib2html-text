@@ -7,7 +7,7 @@ import java.io.Serializable;
  *
  * @author Maximilian Schirm, daan
  */
-public interface Identifier extends Serializable {
+public interface IIdentifier extends Serializable {
 
     String getClientID();
 

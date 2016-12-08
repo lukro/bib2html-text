@@ -6,8 +6,8 @@ import java.util.Collection;
 import java.util.Objects;
 
 /**
- * @author Maximilian Schirm (denkbares GmbH)
- * @created 05.12.2016
+ * @author Maximilian Schirm, daan
+ *         created on 05.12.2016
  */
 
 public class DefaultResult implements IResult {

@@ -15,22 +15,22 @@ import java.io.PrintStream;
 
 /**
  * @author Maximilian Schirm
- * @created 08.12.2016
+ *         created on 08.12.2016
  */
 
 public class ServerController {
 
-    public class Console extends OutputStream{
+    public class Console extends OutputStream {
 
         TextArea textArea;
 
-        public Console(TextArea textArea){
+        public Console(TextArea textArea) {
             this.textArea = textArea;
         }
 
         @Override
         public void write(int b) throws IOException {
-            textArea.appendText(String.valueOf((char)b));
+            textArea.appendText(String.valueOf((char) b));
         }
     }
 
@@ -44,9 +44,8 @@ public class ServerController {
     TextArea serverConsoleTextArea;
 
 
-
     @FXML
-    public void initialize(){
+    public void initialize() {
         consoleStream = new Console(serverConsoleTextArea);
         Log.alterOutputStream(consoleStream);
     }
@@ -63,7 +62,7 @@ public class ServerController {
 
     }
 
-    public OutputStream getConsolePrintStream(){
+    public OutputStream getConsolePrintStream() {
         return consoleStream;
     }
 

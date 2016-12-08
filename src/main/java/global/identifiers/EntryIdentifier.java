@@ -4,12 +4,12 @@ import java.util.Objects;
 
 /**
  * @author Maximilian Schirm, daan
- * @created 05.12.2016
- * <p>
- * Identifies an DefaultEntry precisely
+ *         created: 05.12.2016
+ *         <p>
+ *         Identifies an DefaultEntry precisely
  */
 
-public class EntryIdentifier implements Identifier {
+public class EntryIdentifier implements IIdentifier {
 
     private final String clientID;
     private final int bibFileIndex, positionInBibFile;

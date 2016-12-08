@@ -6,7 +6,8 @@ import java.io.*;
 import java.util.Objects;
 
 /**
- * Created by daan on 11/30/16.
+ * @author daan
+ *         created on 111/30/16.
  */
 public final class ClientFileHandler {
 

@@ -22,8 +22,8 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 /**
- * @author Maximilian Schirm (denkbares GmbH)
- * @created 05.12.2016
+ * @author Maximilian Schirm
+ *         created 05.12.2016
  */
 
 public class Server extends ConnectionPoint implements EventListener, Runnable, Consumer {
@@ -114,7 +114,7 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
         DefaultClientRequest deliveredClientRequest = (DefaultClientRequest) SerializationUtils.deserialize(bytes);
-        for(DefaultEntry currentEntry : deliveredClientRequest.getEntries()){
+        for (DefaultEntry currentEntry : deliveredClientRequest.getEntries()) {
             //TODO: publish entries so microservices
         }
         System.out.println("Server received message");

@@ -4,12 +4,12 @@ import java.util.Objects;
 
 /**
  * @author Maximilian Schirm, daan
- * @created 05.12.2016
- * <p>
- * Identifies a DefaultResult
+ *         created: 05.12.2016
+ *         <p>
+ *         Identifies a DefaultResult
  */
 
-public class PartialResultIdentifier implements Identifier {
+public class PartialResultIdentifier implements IIdentifier {
 
     private final EntryIdentifier entryIdentifier;
     private final int cslFileIndex, templateFileIndex;
@@ -43,8 +43,11 @@ public class PartialResultIdentifier implements Identifier {
 
     @Override
     public String toString() {
-        //TODO: implement toString()-method
-        return super.toString();
+        return ("PartialResult for client " + entryIdentifier.getClientID() +
+                " belongs to .bib-file " + entryIdentifier.getBibFileIndex() +
+                " at position " + entryIdentifier.getPositionInBibFile() +
+                "and was converted with .csl-file " + cslFileIndex +
+                " and templateFile " + templateFileIndex);
     }
 
     @Override

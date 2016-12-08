@@ -10,9 +10,10 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Created by daan on 12/4/16.
+ * @author daan
+ *         created on 12/4/16.
  */
-public class BibTeXEntryFormatter extends BibTeXFormatter {
+class BibTeXEntryFormatter extends BibTeXFormatter {
 
     private static BibTeXEntryFormatter INSTANCE = new BibTeXEntryFormatter();
 
@@ -20,7 +21,7 @@ public class BibTeXEntryFormatter extends BibTeXFormatter {
         //singleton
     }
 
-    public static BibTeXEntryFormatter getINSTANCE() {
+    static BibTeXEntryFormatter getINSTANCE() {
         return INSTANCE;
     }
 
@@ -40,7 +41,7 @@ public class BibTeXEntryFormatter extends BibTeXFormatter {
         return null;
     }
 
-    public ArrayList<DefaultEntry> createBibTeXEntryObjectListFromClientFileModel(ClientFileModel clientFileModel) throws IOException {
+    ArrayList<DefaultEntry> createBibTeXEntryObjectListFromClientFileModel(ClientFileModel clientFileModel) throws IOException {
         Objects.requireNonNull(clientFileModel, "(clientFileModel == null) in BibTexEntryFormatter.createBibTeXEntryObjectListFromClientFileModel()");
         ArrayList<DefaultEntry> entryObjectList = new ArrayList<>();
 //        for (File currentFile : clientFileModel.getBibFiles()) {

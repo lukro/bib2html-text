@@ -4,7 +4,7 @@ import global.model.DefaultPartialResult;
 
 /**
  * @author Maximilian Schirm
- * @created 05.12.2016
+ *         created 05.12.2016
  */
 
 public class ReceivedPartialResultEvent implements Event {

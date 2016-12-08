@@ -1,13 +1,17 @@
 package global.controller;
 
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
 /**
- * Created by daan on 12/7/16.
+ * @author daan
+ *         created on 12/7/16.
  */
 public interface IConnectionPoint {
 
-    void closeConnection();
+    void closeConnection() throws IOException, TimeoutException;
 
-    void initConnectionPoint();
+    void initConnectionPoint() throws IOException;
 
     String getHostIP();
 

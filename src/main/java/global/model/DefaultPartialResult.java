@@ -5,8 +5,8 @@ import global.identifiers.PartialResultIdentifier;
 import java.util.Objects;
 
 /**
- * @author Maximilian Schirm (denkbares GmbH)
- * @created 05.12.2016
+ * @author Maximilian Schirm, daan
+ *         created on 05.12.2016
  */
 
 public class DefaultPartialResult implements IPartialResult {

@@ -7,7 +7,8 @@ import java.util.Collection;
 import java.util.Objects;
 
 /**
- * Created by daan on 11/30/16.
+ * @author daan
+ *         created on 11/30/16.
  */
 public class DefaultEntry implements IEntry {
 

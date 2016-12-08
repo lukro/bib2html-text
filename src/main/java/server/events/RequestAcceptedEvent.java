@@ -2,10 +2,10 @@ package server.events;
 
 /**
  * @author Maximilian Schirm (denkbares GmbH)
- * @created 05.12.2016
+ *         created 05.12.2016
  */
 
-public class RequestAcceptedEvent implements Event{
+public class RequestAcceptedEvent implements Event {
 
     private final String requestID;
     private final int reqSize;

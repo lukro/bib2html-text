@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Created by daan on 11/30/16.
+ * @author daan
+ *         created on 11/30/16.
  */
 public class DefaultClientRequest implements IClientRequest {
 

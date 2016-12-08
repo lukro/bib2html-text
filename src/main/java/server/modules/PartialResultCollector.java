@@ -11,9 +11,9 @@ import java.util.*;
 
 /**
  * @author Maximilian Schirm
- * @created 05.12.2016
- * <p>
- * This is a Singleton class with immediate instantiation
+ *         created 05.12.2016
+ *         <p>
+ *         This is a Singleton class with immediate instantiation
  */
 public class PartialResultCollector implements EventListener {
 
