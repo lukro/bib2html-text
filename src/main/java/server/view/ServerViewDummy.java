@@ -1,5 +1,7 @@
 package server.view;
 
+import global.logging.Log;
+import global.logging.LogLevel;
 import server.modules.Server;
 
 /**
@@ -14,9 +16,9 @@ public class ServerViewDummy {
 
     public static void main(String[] args){
         try{
-            log("Starting server...");
+            Log.log("Starting server...");
             Server server = new Server();
-            log("Started server @ " + server.getHostIP());
+            Log.log("Started server @ " + server.getHostIP());
         }
         catch (Exception e){
             e.printStackTrace();

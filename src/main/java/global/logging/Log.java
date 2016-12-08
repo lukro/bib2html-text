@@ -1,10 +1,12 @@
 package global.logging;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.stream.Collectors;
 
 /**
- * @author Maximilian Schirm (denkbares GmbH)
+ * @author Maximilian Schirm
  * @created 07.12.2016
  */
 
@@ -12,42 +14,90 @@ public class Log {
 
     private static final Log INSTANCE = new Log();
     private static LogLevel minimumRequiredLevel = LogLevel.LOW;
-    private PrintStream outputStream;
+    private OutputStream outputStream;
 
-    public Log() {
+    private Log() {
         this.outputStream = System.out;
     }
 
+    /**
+     * Logs the message and the exception at the ERROR level - if the minimum level permits it.
+     *
+     * @param message
+     * @param t
+     */
+    public static void log(String message, Throwable t){
+        log(message, LogLevel.ERROR);
+        log(t.getMessage(), LogLevel.ERROR);
+    }
+
+    /**
+     * Logs the message at the default (INFO) level  - if the minimum level permits it.
+     *
+     * @param message
+     */
     public static void log(String message){
         if(INSTANCE != null)
-            INSTANCE.log(message, LogLevel.INFO);
+            INSTANCE.printOut(message, LogLevel.INFO);
     }
 
-    public void log(String message, LogLevel level){
+    /**
+     * Logs the message at the supplied level - if the minimum level permits it.
+     *
+     * @param message
+     * @param level
+     */
+    public static void log(String message, LogLevel level){
+        if(INSTANCE != null)
+            INSTANCE.printOut(message, level);
+    }
+
+    /**
+     * Prints the String if the level is at least at the minimum required level.
+     *
+     * @param message
+     * @param level
+     */
+    private void printOut(String message, LogLevel level) {
         int ordLev = level.ordinal();
-        int maxLev = minimumRequiredLevel.ordinal();
+        int minLev = minimumRequiredLevel.ordinal();
 
-        if(ordLev <= maxLev)
-            outputStream.println(level + ": " + message);
-    }
-
-    public static Log getInstance() {
-        return INSTANCE;
+        if (minLev <= ordLev){
+            try {
+                for(char c : message.toCharArray())
+                    outputStream.write(c);
+                outputStream.write("\n".getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static LogLevel getMinimumRequiredLevel() {
+        if(INSTANCE != null)
+            return INSTANCE.minimumRequiredLevel;
         return minimumRequiredLevel;
     }
 
-    public static void setMinimumRequiredLevel(LogLevel minimumRequiredLevel) {
-        Log.minimumRequiredLevel = minimumRequiredLevel;
+    private void setMinimumRequiredLevel(LogLevel minimumRequiredLevel){
+        this.minimumRequiredLevel = minimumRequiredLevel;
+    }
+
+    public static void alterMinimumRequiredLevel(LogLevel minimumRequiredLevel) {
+        if(INSTANCE != null)
+            INSTANCE.setMinimumRequiredLevel(minimumRequiredLevel);
+    }
+
+    public static void alterOutputStream(OutputStream newOutputStream){
+        if(INSTANCE != null)
+            INSTANCE.setOutputStream(newOutputStream);
     }
 
     public OutputStream getOutputStream() {
         return outputStream;
     }
 
-    public void setOutputStream(PrintStream outputStream) {
+    public void setOutputStream(OutputStream outputStream) {
         this.outputStream = outputStream;
     }
 }
