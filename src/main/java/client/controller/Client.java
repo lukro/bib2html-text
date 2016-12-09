@@ -3,7 +3,6 @@ package client.controller;
 import com.rabbitmq.client.*;
 import client.model.ClientFileModel;
 import global.controller.IConnectionPoint;
-import global.logging.Log;
 import global.model.DefaultClientRequest;
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -14,13 +13,14 @@ import java.util.concurrent.TimeoutException;
 /**
  * Created by daan on 11/30/16.
  */
-public class Client implements Runnable, Consumer, IConnectionPoint {
+public class Client implements IConnectionPoint, Runnable, Consumer {
 
     private final String clientID, hostIP, callbackQueueName;
-    private final Connection connection;
-    private final Channel channel;
     private final String CLIENT_REQUEST_QUEUE_NAME = "clientRequestQueue";
     private String outputDirectory;
+
+    private final Connection connection;
+    private final Channel channel;
 
     private final BibTeXEntryFormatter bibTeXEntryFormatter = BibTeXEntryFormatter.getINSTANCE();
     private ClientFileModel clientFileModel;
@@ -49,10 +49,9 @@ public class Client implements Runnable, Consumer, IConnectionPoint {
     @Override
     public void run() {
         try {
-            channel.queueDeclare(callbackQueueName, false, false, false, null);
             channel.basicConsume(callbackQueueName, true, this);
         } catch (IOException e) {
-            Log.log("Failure to run channel.basicConsume() in Client.run", e);
+            e.printStackTrace();
         }
     }
 
@@ -100,7 +99,7 @@ public class Client implements Runnable, Consumer, IConnectionPoint {
     @Override
     public void initConnectionPoint() throws IOException {
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
-        this.run();
+        run();
     }
 
     @Override
