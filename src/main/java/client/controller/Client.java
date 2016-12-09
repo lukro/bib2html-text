@@ -13,13 +13,14 @@ import java.util.concurrent.TimeoutException;
 /**
  * Created by daan on 11/30/16.
  */
-public class Client implements Runnable, Consumer, IConnectionPoint {
+public class Client implements IConnectionPoint, Runnable, Consumer {
 
     private final String clientID, hostIP, callbackQueueName;
-    private final Connection connection;
-    private final Channel channel;
     private final String CLIENT_REQUEST_QUEUE_NAME = "clientRequestQueue";
     private String outputDirectory;
+
+    private final Connection connection;
+    private final Channel channel;
 
     private final BibTeXEntryFormatter bibTeXEntryFormatter = BibTeXEntryFormatter.getINSTANCE();
     private ClientFileModel clientFileModel;
@@ -48,7 +49,7 @@ public class Client implements Runnable, Consumer, IConnectionPoint {
     @Override
     public void run() {
         try {
-            channel.basicConsume(callbackQueueName, false, this);
+            channel.basicConsume(callbackQueueName, true, this);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -98,7 +99,7 @@ public class Client implements Runnable, Consumer, IConnectionPoint {
     @Override
     public void initConnectionPoint() throws IOException {
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
-        this.run();
+        run();
     }
 
     @Override

@@ -1,10 +1,7 @@
 package microservice;
 
-import client.controller.ConnectionPoint;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.Envelope;
-import com.rabbitmq.client.ShutdownSignalException;
+import com.rabbitmq.client.*;
+import global.controller.IConnectionPoint;
 import global.model.DefaultEntry;
 import global.model.DefaultPartialResult;
 
@@ -12,31 +9,39 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 /**
- * @author Maximilian Schirm, Karsten Schaefers
- * @created 05.12.2016
- * @edited 7.12.2016
+ * @author Maximilian Schirm, Karsten Schaefers, daan
+ *         created 05.12.2016
+ *         edited 9.12.2016
  */
-public class MicroService extends ConnectionPoint implements Consumer, Runnable {
+public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
-    //TODO : Fill...
-    private final String routingKey;
-    private final String registerQueueName;
+    private final String microServiceID, hostIP;
+    private final String TASK_QUEUE_NAME = "taskQueue";
+    private final String REGISTER_QUEUE_NAME = "registerQueue";
 
-    public MicroService(String routingKey, String registerQueueName) throws IOException, TimeoutException {
-        super();
-        this.routingKey = routingKey;
-        this.registerQueueName = registerQueueName;
+    private final Connection connection;
+    private final Channel channel;
+
+
+    public MicroService() throws IOException, TimeoutException {
+        this("localhost");
     }
 
-    public String getRoutingKey() {
-        return routingKey;
+    public MicroService(String hostIP) throws IOException, TimeoutException {
+        this(hostIP, UUID.randomUUID().toString());
     }
 
-    public String getRegisterQueueName() {
-        return registerQueueName;
+    public MicroService(String hostIP, String microServiceID) throws IOException, TimeoutException {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(hostIP);
+        this.hostIP = hostIP;
+        this.microServiceID = microServiceID;
+        this.connection = factory.newConnection();
+        this.channel = connection.createChannel();
     }
 
     private DefaultPartialResult convertEntry(DefaultEntry toConvert) {
@@ -103,9 +108,31 @@ public class MicroService extends ConnectionPoint implements Consumer, Runnable 
     @Override
     public void run() {
         try {
-            channel.basicConsume(routingKey, true, this);
+            channel.basicConsume(TASK_QUEUE_NAME, true, this);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void closeConnection() throws IOException, TimeoutException {
+        channel.close();
+        connection.close();
+    }
+
+    @Override
+    public void initConnectionPoint() throws IOException {
+        channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
+        run();
+    }
+
+    @Override
+    public String getHostIP() {
+        return hostIP;
+    }
+
+    @Override
+    public String getID() {
+        return microServiceID;
     }
 }

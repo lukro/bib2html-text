@@ -1,12 +1,9 @@
 package server.modules;
 
-import client.controller.ConnectionPoint;
+import com.rabbitmq.client.*;
+import global.controller.IConnectionPoint;
 import global.model.DefaultClientRequest;
 import global.model.DefaultEntry;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.Envelope;
-import com.rabbitmq.client.ShutdownSignalException;
 import global.model.DefaultResult;
 import org.apache.commons.lang3.SerializationUtils;
 import server.events.Event;
@@ -19,32 +16,50 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 /**
- * @author Maximilian Schirm
+ * @author Maximilian Schirm, daan
  *         created 05.12.2016
  */
 
-public class Server extends ConnectionPoint implements EventListener, Runnable, Consumer {
+public class Server implements IConnectionPoint, Runnable, Consumer, EventListener {
 
-    private static final String MICRO_SERVICE_PUB_QUEUE_NAME = "msPubQueueName";
-    private static final String MICRO_SERVICE_SUB_QUEUE_NAME = "msSubQueueName";
+    private final String serverID, hostIP, callbackQueueName;
+    private final String CLIENT_REQUEST_QUEUE_NAME = "clientRequestQueue";
+    private final String TASK_QUEUE_NAME = "taskQueue";
+//    private final URI address;
+
+    private final Connection connection;
+    private final Channel channel;
 
     private ArrayList<String> invalidClientIDs = new ArrayList<>();
 
-    private final URI adress;
     private final MicroServiceManager microServiceManager;
     private final PartialResultCollector partialResultCollector;
 
     public Server() throws IOException, TimeoutException {
-        super();
+        this("localhost");
+    }
 
-        adress = URI.create(getHostIP());
-        microServiceManager = MicroServiceManager.getInstance();
-        partialResultCollector = PartialResultCollector.getInstance();
+    public Server(String hostIP) throws IOException, TimeoutException {
+        this(hostIP, UUID.randomUUID().toString());
+    }
 
+    public Server(String hostIP, String serverID) throws IOException, TimeoutException {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(hostIP);
+        this.hostIP = hostIP;
+//        this.address = URI.create(getHostIP());
+        this.serverID = serverID;
+        this.callbackQueueName = serverID;
+        this.connection = factory.newConnection();
+        this.channel = connection.createChannel();
+        this.microServiceManager = MicroServiceManager.getInstance();
+        this.partialResultCollector = PartialResultCollector.getInstance();
         EventManager.getInstance().registerListener(this);
+        initConnectionPoint();
     }
 
     public boolean sendEntryToMicroServices(DefaultEntry entry) {
@@ -57,14 +72,12 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
             e.printStackTrace();
             return false;
         }
-
-
     }
 
     @Override
     public void run() {
         try {
-            channel.basicConsume(QUEUE_TO_SERVER_NAME, true, this);
+            channel.basicConsume(TASK_QUEUE_NAME, true, this);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -118,7 +131,40 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
             //TODO: publish entries so microservices
         }
         System.out.println("Server received message");
-        channel.queueDeclare(MICRO_SERVICE_PUB_QUEUE_NAME, false, false, false, null);
-        channel.basicPublish("", MICRO_SERVICE_PUB_QUEUE_NAME, null, bytes);
+        channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
+        channel.basicPublish("", TASK_QUEUE_NAME, null, bytes);
     }
+
+    @Override
+    public void closeConnection() throws IOException, TimeoutException {
+        channel.close();
+        connection.close();
+    }
+
+    @Override
+    public void initConnectionPoint() throws IOException {
+        run();
+    }
+
+    @Override
+    public String getHostIP() {
+        return hostIP;
+    }
+
+    @Override
+    public String getID() {
+        return serverID;
+    }
+
+    public void banClientID(String clientID) {
+        if (!invalidClientIDs.contains(clientID))
+            invalidClientIDs.add(clientID);
+    }
+
+    public void unbanClientID(String clientID) {
+        if (invalidClientIDs.contains(clientID))
+            invalidClientIDs.remove(clientID);
+    }
+
+
 }
