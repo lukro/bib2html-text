@@ -49,9 +49,10 @@ public class Client implements Runnable, Consumer, IConnectionPoint {
     @Override
     public void run() {
         try {
-            channel.basicConsume(callbackQueueName, false, this);
+            channel.queueDeclare(callbackQueueName, false, false, false, null);
+            channel.basicConsume(callbackQueueName, true, this);
         } catch (IOException e) {
-            Log.log("Failure to run channel.basicConsume() in Client.run",e);
+            Log.log("Failure to run channel.basicConsume() in Client.run", e);
         }
     }
 
