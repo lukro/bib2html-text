@@ -6,15 +6,14 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.TextFlow?>
 
-
-<AnchorPane maxHeight="720.0" maxWidth="1280.0" prefHeight="720.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="720.0" maxWidth="1280.0" prefHeight="720.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.controller.ClientController">
    <children>
       <SplitPane dividerPositions="0.667" layoutX="8.0" prefHeight="720.0" prefWidth="1280.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="-8.0" AnchorPane.topAnchor="0.0">
         <items>
@@ -26,7 +25,7 @@
                            <children>
                               <BorderPane layoutX="111.0" layoutY="258.0" prefHeight="716.0" prefWidth="421.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <center>
-                                    <ListView prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                                    <ListView fx:id="bibFilesListView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
                                  </center>
                                  <bottom>
                                     <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
@@ -44,7 +43,7 @@
                            <children>
                               <BorderPane layoutX="98.0" layoutY="240.0" prefHeight="716.0" prefWidth="420.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <center>
-                                    <ListView prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                                    <ListView fx:id="cslFilesListView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
                                  </center>
                                  <bottom>
                                     <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
@@ -68,12 +67,12 @@
                      <children>
                         <HBox prefHeight="34.0" prefWidth="423.0">
                            <children>
-                              <Button mnemonicParsing="false" prefWidth="75.0" text="Choose">
+                              <Button mnemonicParsing="false" onAction="#chooseTemplateButtonPressed" prefWidth="75.0" text="Choose">
                                  <HBox.margin>
                                     <Insets left="25.0" />
                                  </HBox.margin>
                               </Button>
-                              <TextField prefHeight="25.0" prefWidth="200.0">
+                              <TextField fx:id="templateDirectoryTextField" prefHeight="25.0" prefWidth="200.0">
                                  <HBox.margin>
                                     <Insets left="15.0" />
                                  </HBox.margin>
@@ -90,12 +89,12 @@
                         </HBox>
                         <HBox prefHeight="34.0" prefWidth="423.0">
                            <children>
-                              <Button mnemonicParsing="false" prefWidth="75.0" text="Choose">
+                              <Button mnemonicParsing="false" onAction="#chooseOutputDirectoryButtonPressed" prefWidth="75.0" text="Choose">
                                  <HBox.margin>
                                     <Insets left="25.0" />
                                  </HBox.margin>
                               </Button>
-                              <TextField prefHeight="25.0" prefWidth="200.0">
+                              <TextField fx:id="outputDirectoryTextField" prefHeight="25.0" prefWidth="200.0">
                                  <HBox.margin>
                                     <Insets left="15.0" />
                                  </HBox.margin>
@@ -109,12 +108,12 @@
                         </HBox>
                         <HBox prefHeight="34.0" prefWidth="423.0">
                            <children>
-                              <Button maxWidth="75.0" mnemonicParsing="false" prefWidth="75.0" text="Connect">
+                              <Button maxWidth="75.0" mnemonicParsing="false" onAction="#connectToServerButtonPressed" prefWidth="75.0" text="Connect">
                                  <HBox.margin>
                                     <Insets left="25.0" />
                                  </HBox.margin>
                               </Button>
-                              <TextField prefHeight="25.0" prefWidth="200.0">
+                              <TextField fx:id="serverAdressTextField" prefHeight="25.0" prefWidth="200.0">
                                  <HBox.margin>
                                     <Insets left="15.0" />
                                  </HBox.margin>
@@ -126,8 +125,8 @@
                               </Label>
                            </children>
                         </HBox>
-                        <TextFlow prefHeight="564.0" prefWidth="423.0" style="-fx-background-color: black;" />
-                        <Button mnemonicParsing="false" prefWidth="150.0" text="Start Conversion">
+                        <TextArea fx:id="clientConsoleTextArea" prefHeight="565.0" prefWidth="420.0" style="-fx-background-color: White;" />
+                        <Button mnemonicParsing="false" onAction="#startConversionButtonPressed" prefWidth="150.0" text="Start Conversion">
                            <VBox.margin>
                               <Insets left="125.0" top="7.0" />
                            </VBox.margin>

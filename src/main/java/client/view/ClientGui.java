@@ -1,33 +1,33 @@
 package client.view;
 
-import client.controller.Client;
-import microservice.MicroService;
-import org.jbibtex.*;
-import server.modules.Server;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
 
 /**
- * @author daan
- *         created on 11/30/16.
+ * @author Maximilian Schirm
+ * @created 09.12.2016
  */
-public class ClientGui {
 
-    public static void main(String[] args) throws IOException, TimeoutException, ParseException {
-//        String serverIPv4_2 = "192.168.137.171";
-        //TODO: change path to test_files
-        File bibFile1 = new File("C:\\Users\\pc\\IdeaProjects\\bib2html-text\\bib2html-text\\test_files\\xampl.bib");
-        File bibFile2 = new File("C:\\Users\\pc\\IdeaProjects\\bib2html-text\\bib2html-text\\test_files\\mybib2.bib");
-        Client testClient = new Client();
-        Server testServer = new Server();
-        MicroService testService = new MicroService("msPubQueueName", "regQueue");
-        testServer.run();
-        testService.run();
-        testClient.getClientFileModel().addBibFile(bibFile1);
-        testClient.getClientFileModel().addBibFile(bibFile2);
-        testClient.sendClientRequest();
-        System.out.println("end of main().");
+public class ClientGui extends Application {
+
+    public static void main(String[] args){
+        launch(args);
     }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        primaryStage.setOnCloseRequest(event -> System.exit(0));
+
+        //Loading UI
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("clientMain.fxml"));
+        Pane root = loader.load();
+        Scene scene = new Scene(root, 1280, 720);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("bib2hmtl-text Client 0.0.1");
+        primaryStage.show();
+    }
+
 }

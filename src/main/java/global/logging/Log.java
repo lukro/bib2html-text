@@ -4,8 +4,8 @@ import javafx.application.Platform;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.stream.Collectors;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * @author Maximilian Schirm
@@ -30,7 +30,10 @@ public class Log {
      */
     public static void log(String message, Throwable t){
         log(message, LogLevel.ERROR);
-        log(t.getMessage(), LogLevel.ERROR);
+        StringWriter sw = new StringWriter();
+        t.printStackTrace(new PrintWriter(sw));
+        String exceptionAsString = t.getMessage() + "\n" + sw.toString();
+        log(exceptionAsString, LogLevel.ERROR);
     }
 
     /**

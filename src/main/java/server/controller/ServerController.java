@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,35 +29,6 @@ import java.util.concurrent.TimeoutException;
  */
 
 public class ServerController implements EventListener {
-
-    @Override
-    public void notify(Event toNotify) {
-        if(toNotify instanceof ClientRegisteredEvent){
-            Client toAdd = ((ClientRegisteredEvent) toNotify).getRegisteredClient();
-            Log.log("Registered Client with ID " + toAdd.getID(), LogLevel.INFO);
-            clientListView.getItems().add(toAdd);
-        }
-        else if(toNotify instanceof ClientDisconnectedEvent){
-            Client toRemove = ((ClientDisconnectedEvent) toNotify).getDisconnectedClient();
-            Log.log("Disconnected Client with ID " + toRemove.getID(), LogLevel.INFO);
-            clientListView.getItems().remove(toRemove);
-        }
-        else if(toNotify instanceof MicroServiceConnectedEvent){
-            MicroService toAdd = ((MicroServiceConnectedEvent) toNotify).getConnectedSvc();
-            Log.log("Registered Microservice with ID " + toAdd.getRoutingKey(), LogLevel.INFO);
-            microServiceListView.getItems().add(toAdd);
-        }
-        else if(toNotify instanceof MicroServiceDisconnectedEvent){
-            MicroService toRemove = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvc();
-            Log.log("Unregistered Microservice with ID " + toRemove.getRoutingKey(), LogLevel.INFO);
-            microServiceListView.getItems().remove(toRemove);
-        }
-    }
-
-    @Override
-    public Set<Class<? extends Event>> getEvents() {
-        return new HashSet(Arrays.asList(ClientRegisteredEvent.class, ClientDisconnectedEvent.class, MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class));
-    }
 
     public class Console extends OutputStream {
 
@@ -114,11 +84,36 @@ public class ServerController implements EventListener {
         try {
             serverAdressLabel.setText(Inet4Address.getLocalHost().getHostAddress());
         } catch (UnknownHostException e) {
-            Log.log("Failed to display Host IP",e);
+            Log.log("Failed to display Host IP", e);
         }
-        ;
 
         Log.log("Initialized the Server.", LogLevel.INFO);
+    }
+
+    @Override
+    public void notify(Event toNotify) {
+        if (toNotify instanceof ClientRegisteredEvent) {
+            Client toAdd = ((ClientRegisteredEvent) toNotify).getRegisteredClient();
+            Log.log("Registered Client with ID " + toAdd.getID(), LogLevel.INFO);
+            clientListView.getItems().add(toAdd);
+        } else if (toNotify instanceof ClientDisconnectedEvent) {
+            Client toRemove = ((ClientDisconnectedEvent) toNotify).getDisconnectedClient();
+            Log.log("Disconnected Client with ID " + toRemove.getID(), LogLevel.INFO);
+            clientListView.getItems().remove(toRemove);
+        } else if (toNotify instanceof MicroServiceConnectedEvent) {
+            MicroService toAdd = ((MicroServiceConnectedEvent) toNotify).getConnectedSvc();
+            Log.log("Registered Microservice with ID " + toAdd.getRoutingKey(), LogLevel.INFO);
+            microServiceListView.getItems().add(toAdd);
+        } else if (toNotify instanceof MicroServiceDisconnectedEvent) {
+            MicroService toRemove = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvc();
+            Log.log("Unregistered Microservice with ID " + toRemove.getRoutingKey(), LogLevel.INFO);
+            microServiceListView.getItems().remove(toRemove);
+        }
+    }
+
+    @Override
+    public Set<Class<? extends Event>> getEvents() {
+        return new HashSet(Arrays.asList(ClientRegisteredEvent.class, ClientDisconnectedEvent.class, MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class));
     }
 
     public void removeMicroserviceButtonPressed(ActionEvent actionEvent) {
@@ -135,9 +130,5 @@ public class ServerController implements EventListener {
 
     public OutputStream getConsolePrintStream() {
         return consoleStream;
-    }
-
-    public void addClient(Client client){
-
     }
 }

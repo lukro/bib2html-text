@@ -3,6 +3,7 @@ package client.controller;
 import com.rabbitmq.client.*;
 import client.model.ClientFileModel;
 import global.controller.IConnectionPoint;
+import global.logging.Log;
 import global.model.DefaultClientRequest;
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -50,7 +51,7 @@ public class Client implements Runnable, Consumer, IConnectionPoint {
         try {
             channel.basicConsume(callbackQueueName, false, this);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.log("Failure to run channel.basicConsume() in Client.run",e);
         }
     }
 
