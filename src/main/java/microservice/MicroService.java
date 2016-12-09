@@ -20,6 +20,7 @@ import java.util.concurrent.TimeoutException;
  * @edited 7.12.2016
  */
 public class MicroService extends ConnectionPoint implements Consumer, Runnable {
+
     //TODO : Fill...
     private final String routingKey;
     private final String registerQueueName;
