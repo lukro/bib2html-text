@@ -13,6 +13,8 @@ public interface IConnectionPoint {
 
     void initConnectionPoint() throws IOException;
 
+    void declareAndConsumeIncomingQueues() throws IOException;
+
     String getHostIP();
 
     String getID();

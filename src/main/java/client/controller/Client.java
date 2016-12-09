@@ -3,6 +3,7 @@ package client.controller;
 import com.rabbitmq.client.*;
 import client.model.ClientFileModel;
 import global.controller.IConnectionPoint;
+import global.logging.Log;
 import global.model.DefaultClientRequest;
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -49,9 +50,9 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void run() {
         try {
-            channel.basicConsume(callbackQueueName, true, this);
+            declareAndConsumeIncomingQueues();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.log("Failure to run channel.basicConsume() in Client.run", e);
         }
     }
 
@@ -98,8 +99,14 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void initConnectionPoint() throws IOException {
-        channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
+        declareOutgoingQueue();
         run();
+    }
+
+    @Override
+    public void declareAndConsumeIncomingQueues() throws IOException {
+        channel.queueDeclare(callbackQueueName, false, false, false, null);
+        channel.basicConsume(callbackQueueName, true, this);
     }
 
     @Override
@@ -134,6 +141,10 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     public void setOutputDirectory(String outputDirectory) {
         this.outputDirectory = outputDirectory;
+    }
+
+    private void declareOutgoingQueue() throws IOException {
+        channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
     }
 
     private DefaultClientRequest createClientRequest() throws IOException {

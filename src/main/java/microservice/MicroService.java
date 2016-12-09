@@ -42,6 +42,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         this.microServiceID = microServiceID;
         this.connection = factory.newConnection();
         this.channel = connection.createChannel();
+        initConnectionPoint();
     }
 
     private DefaultPartialResult convertEntry(DefaultEntry toConvert) {
@@ -108,7 +109,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void run() {
         try {
-            channel.basicConsume(TASK_QUEUE_NAME, true, this);
+            declareAndConsumeIncomingQueues();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -122,8 +123,13 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void initConnectionPoint() throws IOException {
-        channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
         run();
+    }
+
+    @Override
+    public void declareAndConsumeIncomingQueues() throws IOException {
+        channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
+        channel.basicConsume(TASK_QUEUE_NAME, true, this);
     }
 
     @Override
