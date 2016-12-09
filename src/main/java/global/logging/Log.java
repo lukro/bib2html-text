@@ -1,5 +1,7 @@
 package global.logging;
 
+import javafx.application.Platform;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -59,18 +61,20 @@ public class Log {
      * @param level
      */
     private void printOut(String message, LogLevel level) {
-        int ordLev = level.ordinal();
-        int minLev = minimumRequiredLevel.ordinal();
+        Platform.runLater(() -> {
+            int ordLev = level.ordinal();
+            int minLev = minimumRequiredLevel.ordinal();
 
-        if (minLev <= ordLev){
-            try {
-                for(char c : message.toCharArray())
-                    outputStream.write(c);
-                outputStream.write("\n".getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (minLev <= ordLev){
+                try {
+                    for(char c : message.toCharArray())
+                        outputStream.write(c);
+                    outputStream.write("\n".getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }
+        });
     }
 
     public static LogLevel getMinimumRequiredLevel() {
