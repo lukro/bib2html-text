@@ -74,7 +74,7 @@ public class Server extends ConnectionPoint implements EventListener, Runnable, 
     public void notify(Event toNotify) {
         if (toNotify instanceof FinishedCollectingResultEvent) {
             DefaultResult eventResult = ((FinishedCollectingResultEvent) toNotify).getResult();
-            String clientID = eventResult.getIdentifier().getClientID();
+            String clientID = eventResult.getClientID();
             //TODO : Publish to client
         }
     }
