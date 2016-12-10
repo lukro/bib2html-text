@@ -102,12 +102,16 @@ public class ServerController implements EventListener {
             clientListView.getItems().remove(toRemove);
         } else if (toNotify instanceof MicroServiceConnectedEvent) {
             MicroService toAdd = ((MicroServiceConnectedEvent) toNotify).getConnectedSvc();
-            Log.log("Registered Microservice with ID " + toAdd.getRoutingKey(), LogLevel.INFO);
+            Log.log("Registered Microservice with ID " + toAdd.getID(), LogLevel.INFO);
             microServiceListView.getItems().add(toAdd);
         } else if (toNotify instanceof MicroServiceDisconnectedEvent) {
             MicroService toRemove = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvc();
-            Log.log("Unregistered Microservice with ID " + toRemove.getRoutingKey(), LogLevel.INFO);
+            Log.log("Unregistered Microservice with ID " + toRemove.getID(), LogLevel.INFO);
             microServiceListView.getItems().remove(toRemove);
+        } else if (toNotify instanceof RequestStoppedEvent){
+            IClientRequest toRemove = ((StopRequestEvent) toNotify).getRequest();
+            Log.log("Removed Request with ID " + toRemove.getClientID());
+            clientRequestListView.getItems().remove(toRemove);
         }
     }
 
@@ -117,15 +121,27 @@ public class ServerController implements EventListener {
     }
 
     public void removeMicroserviceButtonPressed(ActionEvent actionEvent) {
-
+        if(microServiceListView.getSelectionModel().getSelectedItem() != null){
+            MicroService serviceToRemove = microServiceListView.getSelectionModel().getSelectedItem();
+            Log.log("Disconnecting MicroSerivce " + serviceToRemove.getID());
+            EventManager.getInstance().publishEvent(new MicroserviceDisconnectionRequestEvent(serviceToRemove));
+        }
     }
 
     public void removeClientButtonPressed(ActionEvent actionEvent) {
-
+        if(clientListView.getSelectionModel().getSelectedItem() != null) {
+            String clientToBlock = clientListView.getSelectionModel().getSelectedItem().getID();
+            Log.log("Blocking Client " + clientToBlock);
+            EventManager.getInstance().publishEvent(new ClientBlockRequestEvent(clientToBlock));
+        }
     }
 
-    public void cancelJobButtonPressed(ActionEvent actionEvent) {
-
+    public void cancelRequestButtonPressed(ActionEvent actionEvent) {
+        if(clientRequestListView.getSelectionModel().getSelectedItem() != null){
+            IClientRequest toStop = clientRequestListView.getSelectionModel().getSelectedItem();
+            Log.log("Cancelling Request " + toStop.getClientID());
+            EventManager.getInstance().publishEvent(new StopRequestEvent(toStop));
+        }
     }
 
     public OutputStream getConsolePrintStream() {

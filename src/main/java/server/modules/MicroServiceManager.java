@@ -43,4 +43,7 @@ public class MicroServiceManager {
         return "banana";
     }
 
+    public void disconnectMicroservice(MicroService toDisconnect) {
+        //TODO : Fill... And throw new MicroServiceDisconnectedEvent on Success.
+    }
 }

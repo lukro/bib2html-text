@@ -30,9 +30,9 @@
                                  <bottom>
                                     <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                                       <buttons>
-                                        <Button mnemonicParsing="false" text="Add bib" />
-                                          <Button mnemonicParsing="false" text="Remove bib" />
-                                          <Button mnemonicParsing="false" text="Clear" />
+                                        <Button mnemonicParsing="false" onAction="#addBibButtonPressed" text="Add bib" />
+                                          <Button mnemonicParsing="false" onAction="#removeBibButtonPressed" text="Remove bib" />
+                                          <Button mnemonicParsing="false" onAction="#clearBibButtonPressed" text="Clear" />
                                       </buttons>
                                     </ButtonBar>
                                  </bottom>
@@ -48,9 +48,9 @@
                                  <bottom>
                                     <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                                       <buttons>
-                                        <Button mnemonicParsing="false" text="Add csl" />
-                                          <Button mnemonicParsing="false" text="Remove csl" />
-                                          <Button mnemonicParsing="false" text="Clear" />
+                                        <Button mnemonicParsing="false" onAction="#addCslButtonPressed" text="Add csl" />
+                                          <Button mnemonicParsing="false" onAction="#removeCslButtonPressed" text="Remove csl" />
+                                          <Button mnemonicParsing="false" onAction="#clearCslButtonPressed" text="Clear" />
                                       </buttons>
                                     </ButtonBar>
                                  </bottom>

@@ -58,7 +58,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     public void sendClientRequest() throws IOException {
         channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, null, SerializationUtils.serialize(this.createClientRequest()));
-        System.out.println("Client with ID: " + this.clientID + " sent a ClientRequest.");
+        Log.log("Client with ID: " + this.clientID + " sent a ClientRequest.");
     }
 
     @Override
@@ -88,7 +88,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        System.out.println("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName);
+        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName);
     }
 
     @Override

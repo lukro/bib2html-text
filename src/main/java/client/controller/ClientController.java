@@ -116,12 +116,16 @@ public class ClientController {
     @FXML
     public void chooseTemplateButtonPressed() {
         FileChooser templateChooser = new FileChooser();
-        templateChooser.setTitle("Select a Template file...");
+        templateChooser.setTitle("Select a Template file..."); //TODO Set template file extension
         File newTemplate = templateChooser.showOpenDialog(new Popup());
         try {
-            client.getClientFileModel().addTemplateAsString(newTemplate);
-            templateDirectoryTextField.setText(newTemplate.getAbsolutePath());
-            Log.log("User selected new template " + newTemplate.getAbsolutePath());
+            if(newTemplate == null)
+                client.getClientFileModel().clearTemplates();
+            else {
+                client.getClientFileModel().addTemplateAsString(newTemplate);
+                templateDirectoryTextField.setText(newTemplate.getAbsolutePath());
+                Log.log("User selected new template " + newTemplate.getAbsolutePath());
+            }
         } catch (IOException e) {
             Log.log("Could not set new template", e);
         }
@@ -142,6 +146,7 @@ public class ClientController {
             chosenBib.forEach(file -> {
                 try {
                     client.getClientFileModel().addBibFile(file);
+                    bibFilesListView.getItems().add(file);
                 } catch (IOException e) {
                     Log.log("Could not add bibfile " + file.getAbsolutePath(), e);
                 }
@@ -155,12 +160,14 @@ public class ClientController {
     public void removeBibButtonPressed() {
         File toRemove = bibFilesListView.getSelectionModel().getSelectedItem();
         client.getClientFileModel().removeBibFile(toRemove);
+        bibFilesListView.getItems().remove(toRemove);
         Log.log("Removed bib " + toRemove + " from the selection.");
     }
 
     @FXML
     public void clearBibButtonPressed() {
-        client.getClientFileModel().removeBibFiles(client.getClientFileModel().getBibFiles());
+        client.getClientFileModel().clearBibFiles();
+        bibFilesListView.getItems().clear();
         Log.log("Removed all bib files from the selection.");
     }
 
@@ -179,6 +186,7 @@ public class ClientController {
             chosenBib.forEach(file -> {
                 try {
                     client.getClientFileModel().addCslFileAsString(file);
+                    cslFilesListView.getItems().add(file);
                 } catch (IOException e) {
                     Log.log("Could not add cslfile " + file.getAbsolutePath(), e);
                 }
@@ -191,14 +199,20 @@ public class ClientController {
     @FXML
     public void removeCslButtonPressed() {
         File toRemove = cslFilesListView.getSelectionModel().getSelectedItem();
-        //TODO : wait for daan to update
-        //client.getClientFileModel().removeCslFile(toRemove);
-        Log.log("Removed csl " + toRemove + " from the selection.");
+        //TODO : update on finishing switching procedure
+        try {
+            client.getClientFileModel().removeCslFile(toRemove);
+            cslFilesListView.getItems().remove(toRemove);
+            Log.log("Removed csl " + toRemove + " from the selection.");
+        } catch (IOException e) {
+            Log.log("Failed to remove the csl file",e);
+        }
     }
 
     @FXML
     public void clearCslButtonPressed() {
-        //client.getClientFileModel().removeCslFiles(client.getClientFileModel().g);
+        client.getClientFileModel().clearCslFiles();
+        cslFilesListView.getItems().clear();
         Log.log("Removed all csl files from the selection.");
     }
 }
