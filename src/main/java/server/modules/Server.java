@@ -77,10 +77,16 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     @Override
     public void run() {
         try {
-            declareAndConsumeIncomingQueues();
+            consumeIncomingQueues();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void consumeIncomingQueues() throws IOException {
+        channel.basicConsume(CLIENT_REQUEST_QUEUE_NAME, true, this);
+        channel.basicConsume(callbackQueueName, true, this);
     }
 
     @Override
@@ -142,18 +148,17 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
 
     @Override
     public void initConnectionPoint() throws IOException {
-        declareOutgoingQueue();
+        declareQueues();
         run();
     }
 
     @Override
-    public void declareAndConsumeIncomingQueues() throws IOException {
-        //declare & consume queue from clients to server
+    public void declareQueues() throws IOException {
+        //outgoing queues
+        channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
+        //incoming queues
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
-        channel.basicConsume(CLIENT_REQUEST_QUEUE_NAME, true, this);
-        //declare & consume queue from microservices to server
         channel.queueDeclare(callbackQueueName, false, false, false, null);
-        channel.basicConsume(callbackQueueName, true, this);
     }
 
     @Override
@@ -164,10 +169,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     @Override
     public String getID() {
         return serverID;
-    }
-
-    private void declareOutgoingQueue() throws IOException {
-        channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
     }
 
     public void banClientID(String clientID) {

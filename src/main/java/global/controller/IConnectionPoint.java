@@ -13,7 +13,9 @@ public interface IConnectionPoint {
 
     void initConnectionPoint() throws IOException;
 
-    void declareAndConsumeIncomingQueues() throws IOException;
+    void declareQueues() throws IOException;
+
+    void consumeIncomingQueues() throws IOException;
 
     String getHostIP();
 

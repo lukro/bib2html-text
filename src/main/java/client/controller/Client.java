@@ -16,12 +16,12 @@ import java.util.concurrent.TimeoutException;
  */
 public class Client implements IConnectionPoint, Runnable, Consumer {
 
-    private final String clientID, hostIP, callbackQueueName;
+    private final String clientID, callbackQueueName;
     private final String CLIENT_REQUEST_QUEUE_NAME = "clientRequestQueue";
-    private String outputDirectory;
+    private String outputDirectory, hostIP;
 
-    private final Connection connection;
-    private final Channel channel;
+    private Connection connection;
+    private Channel channel;
 
     private final BibTeXEntryFormatter bibTeXEntryFormatter = BibTeXEntryFormatter.getINSTANCE();
     private ClientFileModel clientFileModel;
@@ -50,10 +50,15 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void run() {
         try {
-            declareAndConsumeIncomingQueues();
+            consumeIncomingQueues();
         } catch (IOException e) {
             Log.log("Failure to run channel.basicConsume() in Client.run", e);
         }
+    }
+
+    @Override
+    public void consumeIncomingQueues() throws IOException {
+        channel.basicConsume(callbackQueueName, true, this);
     }
 
     public void sendClientRequest() throws IOException {
@@ -99,14 +104,16 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void initConnectionPoint() throws IOException {
-        declareOutgoingQueue();
+        declareQueues();
         run();
     }
 
     @Override
-    public void declareAndConsumeIncomingQueues() throws IOException {
+    public void declareQueues() throws IOException {
+        //outgoing queues
+        channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
+        //incoming queues
         channel.queueDeclare(callbackQueueName, false, false, false, null);
-        channel.basicConsume(callbackQueueName, true, this);
     }
 
     @Override
@@ -141,10 +148,6 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     public void setOutputDirectory(String outputDirectory) {
         this.outputDirectory = outputDirectory;
-    }
-
-    private void declareOutgoingQueue() throws IOException {
-        channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
     }
 
     private DefaultClientRequest createClientRequest() throws IOException {

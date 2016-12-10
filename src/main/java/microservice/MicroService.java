@@ -109,11 +109,17 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void run() {
         try {
-            declareAndConsumeIncomingQueues();
+            consumeIncomingQueues();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void consumeIncomingQueues() throws IOException {
+        channel.basicConsume(TASK_QUEUE_NAME, true, this);
+    }
+
 
     @Override
     public void closeConnection() throws IOException, TimeoutException {
@@ -123,13 +129,14 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void initConnectionPoint() throws IOException {
+        declareQueues();
         run();
     }
 
     @Override
-    public void declareAndConsumeIncomingQueues() throws IOException {
+    public void declareQueues() throws IOException {
+        //incoming queues
         channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
-        channel.basicConsume(TASK_QUEUE_NAME, true, this);
     }
 
     @Override
