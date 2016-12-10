@@ -27,22 +27,18 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     private ClientFileModel clientFileModel;
 
 
-    public Client() throws IOException, TimeoutException {
+    public Client() throws IOException {
         this("localhost");
     }
 
-    public Client(String hostIP) throws IOException, TimeoutException {
+    public Client(String hostIP) throws IOException {
         this(hostIP, UUID.randomUUID().toString());
     }
 
-    public Client(String hostIP, String clientID) throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(hostIP);
-        this.hostIP = hostIP;
+    public Client(String hostIP, String clientID) throws IOException {
+        connectToHost(hostIP);
         this.clientID = clientID;
         this.callbackQueueName = clientID;
-        this.connection = factory.newConnection();
-        this.channel = connection.createChannel();
         this.clientFileModel = new ClientFileModel(this.clientID);
         initConnectionPoint();
     }
@@ -119,6 +115,25 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     @Override
     public String getHostIP() {
         return hostIP;
+    }
+
+    public boolean connectToHost(String hostIP) {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(hostIP);
+        try {
+            this.connection = factory.newConnection();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        try {
+            this.channel = connection.createChannel();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        this.hostIP = hostIP;
+        return true;
     }
 
     @Override
