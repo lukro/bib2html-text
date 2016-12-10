@@ -14,6 +14,7 @@ import java.util.Objects;
  */
 public class ClientFileModel {
 
+    //TODO: change data-collections to 'File'-object and implement support for that in all dependent classes
     private final String clientID;
     private ArrayList<File> bibFiles = new ArrayList<>();
     private ArrayList<String> cslFilesAsStrings = new ArrayList<>();
