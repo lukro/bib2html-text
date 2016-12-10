@@ -154,13 +154,13 @@ public class ClientController {
     @FXML
     public void removeBibButtonPressed() {
         File toRemove = bibFilesListView.getSelectionModel().getSelectedItem();
-        //TODO: add clientfilemodel REMOVE bib
+        client.getClientFileModel().removeBibFile(toRemove);
         Log.log("Removed bib " + toRemove + " from the selection.");
     }
 
     @FXML
     public void clearBibButtonPressed() {
-        //TODO : add clientfilemodel REMOVE all bib
+        client.getClientFileModel().removeBibFiles(client.getClientFileModel().getBibFiles());
         Log.log("Removed all bib files from the selection.");
     }
 
@@ -191,13 +191,14 @@ public class ClientController {
     @FXML
     public void removeCslButtonPressed() {
         File toRemove = cslFilesListView.getSelectionModel().getSelectedItem();
-        //TODO: add clientfilemodel REMOVE csl
+        //TODO : wait for daan to update
+        //client.getClientFileModel().removeCslFile(toRemove);
         Log.log("Removed csl " + toRemove + " from the selection.");
     }
 
     @FXML
     public void clearCslButtonPressed() {
-        //TODO: add clientfilemodel REMOVE ALL csls
+        //client.getClientFileModel().removeCslFiles(client.getClientFileModel().g);
         Log.log("Removed all csl files from the selection.");
     }
 }
