@@ -75,7 +75,7 @@ public class ClientController {
         Log.log("Initializing Client..");
 
         //Init here.
-        if(client == null)
+        if (client == null)
             Log.log("Client was not properly initialized! Instance broken!", LogLevel.ERROR);
 
         Log.log("Client Initialized.");
@@ -95,7 +95,7 @@ public class ClientController {
     @FXML
     public void connectToServerButtonPressed() {
         String serverAdress = serverAdressTextField.getText();
-        Log.log("Connecting to server @"+serverAdress);
+        Log.log("Connecting to server @" + serverAdress);
         //TODO : Client.connectToServer...
     }
 
@@ -119,11 +119,11 @@ public class ClientController {
         templateChooser.setTitle("Select a Template file...");
         File newTemplate = templateChooser.showOpenDialog(new Popup());
         try {
-            client.getClientFileModel().addTemplateFileAsString(newTemplate);
+            client.getClientFileModel().addTemplateAsString(newTemplate);
             templateDirectoryTextField.setText(newTemplate.getAbsolutePath());
             Log.log("User selected new template " + newTemplate.getAbsolutePath());
         } catch (IOException e) {
-            Log.log("Could not set new template",e);
+            Log.log("Could not set new template", e);
         }
     }
 

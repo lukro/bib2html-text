@@ -1,10 +1,7 @@
 package global.model;
 
-import global.identifiers.PartialResultIdentifier;
-
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 
 /**
  * @author Maximilian Schirm, daan
