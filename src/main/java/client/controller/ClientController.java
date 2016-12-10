@@ -119,7 +119,7 @@ public class ClientController {
         templateChooser.setTitle("Select a Template file...");
         File newTemplate = templateChooser.showOpenDialog(new Popup());
         try {
-            client.getClientFileModel().addTemplateAsString(newTemplate);
+            client.getClientFileModel().addTemplate(newTemplate);
             templateDirectoryTextField.setText(newTemplate.getAbsolutePath());
             Log.log("User selected new template " + newTemplate.getAbsolutePath());
         } catch (IOException e) {

@@ -48,8 +48,8 @@ class BibTeXEntryFormatter extends BibTeXFormatter {
 //            ArrayList<String> entryContentList = this.createBibTeXEntryContentList(currentFile);
 //            for (String currentEntryContent : entryContentList) {
 //                DefaultEntry currentEntryObject = new DefaultEntry(clientFileModel.getClientID(),
-//                        currentEntryContent, clientFileModel.getCslFilesAsStrings(),
-//                        clientFileModel.getTemplatesAsStrings());
+//                        currentEntryContent, clientFileModel.getCslFiles(),
+//                        clientFileModel.getTemplates());
 //                entryObjectList.add(currentEntryObject);
 //            }
 //        }
@@ -57,8 +57,8 @@ class BibTeXEntryFormatter extends BibTeXFormatter {
             ArrayList<String> entryContentList = this.createBibTeXEntryContentList(clientFileModel.getBibFiles().get(bibFileIndex));
             for (int positionInBibFile = 0; positionInBibFile < entryContentList.size(); positionInBibFile++) {
                 DefaultEntry currentEntryObject = new DefaultEntry(clientFileModel.getClientID(),
-                        entryContentList.get(positionInBibFile), bibFileIndex, positionInBibFile, clientFileModel.getCslFilesAsStrings(),
-                        clientFileModel.getTemplatesAsStrings());
+                        entryContentList.get(positionInBibFile), bibFileIndex, positionInBibFile, clientFileModel.getCslFiles(),
+                        clientFileModel.getTemplates());
                 entryObjectList.add(currentEntryObject);
             }
         }
