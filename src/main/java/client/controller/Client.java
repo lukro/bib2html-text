@@ -123,13 +123,13 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         try {
             this.connection = factory.newConnection();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.log("Invalid Host IP " + hostIP);
             return false;
         }
         try {
             this.channel = connection.createChannel();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.log("Could not create a channel for the connection to host ip " + hostIP);
             return false;
         }
         this.hostIP = hostIP;

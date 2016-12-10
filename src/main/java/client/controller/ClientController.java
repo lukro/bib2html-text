@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @author Maximilian Schirm
@@ -43,7 +42,7 @@ public class ClientController {
     public ClientController() {
         try {
             client = new Client();
-        } catch (IOException | TimeoutException e) {
+        } catch (IOException e) {
             Log.log("Failed to initialize Client instance", e);
             System.exit(1);
         }
@@ -96,7 +95,10 @@ public class ClientController {
     public void connectToServerButtonPressed() {
         String serverAdress = serverAdressTextField.getText();
         Log.log("Connecting to server @" + serverAdress);
-        //TODO : Client.connectToServer...
+        if(client.connectToHost(serverAdress))
+            Log.log("Successfully connected to Host!");
+        else
+            Log.log("Failed to connect to that Host!");
     }
 
     @FXML
