@@ -95,7 +95,10 @@ public class ClientController {
     public void connectToServerButtonPressed() {
         String serverAdress = serverAdressTextField.getText();
         Log.log("Connecting to server @" + serverAdress);
-        //TODO : Client.connectToServer...
+        if(client.connectToHost(serverAdress))
+            Log.log("Successfully connected to Host!");
+        else
+            Log.log("Failed to connect to that Host!");
     }
 
     @FXML
@@ -115,7 +118,7 @@ public class ClientController {
     @FXML
     public void chooseTemplateButtonPressed() {
         FileChooser templateChooser = new FileChooser();
-        templateChooser.setTitle("Select a Template file...");
+        templateChooser.setTitle("Select a Template file..."); //TODO Set template file extension
         File newTemplate = templateChooser.showOpenDialog(new Popup());
         if (client.getClientFileModel().addTemplate(newTemplate)) {
             templateDirectoryTextField.setText(newTemplate.getAbsolutePath());
@@ -146,12 +149,14 @@ public class ClientController {
     public void removeBibButtonPressed() {
         File toRemove = bibFilesListView.getSelectionModel().getSelectedItem();
         client.getClientFileModel().removeBibFile(toRemove);
+        bibFilesListView.getItems().remove(toRemove);
         Log.log("Removed bib " + toRemove + " from the selection.");
     }
 
     @FXML
     public void clearBibButtonPressed() {
         client.getClientFileModel().clearBibFiles();
+        bibFilesListView.getItems().clear();
         Log.log("Removed all bib files from the selection.");
     }
 
@@ -176,12 +181,14 @@ public class ClientController {
     public void removeCslButtonPressed() {
         File toRemove = cslFilesListView.getSelectionModel().getSelectedItem();
         client.getClientFileModel().removeCslFile(toRemove);
+        cslFilesListView.getItems().remove(toRemove);
         Log.log("Removed csl " + toRemove + " from the selection.");
     }
 
     @FXML
     public void clearCslButtonPressed() {
         client.getClientFileModel().clearCslFiles();
+        cslFilesListView.getItems().clear();
         Log.log("Removed all csl files from the selection.");
     }
 }

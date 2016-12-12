@@ -95,7 +95,7 @@
                                        <bottom>
                                           <ButtonBar prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: skyblue;" BorderPane.alignment="CENTER">
                                             <buttons>
-                                              <Button mnemonicParsing="false" onAction="#cancelJobButtonPressed" text="Cancel Job" />
+                                              <Button mnemonicParsing="false" onAction="#cancelRequestButtonPressed" text="Cancel Job" />
                                             </buttons>
                                           </ButtonBar>
                                        </bottom>

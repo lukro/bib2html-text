@@ -70,11 +70,14 @@ public class PartialResultCollector implements EventListener {
      * Checks whether any of the results is finished creating yet and - if that is the case - sends out a FinishedCollectingResultEvent.
      */
     private synchronized void update() {
-        mappingClientIDtoExpectedResultsSize.forEach((key, size) -> {
-            Collection<DefaultPartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
-            if (parts.size() == size)
-                EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(DefaultResult.buildResultfromPartials(parts)));
-        });
+        synchronized (mappingClientIDtoExpectedResultsSize) {
+            mappingClientIDtoExpectedResultsSize.forEach((key, size) -> {
+                Collection<DefaultPartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
+                if(parts != null)
+                    if (parts.size() == size)
+                        EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(DefaultResult.buildResultfromPartials(parts)));
+            });
+        }
     }
 
     @Override

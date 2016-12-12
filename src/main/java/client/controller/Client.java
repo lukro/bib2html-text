@@ -59,7 +59,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     public void sendClientRequest() throws IOException {
         channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, null, SerializationUtils.serialize(this.createClientRequest()));
-        System.out.println("Client with ID: " + this.clientID + " sent a ClientRequest.");
+        Log.log("Client with ID: " + this.clientID + " sent a ClientRequest.");
     }
 
     @Override
@@ -89,7 +89,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        System.out.println("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName);
+        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName);
     }
 
     @Override
@@ -123,13 +123,13 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         try {
             this.connection = factory.newConnection();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.log("Invalid Host IP " + hostIP);
             return false;
         }
         try {
             this.channel = connection.createChannel();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.log("Could not create a channel for the connection to host ip " + hostIP);
             return false;
         }
         this.hostIP = hostIP;
