@@ -79,7 +79,7 @@ public class ServerController implements EventListener {
         Log.alterOutputStream(consoleStream);
 
         logLevelChoiceBox.getItems().addAll(LogLevel.values());
-        logLevelChoiceBox.onActionProperty().set(eventhandler -> Log.alterMinimumRequiredLevel(logLevelChoiceBox.getValue()));
+//        logLevelChoiceBox.onActionProperty().set(eventhandler -> Log.alterMinimumRequiredLevel(logLevelChoiceBox.getValue()));
 
         try {
             serverAdressLabel.setText(Inet4Address.getLocalHost().getHostAddress());
