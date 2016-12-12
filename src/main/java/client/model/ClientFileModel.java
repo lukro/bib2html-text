@@ -2,6 +2,7 @@ package client.model;
 
 import client.controller.ClientFileHandler;
 import global.logging.Log;
+import global.logging.LogLevel;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -67,6 +68,7 @@ public class ClientFileModel {
             Log.log(".bib-file '" + bibFileToAdd.getAbsolutePath() + "' not found.", e);
             return false;
         }
+        Log.log("file '" + bibFileToAdd.getAbsolutePath() + "' wasn't a valid .bib-file.", LogLevel.WARNING);
         return false;
     }
 

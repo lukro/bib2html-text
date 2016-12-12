@@ -117,21 +117,12 @@ public class ClientController {
         FileChooser templateChooser = new FileChooser();
         templateChooser.setTitle("Select a Template file...");
         File newTemplate = templateChooser.showOpenDialog(new Popup());
-        //simplified with new clientFileModel-functionality
         if (client.getClientFileModel().addTemplate(newTemplate)) {
             templateDirectoryTextField.setText(newTemplate.getAbsolutePath());
             Log.log("User selected new template " + newTemplate.getAbsolutePath());
+        } else {
+            Log.log("Could not set new template", LogLevel.WARNING);
         }
-//        try {
-//            client.getClientFileModel().addTemplate(newTemplate);
-//            templateDirectoryTextField.setText(newTemplate.getAbsolutePath());
-//            Log.log("User selected new template " + newTemplate.getAbsolutePath());
-//        }
-//        catch (IOException e) {
-//            Log.log("Could not set new template", e);
-//        }
-
-
     }
 
 
@@ -146,16 +137,7 @@ public class ClientController {
         if (chosenBib == null) {
             Log.log("User aborted bib adding");
         } else {
-            //simplified with new clientFileModel-functionality
             client.getClientFileModel().addBibFiles(chosenBib);
-//            chosenBib.forEach(file -> {
-//                try {
-//                    client.getClientFileModel().addBibFile(file);
-//                } catch (IOException e) {
-//                    Log.log("Could not add bibfile " + file.getAbsolutePath(), e);
-//                }
-//            });
-
             Log.log("Added " + chosenBib.size() + " bib File(s)", LogLevel.INFO);
         }
     }
@@ -185,17 +167,7 @@ public class ClientController {
         if (chosenBib == null) {
             Log.log("User aborted csl adding");
         } else {
-            //simplified with new clientFileModel-functionality
             client.getClientFileModel().addCslFiles(chosenBib);
-
-//            chosenBib.forEach(file -> {
-//                try {
-//                    client.getClientFileModel().addCslFile(file);
-//                } catch (IOException e) {
-//                    Log.log("Could not add cslfile " + file.getAbsolutePath(), e);
-//                }
-//            });
-
             Log.log("Added " + chosenBib.size() + " csl File(s)");
         }
     }
