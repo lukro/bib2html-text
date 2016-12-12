@@ -3,6 +3,7 @@ package client.controller;
 import org.jbibtex.*;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Objects;
 
 /**
@@ -45,6 +46,13 @@ public final class ClientFileHandler {
             e.printStackTrace();
         }
         return result;
+    }
+
+    static ArrayList<String> createStringListFromFileList(ArrayList<File> fileList) throws IOException {
+        ArrayList<String> stringList = new ArrayList<>();
+        for (File currentFile : fileList)
+            stringList.add(ClientFileHandler.readStringFromFile(currentFile));
+        return stringList;
     }
 
     public static boolean isValidBibFile(File bibFile) throws FileNotFoundException {

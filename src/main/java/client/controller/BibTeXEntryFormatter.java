@@ -55,12 +55,15 @@ class BibTeXEntryFormatter extends BibTeXFormatter {
 //        }
 
         //create csl-/template-String-Lists
-        ArrayList<String> cslFilesAsStrings = new ArrayList<>();
-        ArrayList<String> templatesAsStrings = new ArrayList<>();
-        for (File currentCslFile : clientFileModel.getCslFiles())
-            cslFilesAsStrings.add(ClientFileHandler.readStringFromFile(currentCslFile));
-        for (File currentTemplate : clientFileModel.getTemplates())
-            templatesAsStrings.add(ClientFileHandler.readStringFromFile(currentTemplate));
+        ArrayList<String> cslFilesAsStrings = ClientFileHandler.createStringListFromFileList(clientFileModel.getCslFiles());
+        ArrayList<String> templatesAsStrings = ClientFileHandler.createStringListFromFileList(clientFileModel.getTemplates());
+
+
+//        for (File currentCslFile : clientFileModel.getCslFiles())
+//            cslFilesAsStrings.add(ClientFileHandler.readStringFromFile(currentCslFile));
+//        for (File currentTemplate : clientFileModel.getTemplates())
+//            templatesAsStrings.add(ClientFileHandler.readStringFromFile(currentTemplate));
+
         //create DefaultEntry-Objects
         for (int bibFileIndex = 0; bibFileIndex < clientFileModel.getBibFiles().size(); bibFileIndex++) {
             ArrayList<String> entryContentList = this.createBibTeXEntryContentList(clientFileModel.getBibFiles().get(bibFileIndex));
