@@ -98,7 +98,11 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-//        IResult deliveredResult = SerializationUtils.deserialize(bytes);
+        try {
+            IResult deliveredResult = SerializationUtils.deserialize(bytes);
+        } catch (Exception e) {
+            Log.log("Unfortunatelly you have been baned.", LogLevel.INFO);
+        }
         Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName, LogLevel.INFO);
     }
 

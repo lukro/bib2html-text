@@ -34,8 +34,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     private HashMap<String, BasicProperties> clientID2basicProps = new HashMap<>();
     private HashMap<BasicProperties, BasicProperties> basicProps2replyProps = new HashMap<>();
 
-    private final PartialResultCollector partialResultCollector;
-
     public Server() throws IOException, TimeoutException {
         this("localhost");
     }
@@ -54,7 +52,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         this.connection = factory.newConnection();
         this.channel = connection.createChannel();
         MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
-        this.partialResultCollector = PartialResultCollector.getInstance();
         EventManager.getInstance().registerListener(this);
         this.replyProps = new BasicProperties
                 .Builder()
@@ -155,13 +152,13 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     }
 
     private void handleDeliveredClientRequest(IClientRequest deliveredClientRequest, BasicProperties basicProperties) throws IOException {
+        storeClientCallbackInformation(basicProperties);
         if (isBlacklisted(deliveredClientRequest.getClientID())) {
             Log.log("illegal ClientRequest with ID: " + deliveredClientRequest.getClientID() + " refused.");
-            //TODO: let the client know about refused request
+            channel.basicPublish("", basicProperties.getReplyTo(), basicProps2replyProps.get(basicProperties), ("Unfortunatelly you have been baned.").getBytes());
         } else {
             EventManager.getInstance().publishEvent(new RequestAcceptedEvent(deliveredClientRequest.getClientID(), deliveredClientRequest.getEntries().size()));
             Log.log("Server received a legal ClientRequest.");
-            storeClientCallbackInformation(basicProperties);
             for (IEntry currentEntry : deliveredClientRequest.getEntries()) {
                 channel.basicPublish("", TASK_QUEUE_NAME, replyProps, SerializationUtils.serialize(currentEntry));
             }
@@ -198,12 +195,12 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
      * Can be expanded by persistent blacklist file.
      * TODO Make persistent
      *
-     * @param clientToBlock The id to block.
+     * @param clientIDToBlock The id to block.
      */
-    public void blacklistClient(String clientToBlock) {
-        blacklistedClients.add(clientToBlock);
+    public void blacklistClient(String clientIDToBlock) {
+        blacklistedClients.add(clientIDToBlock);
         //TODO : Disconnect Client
-        Log.log("Blacklisted Client " + clientToBlock, LogLevel.WARNING);
+        Log.log("Blacklisted Client " + clientIDToBlock, LogLevel.WARNING);
     }
 
     /**

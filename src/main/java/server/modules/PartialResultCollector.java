@@ -89,11 +89,4 @@ public class PartialResultCollector implements EventListener {
         return evts;
     }
 
-    public HashMap<String, Collection<DefaultPartialResult>> getMappingClientIDtoFinishedPartialResults() {
-        return mappingClientIDtoFinishedPartialResults;
-    }
-
-    public HashMap<String, Integer> getMappingClientIDtoExpectedResultsSize() {
-        return mappingClientIDtoExpectedResultsSize;
-    }
 }
