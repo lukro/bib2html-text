@@ -98,15 +98,15 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        Log.log("Message received.");
+        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName, LogLevel.LOW);
         Object deliveredObject = SerializationUtils.deserialize(bytes);
         if (deliveredObject instanceof IResult) {
             //TODO: handle Result
-            Log.log("Message is instance of IResult.");
+            Log.log("Message is instance of IResult.", LogLevel.INFO);
         } else {
             Log.log("SERVER: " + new String(bytes), LogLevel.SEVERE);
         }
-        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName, LogLevel.LOW);
+
     }
 
     @Override

@@ -188,6 +188,12 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         int countOfEntries = deliveredClientRequest.getEntries().size();
         int countOfCSL = firstEntry.getCslFiles().size();
         int countOfTempl = firstEntry.getTemplates().size();
+
+        if (countOfCSL == 0)
+            countOfCSL = 1;
+        else if (countOfTempl == 0)
+            countOfTempl = 1;
+
         int requestSize = countOfEntries * countOfCSL * countOfTempl;
 
         RequestAcceptedEvent requestAcceptedEvent = new RequestAcceptedEvent(deliveredClientRequest.getClientID(), requestSize);
