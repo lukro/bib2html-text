@@ -61,18 +61,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         initConnectionPoint();
     }
 
-    public boolean sendEntryToMicroServices(DefaultEntry entry) {
-        try {
-            //TODO : Implement properly after checking out how the rabbitmq publish works
-            MicroServiceManager.getInstance().checkUtilization();
-            channel.basicPublish("", TASK_QUEUE_NAME, null, SerializationUtils.serialize(entry));
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     @Override
     public void run() {
         try {
@@ -205,9 +193,10 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
 
         Log.log("Server successfully received a ClientRequest.");
 
+        //TODO : Find a way for MSM.checkUtilization() to be executed in smart intervals.
         for (IEntry currentEntry : deliveredClientRequest.getEntries())
             channel.basicPublish("", TASK_QUEUE_NAME, replyProps, SerializationUtils.serialize(currentEntry));
-    }
+}
 
     private Collection<String> blacklistedClients = new HashSet<>();
 
