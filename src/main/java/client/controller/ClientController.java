@@ -122,7 +122,8 @@ public class ClientController {
     @FXML
     public void chooseTemplateButtonPressed() {
         FileChooser templateChooser = new FileChooser();
-        templateChooser.setTitle("Select a Template file..."); //TODO Set template file extension
+        templateChooser.setTitle("Select a Template file...");
+        templateChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("TEMPLATE File (*.latex)","*.latex"));
         File newTemplate = templateChooser.showOpenDialog(new Popup());
         if (client.getClientFileModel().addTemplate(newTemplate)) {
             templateDirectoryTextField.setText(newTemplate.getAbsolutePath());
