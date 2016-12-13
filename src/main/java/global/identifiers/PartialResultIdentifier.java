@@ -50,18 +50,31 @@ public class PartialResultIdentifier implements IIdentifier {
                 " and templateFile " + templateFileIndex);
     }
 
+
+    /**
+     * Ignores EntryIdentifier aside from the bib file index
+     * @param o The object to compare.
+     * @return A boolean for equality.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PartialResultIdentifier)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
+
         PartialResultIdentifier that = (PartialResultIdentifier) o;
-        return hasErrors == that.hasErrors &&
-                Objects.equals(entryIdentifier, that.entryIdentifier);
+
+        if (cslFileIndex != that.cslFileIndex) return false;
+        if (templateFileIndex != that.templateFileIndex) return false;
+        if (isHasErrors() != that.isHasErrors()) return false;
+        return getBibFileIndex() == that.getBibFileIndex();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(entryIdentifier, hasErrors);
+        int result = cslFileIndex;
+        result = 31 * result + templateFileIndex;
+        result = 31 * result + (isHasErrors() ? 1 : 0);
+        return result;
     }
 
     public boolean isHasErrors() {

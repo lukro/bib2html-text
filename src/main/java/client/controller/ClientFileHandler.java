@@ -60,9 +60,8 @@ public final class ClientFileHandler {
 
     public static boolean isValidCslFile(File cslFile) {
         //TODO: implement algorithm to validate cslFile/xmlFile
-        if (true && cslFile.equals(cslFile)) {
+        if (true && cslFile.equals(cslFile))
             return true;
-        }
         return false;
     }
 
