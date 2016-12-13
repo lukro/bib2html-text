@@ -183,7 +183,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
 
         if (countOfCSL == 0)
             countOfCSL = 1;
-        else if (countOfTempl == 0)
+        if (countOfTempl == 0)
             countOfTempl = 1;
 
         int requestSize = countOfEntries * countOfCSL * countOfTempl;
@@ -196,7 +196,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         //TODO : Find a way for MSM.checkUtilization() to be executed in smart intervals.
         for (IEntry currentEntry : deliveredClientRequest.getEntries())
             channel.basicPublish("", TASK_QUEUE_NAME, replyProps, SerializationUtils.serialize(currentEntry));
-}
+    }
 
     private Collection<String> blacklistedClients = new HashSet<>();
 
@@ -265,7 +265,4 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         return serverID;
     }
 
-    private void declareOutgoingQueue() throws IOException {
-        channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
-    }
 }
