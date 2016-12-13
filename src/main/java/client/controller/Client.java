@@ -6,6 +6,7 @@ import global.controller.IConnectionPoint;
 import global.logging.Log;
 import global.logging.LogLevel;
 import global.model.DefaultClientRequest;
+import global.model.IResult;
 import org.apache.commons.lang3.SerializationUtils;
 import com.rabbitmq.client.AMQP.BasicProperties;
 
@@ -97,10 +98,8 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
+//        IResult deliveredResult = SerializationUtils.deserialize(bytes);
         Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName, LogLevel.INFO);
-
-//     == null, if is reply
-//        System.out.println("replyTo: " + basicProperties.getReplyTo());
     }
 
     @Override

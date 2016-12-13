@@ -73,7 +73,7 @@ public class PartialResultCollector implements EventListener {
         synchronized (mappingClientIDtoExpectedResultsSize) {
             mappingClientIDtoExpectedResultsSize.forEach((key, size) -> {
                 Collection<DefaultPartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
-                if(parts != null)
+                if (parts != null)
                     if (parts.size() == size)
                         EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(DefaultResult.buildResultfromPartials(parts)));
             });
@@ -87,5 +87,13 @@ public class PartialResultCollector implements EventListener {
         evts.add(ReceivedPartialResultEvent.class);
         evts.add(RequestAcceptedEvent.class);
         return evts;
+    }
+
+    public HashMap<String, Collection<DefaultPartialResult>> getMappingClientIDtoFinishedPartialResults() {
+        return mappingClientIDtoFinishedPartialResults;
+    }
+
+    public HashMap<String, Integer> getMappingClientIDtoExpectedResultsSize() {
+        return mappingClientIDtoExpectedResultsSize;
     }
 }

@@ -4,9 +4,7 @@ import com.rabbitmq.client.*;
 import global.controller.IConnectionPoint;
 import global.logging.Log;
 import global.logging.LogLevel;
-import global.model.DefaultEntry;
-import global.model.DefaultResult;
-import global.model.IClientRequest;
+import global.model.*;
 import org.apache.commons.lang3.SerializationUtils;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import server.events.*;
@@ -31,6 +29,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
 
     private final Connection connection;
     private final Channel channel;
+    private final BasicProperties replyProps;
 
     private HashMap<String, BasicProperties> clientID2basicProps = new HashMap<>();
     private HashMap<BasicProperties, BasicProperties> basicProps2replyProps = new HashMap<>();
@@ -57,6 +56,11 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
         this.partialResultCollector = PartialResultCollector.getInstance();
         EventManager.getInstance().registerListener(this);
+        this.replyProps = new BasicProperties
+                .Builder()
+                .correlationId(serverID)
+                .replyTo(callbackQueueName)
+                .build();
         initConnectionPoint();
     }
 
@@ -139,32 +143,40 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        IClientRequest deliveredClientRequest = SerializationUtils.deserialize(bytes);
-        System.out.println("replyTo: " + basicProperties.getReplyTo());
-        //store information for client-callback
+        //delivered object is a ClientRequest
+        if (basicProperties.getReplyTo() != null) {
+            IClientRequest deliveredClientRequest = SerializationUtils.deserialize(bytes);
+            handleDeliveredClientRequest(deliveredClientRequest, basicProperties);
+        } else {
+            //delivered object is a PartialResult
+            IPartialResult deliveredPartialResult = SerializationUtils.deserialize(bytes);
+            //TODO: put deliveredPartialResult into PartialResultCollector-Map
+        }
+    }
+
+    private void handleDeliveredClientRequest(IClientRequest deliveredClientRequest, BasicProperties basicProperties) throws IOException {
+        if (isBlacklisted(deliveredClientRequest.getClientID())) {
+            Log.log("illegal ClientRequest with ID: " + deliveredClientRequest.getClientID() + " refused.");
+            //TODO: let the client know about refused request
+        } else {
+            EventManager.getInstance().publishEvent(new RequestAcceptedEvent(deliveredClientRequest.getClientID(), deliveredClientRequest.getEntries().size()));
+            Log.log("Server received a legal ClientRequest.");
+            storeClientCallbackInformation(basicProperties);
+            for (IEntry currentEntry : deliveredClientRequest.getEntries()) {
+                channel.basicPublish("", TASK_QUEUE_NAME, replyProps, SerializationUtils.serialize(currentEntry));
+            }
+        }
+    }
+
+    private void storeClientCallbackInformation(BasicProperties basicProperties) {
         clientID2basicProps.put(basicProperties.getCorrelationId(), basicProperties);
         basicProps2replyProps.put(basicProperties,
                 new BasicProperties
                         .Builder()
                         .correlationId(basicProperties.getCorrelationId())
                         .build());
-
-        channel.basicPublish("", basicProperties.getReplyTo(), basicProps2replyProps.get(basicProperties), ("RESULT_OBJECT").getBytes());
-
-
-        String clientID = deliveredClientRequest.getClientID();
-        if (isBlacklisted(clientID)) {
-            Log.log("Illegal Client Request Refused. ID was " + clientID);
-        } else {
-            int requestSize = deliveredClientRequest.getEntries().size();
-            EventManager.getInstance().publishEvent(new RequestAcceptedEvent(clientID, requestSize));
-
-
-            Log.log("Server received a message");
-
-            //TODO: request verarbeiten, entries verschicken über sendEntryToMicroServices.
-
-        }
+        //publish finished result object with this command
+        //channel.basicPublish("", basicProperties.getReplyTo(), basicProps2replyProps.get(basicProperties), ("RESULT_OBJECT").getBytes());
     }
 
     private Collection<String> blacklistedClients = new HashSet<>();
