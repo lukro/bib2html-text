@@ -137,6 +137,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     public void declareQueues() throws IOException {
         //incoming queues
         channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
+        //Registration Queue?
     }
 
     @Override

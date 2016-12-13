@@ -1,13 +1,12 @@
 package server.modules;
 
+import com.rabbitmq.client.Channel;
 import global.logging.Log;
 import global.logging.LogLevel;
 import microservice.MicroService;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 
@@ -22,58 +21,128 @@ import java.util.concurrent.TimeoutException;
 public class MicroServiceManager {
 
     private static MicroServiceManager INSTANCE;
-    private HashSet<MicroService> microServices;
+    //Key : ID | Value : IP
+    private HashMap<String, String> microServices;
 
+    private final Channel channel;
+    private final String taskQueueName;
 
-    private List<String> microServiceHostIPs = new ArrayList<>();
-
-
-    private MicroServiceManager() {
+    private MicroServiceManager(Channel channel, String taskQueueName) {
+        this.channel = channel;
+        this.taskQueueName = taskQueueName;
     }
 
-    public static MicroServiceManager getInstance() throws IOException, TimeoutException {
-        if (INSTANCE == null)
-            INSTANCE = new MicroServiceManager();
+
+    /**
+     * Has to be called for instance to not be null.
+     */
+    public static MicroServiceManager initialize(Channel channel, String taskQueueName) {
+        if(INSTANCE == null)
+            INSTANCE = new MicroServiceManager(channel, taskQueueName);
         return INSTANCE;
     }
 
-    public boolean startMicroService() {
+    /**
+     * Returns the INSTANCE of the MicroServiceManager
+     */
+    public static MicroServiceManager getInstance() {
+        if (INSTANCE == null) Log.log("MicroServiceManager was not initialized properly", new InstantiationException("initialize() was not called before getInstance()"));
+        return INSTANCE;
+    }
+
+    /**
+     * Starts a new MicroService and returns the key of the newly created Service.
+     * The Service will be started on the local machine (ie. the server).
+     *
+     * @return Key of a new Service.
+     */
+    public String startMicroService() {
+        //TODO : Fill... Add Port to newService.getHostIP()
         try {
-            Log.log("starting microservice on server", LogLevel.LOW);
-            MicroService ms = new MicroService();
-            microServices.add(ms);
-            ms.run();
-            Log.log("successfully started microservice", LogLevel.LOW);
+            Log.log("Starting microservice on server");
+            MicroService newService = new MicroService();
+            microServices.put(newService.getID(), newService.getHostIP());
+            newService.run();
+            Log.log("Successfully started microservice");
+            return newService.getID();
         } catch (IOException | TimeoutException e) {
-            Log.log("failed to start microservice", e);
+            Log.log("Failed to create a new MicroService, returned null",e);
+            return null;
+        }
+    }
+
+    /**
+     * Sends a STOP Message to the MicroService.
+     *
+     * DO NOT confuse this method with stopMicroService() - outstanding tasks will not be redistributed.
+     * USE THIS for the act of sending the stop message only.
+     *
+     * @param idToStop The ID of the MiroService we want to stop.
+     */
+    private void sendStopMessage(String idToStop){
+        //TODO :Publish to that MicroService's Queue a stop package.
+    }
+
+    /**
+     * Disconnects and then stops the MicroService.
+     *
+     * @param microserviceID The ID of the Service to stop.
+     * @return Whether the stopping was successful.
+     */
+    public boolean stopMicroService(String microserviceID) {
+        Objects.requireNonNull(microserviceID);
+
+        if(disconnectMicroService(microserviceID)){
+            sendStopMessage(microserviceID);
+            //TODO : Fill...
+            return true;
+        }
+        else {
+            Log.log("Failed to disconnect MicroService ");
             return false;
         }
-        return true;
     }
 
-    public boolean stopMicroService(String routingKey) {
-        Objects.requireNonNull(routingKey);
-        //TODO : Fill...
-        return true;
+    /**
+     * Disconnects the MicroService with the ID.
+     * A disconnection means that the remaining Tasks for that MicroService will be redistributed.
+     *
+     *  DO NOT Confuse this Method with stopMicroService(), as it will not issue a STOP Command to that Service
+     * USE THIS Method for disconnecting from Services before stopping them or when communicating with externals.
+     *
+     * @param idToRemove The ID of the MicroService to disconnect.
+     * @return A boolean whether the disconnection was successful.
+     */
+    private boolean disconnectMicroService(String idToRemove){
+        Log.log("Disconnecting MicroService " + idToRemove + "...");
+        String oldValue = microServices.get(idToRemove);
+        //TODO : Fill in the disconnection message.
+        return microServices.remove(idToRemove, oldValue);
     }
 
+    /**
+     * Returns the Key of a free MicroService.
+     * Will create a new Service on the Server, if all others are already occupied.
+     *
+     * @return ID of available service.
+     */
     public String getFreeMicroServiceKey() {
-
-        //TODO : How to check queue sizes?...
-        return "banana";
+        String freeServiceID = microServices.keySet().stream().filter(serviceID -> hasFreeSlots(serviceID)).findFirst().get();
+        if(freeServiceID == null){
+            //Start new Service instance.
+            freeServiceID = startMicroService();
+        }
+        return freeServiceID;
     }
 
-    public void disconnectMicroservice(MicroService toDisconnect) {
-
-        if (!microServices.contains(toDisconnect)) {
-            throw new IllegalArgumentException("MicroService does not exist");
-        }
-        try {
-            toDisconnect.closeConnection();
-            Log.log("microservice successfully disconnected");
-        } catch (IOException | TimeoutException e) {
-            Log.log("failed to disconnect microservice", e);
-        }
-        //TODO : Fill... And throw new MicroServiceDisconnectedEvent on Success.
+    /**
+     * Checks whether the service with the given ID has free slots for processing.
+     *
+     * @param id ID of the Service.
+     * @return True if capacities exist.
+     */
+    private boolean hasFreeSlots(String id){
+        //TODO : Fill..
+        return true;
     }
 }
