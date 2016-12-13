@@ -1,5 +1,7 @@
 package client.controller;
 
+import global.logging.Log;
+import global.logging.LogLevel;
 import org.jbibtex.*;
 
 import java.io.*;
@@ -24,7 +26,6 @@ public final class ClientFileHandler {
         StringBuilder sb = new StringBuilder();
         sb.append(br.readLine());
         while (br.ready()) {
-//            sb.append("\r\n");
             sb.append(System.lineSeparator());
             sb.append(br.readLine());
         }
@@ -35,7 +36,6 @@ public final class ClientFileHandler {
     }
 
     static BibTeXDatabase getBibTeXDatabaseObjectFromFile(File bibFile) throws FileNotFoundException {
-        Objects.requireNonNull(bibFile, "(bibFile == null) in ClientFileHandler.getBibTeXDatabaseObjectFromFile()");
         FileReader fileReader = new FileReader(bibFile);
         BibTeXDatabase result = null;
         try {
@@ -43,7 +43,7 @@ public final class ClientFileHandler {
             result = parser.parse(fileReader);
             fileReader.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.log("invalid .bib-file.", LogLevel.WARNING);
         }
         return result;
     }
@@ -56,15 +56,13 @@ public final class ClientFileHandler {
     }
 
     public static boolean isValidBibFile(File bibFile) throws FileNotFoundException {
-        Objects.requireNonNull(bibFile, "(bibFile == null) in ClientFileHandler.isValidBibFile()");
         return (getBibTeXDatabaseObjectFromFile(bibFile) != null);
 
     }
 
     public static boolean isValidCslFile(File cslFile) {
-        Objects.requireNonNull(cslFile, "(cslFile == null) in ClientFileHandler.isValidCslFile()");
         //TODO: implement algorithm to validate cslFile/xmlFile
-        if (true) {
+        if (true && cslFile.equals(cslFile)) {
             return true;
         }
         return false;

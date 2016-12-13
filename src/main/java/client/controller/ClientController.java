@@ -37,6 +37,10 @@ public class ClientController {
         public void write(int b) throws IOException {
             textArea.appendText(String.valueOf((char) b));
         }
+
+        public void clearTextArea() {
+            textArea.clear();
+        }
     }
 
     public ClientController() {
@@ -95,10 +99,10 @@ public class ClientController {
     public void connectToServerButtonPressed() {
         String serverAdress = serverAdressTextField.getText();
         Log.log("Connecting to server @" + serverAdress);
-        if(client.connectToHost(serverAdress))
-            Log.log("Successfully connected to Host!");
+        if (client.connectToHost(serverAdress))
+            Log.log("Successfully connected to Host!", LogLevel.INFO);
         else
-            Log.log("Failed to connect to that Host!");
+            Log.log("Failed to connect to that Host!", LogLevel.WARNING);
     }
 
     @FXML
@@ -107,7 +111,7 @@ public class ClientController {
         outputDirectoryChooser.setTitle("Select an output directory...");
         File outputDirNew = outputDirectoryChooser.showDialog(new Popup());
         if (outputDirNew == null) {
-            Log.log("User aborted directory selection");
+            Log.log("User aborted directory selection", LogLevel.INFO);
         } else {
             client.setOutputDirectory(outputDirNew.getAbsolutePath());
             outputDirectoryTextField.setText(outputDirNew.getAbsolutePath());
@@ -122,7 +126,7 @@ public class ClientController {
         File newTemplate = templateChooser.showOpenDialog(new Popup());
         if (client.getClientFileModel().addTemplate(newTemplate)) {
             templateDirectoryTextField.setText(newTemplate.getAbsolutePath());
-            Log.log("User selected new template " + newTemplate.getAbsolutePath());
+            Log.log("User selected new template " + newTemplate.getAbsolutePath(), LogLevel.INFO);
         } else {
             Log.log("Could not set new template", LogLevel.WARNING);
         }
@@ -138,26 +142,33 @@ public class ClientController {
         bibChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("BIB Files (*.bib)", "*.bib"));
         List<File> chosenBib = bibChooser.showOpenMultipleDialog(new Popup());
         if (chosenBib == null) {
-            Log.log("User aborted bib adding");
+            Log.log("User aborted bib adding", LogLevel.INFO);
         } else {
-            client.getClientFileModel().addBibFiles(chosenBib);
-            Log.log("Added " + chosenBib.size() + " bib File(s)", LogLevel.INFO);
+            int successfullyAddedBibFilesCounter = 0;
+            for (File currentBibFile : chosenBib) {
+                if (client.getClientFileModel().addBibFile(currentBibFile)) {
+                    bibFilesListView.getItems().add(currentBibFile);
+                    successfullyAddedBibFilesCounter++;
+                }
+            }
+            Log.log("Added " + successfullyAddedBibFilesCounter + " bib File(s)", LogLevel.INFO);
         }
     }
 
     @FXML
     public void removeBibButtonPressed() {
         File toRemove = bibFilesListView.getSelectionModel().getSelectedItem();
-        client.getClientFileModel().removeBibFile(toRemove);
-        bibFilesListView.getItems().remove(toRemove);
-        Log.log("Removed bib " + toRemove + " from the selection.");
+        if (client.getClientFileModel().removeBibFile(toRemove)) {
+            bibFilesListView.getItems().remove(toRemove);
+            Log.log("Removed bib " + toRemove + " from the selection.", LogLevel.INFO);
+        }
     }
 
     @FXML
     public void clearBibButtonPressed() {
         client.getClientFileModel().clearBibFiles();
         bibFilesListView.getItems().clear();
-        Log.log("Removed all bib files from the selection.");
+        Log.log("Removed all bib files from the selection.", LogLevel.INFO);
     }
 
 
@@ -170,25 +181,37 @@ public class ClientController {
         cslChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSL Files (*.csl)", "*.csl"));
         List<File> chosenBib = cslChooser.showOpenMultipleDialog(new Popup());
         if (chosenBib == null) {
-            Log.log("User aborted csl adding");
+            Log.log("User aborted csl adding", LogLevel.INFO);
         } else {
-            client.getClientFileModel().addCslFiles(chosenBib);
-            Log.log("Added " + chosenBib.size() + " csl File(s)");
+            int successfullyAddedCslFilesCounter = 0;
+            for (File currentCslFile : chosenBib) {
+                if (client.getClientFileModel().addCslFile(currentCslFile)) {
+                    cslFilesListView.getItems().add(currentCslFile);
+                    successfullyAddedCslFilesCounter++;
+                }
+            }
+            Log.log("Added " + successfullyAddedCslFilesCounter + " bib File(s)", LogLevel.INFO);
         }
     }
 
     @FXML
     public void removeCslButtonPressed() {
         File toRemove = cslFilesListView.getSelectionModel().getSelectedItem();
-        client.getClientFileModel().removeCslFile(toRemove);
-        cslFilesListView.getItems().remove(toRemove);
-        Log.log("Removed csl " + toRemove + " from the selection.");
+        if (client.getClientFileModel().removeCslFile(toRemove)) {
+            cslFilesListView.getItems().remove(toRemove);
+            Log.log("Removed csl " + toRemove + " from the selection.", LogLevel.INFO);
+        }
+
     }
 
     @FXML
     public void clearCslButtonPressed() {
         client.getClientFileModel().clearCslFiles();
         cslFilesListView.getItems().clear();
-        Log.log("Removed all csl files from the selection.");
+        Log.log("Removed all csl files from the selection.", LogLevel.INFO);
+    }
+
+    public void clearConsole() {
+        consoleStream.clearTextArea();
     }
 }
