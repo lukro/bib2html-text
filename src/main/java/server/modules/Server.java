@@ -61,8 +61,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     public boolean sendEntryToMicroServices(DefaultEntry entry) {
         try {
             //TODO : Implement properly after checking out how the rabbitmq publish works
-            String microServiceKey = MicroServiceManager.getInstance().getFreeMicroServiceKey();
-
+            MicroServiceManager.getInstance().checkUtilization();
+            channel.basicPublish("", TASK_QUEUE_NAME, null, SerializationUtils.serialize(entry));
             return true;
         } catch (Exception e) {
             e.printStackTrace();

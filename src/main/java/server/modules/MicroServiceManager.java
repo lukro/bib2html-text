@@ -24,11 +24,11 @@ public class MicroServiceManager {
     private HashMap<String, String> microServices;
 
     private final Channel channel;
-    private final String taskQueueName;
+    private final String TASK_QUEUE_NAME;
 
     private MicroServiceManager(Channel channel, String taskQueueName) {
         this.channel = channel;
-        this.taskQueueName = taskQueueName;
+        this.TASK_QUEUE_NAME = taskQueueName;
     }
 
 
@@ -121,28 +121,21 @@ public class MicroServiceManager {
     }
 
     /**
-     * Returns the Key of a free MicroService.
-     * Will create a new Service on the Server, if all others are already occupied.
+     * Checks the utilization of the system.
+     * This method will start new microservices, until the number of tasks divided by the number of running services
+     * is below 50 (test-value!!)
      *
-     * @return ID of available service.
+     * @return number of added services.
+     * @return 0, if no new services where added.
      */
-    public String getFreeMicroServiceKey() {
-        String freeServiceID = microServices.keySet().stream().filter(serviceID -> hasFreeSlots(serviceID)).findFirst().get();
-        if(freeServiceID == null){
-            //Start new Service instance.
-            freeServiceID = startMicroService();
-        }
-        return freeServiceID;
-    }
+    public int checkUtilization() throws IOException {
 
-    /**
-     * Checks whether the service with the given ID has free slots for processing.
-     *
-     * @param id ID of the Service.
-     * @return True if capacities exist.
-     */
-    private boolean hasFreeSlots(String id){
-        //TODO : Fill..
-        return true;
+        int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
+        int returnValue = 0;
+        while(currTasks/microServices.size() > 50) {
+            startMicroService();
+            returnValue++;
+        }
+        return returnValue;
     }
 }
