@@ -26,6 +26,8 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final Connection connection;
     private final Channel channel;
 
+    private long currentDeliveryTag;
+
 
     public MicroService() throws IOException, TimeoutException {
         this("localhost");
@@ -61,7 +63,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         return output;
     }
 
-    private static int pandocDoWork(File directory, String cslName, String wrapperName) throws IOException, InterruptedException {
+    private static int pandocDoWork(File directory, String cslName, String wrapperName, Channel channel, long currentDeliveryTag) throws IOException, InterruptedException {
         Objects.requireNonNull(directory);
         Objects.requireNonNull(cslName);
         Objects.requireNonNull(wrapperName);
@@ -73,7 +75,9 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             throw new IllegalArgumentException("A file with that name might not exist!");
 
         String command = "pandoc --filter=pandoc-citeproc --csl=" + cslName + ".csl --standalone " + wrapperName + ".md -o " + cslName + ".HTML";
+        channel.basicAck(currentDeliveryTag,false);
         return Runtime.getRuntime().exec(command, null, directory).waitFor();
+
     }
 
     @Override
@@ -104,6 +108,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
         System.out.println("MicroService received message");
+        envelope.getDeliveryTag();
     }
 
     @Override
@@ -117,7 +122,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void consumeIncomingQueues() throws IOException {
-        channel.basicConsume(TASK_QUEUE_NAME, true, this);
+        channel.basicConsume(TASK_QUEUE_NAME, false, this);
     }
 
 

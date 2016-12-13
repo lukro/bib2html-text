@@ -149,7 +149,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
             int requestSize = deliveredClientRequest.getEntries().size();
             EventManager.getInstance().publishEvent(new RequestAcceptedEvent(clientID,requestSize));
 
-            //TODO: publish entries to microservices
+            //TODO: getFreeMicroService
 
             Log.log("Server received a message");
             channel.basicPublish("", TASK_QUEUE_NAME, null, bytes);
