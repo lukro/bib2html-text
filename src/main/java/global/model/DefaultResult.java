@@ -35,7 +35,7 @@ public class DefaultResult implements IResult {
         return ("DefaultResult " + clientID + " has " + fileContents.size() + " outputFiles.");
     }
 
-    public static DefaultResult buildResultfromPartials(Collection<DefaultPartialResult> partials) {
+    public static DefaultResult buildResultfromPartials(Collection<IPartialResult> partials) {
         //Group Results
         Map<PartialResultIdentifier, Collection<IPartialResult>> collectionMap = new HashMap<>();
         partials.forEach(partial -> {

@@ -1,6 +1,7 @@
 package server.events;
 
 import global.model.DefaultPartialResult;
+import global.model.IPartialResult;
 
 /**
  * @author Maximilian Schirm
@@ -9,13 +10,13 @@ import global.model.DefaultPartialResult;
 
 public class ReceivedPartialResultEvent implements Event {
 
-    private final DefaultPartialResult result;
+    private final IPartialResult result;
 
-    public ReceivedPartialResultEvent(DefaultPartialResult result) {
+    public ReceivedPartialResultEvent(IPartialResult result) {
         this.result = result;
     }
 
-    public DefaultPartialResult getPartialResult() {
+    public IPartialResult getPartialResult() {
         return result;
     }
 }

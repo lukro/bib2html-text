@@ -3,6 +3,7 @@ package server.modules;
 import global.logging.Log;
 import global.logging.LogLevel;
 import global.model.DefaultResult;
+import global.model.IPartialResult;
 import server.events.*;
 import server.events.EventListener;
 import global.model.DefaultPartialResult;
@@ -18,7 +19,7 @@ import java.util.*;
 public class PartialResultCollector implements EventListener {
 
     private static final PartialResultCollector INSTANCE = new PartialResultCollector();
-    private HashMap<String, Collection<DefaultPartialResult>> mappingClientIDtoFinishedPartialResults;
+    private HashMap<String, Collection<IPartialResult>> mappingClientIDtoFinishedPartialResults;
     private HashMap<String, Integer> mappingClientIDtoExpectedResultsSize;
 
     private PartialResultCollector() {
@@ -46,9 +47,9 @@ public class PartialResultCollector implements EventListener {
     public void notify(Event toNotify) {
         if (toNotify instanceof ReceivedPartialResultEvent) {
             ReceivedPartialResultEvent tempEvent = (ReceivedPartialResultEvent) toNotify;
-            DefaultPartialResult partialResult = tempEvent.getPartialResult();
+            IPartialResult partialResult = tempEvent.getPartialResult();
             String id = partialResult.getIdentifier().getClientID();
-            Collection<DefaultPartialResult> presentResults = mappingClientIDtoFinishedPartialResults.get(id);
+            Collection<IPartialResult> presentResults = mappingClientIDtoFinishedPartialResults.get(id);
             presentResults.add(partialResult);
             mappingClientIDtoFinishedPartialResults.put(id, presentResults);
 
@@ -71,7 +72,7 @@ public class PartialResultCollector implements EventListener {
     private synchronized void update() {
         synchronized (mappingClientIDtoExpectedResultsSize) {
             mappingClientIDtoExpectedResultsSize.forEach((key, size) -> {
-                Collection<DefaultPartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
+                Collection<IPartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
                 if (parts != null)
                     if (parts.size() == size)
                         EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(DefaultResult.buildResultfromPartials(parts)));

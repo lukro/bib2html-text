@@ -144,16 +144,13 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         if (deliveredObject instanceof IClientRequest) {
             handleDeliveredClientRequest((IClientRequest) deliveredObject, basicProperties);
         } else if (deliveredObject instanceof IPartialResult) {
-            IPartialResult deliveredPartialResult = (IPartialResult) deliveredObject;
-            //TODO: put deliveredPartialResult into PartialResultCollector-Map
+            ReceivedPartialResultEvent event = new ReceivedPartialResultEvent((IPartialResult) deliveredObject);
+            EventManager.getInstance().publishEvent(event);
         }
     }
 
     private void handleDeliveredClientRequest(IClientRequest deliveredClientRequest, BasicProperties basicProperties) throws IOException {
         String requestID = deliveredClientRequest.getClientID();
-
-        blacklistClient(requestID);
-
         clientIDtoCallbackInformation.put(requestID,
                 new CallbackInformation(basicProperties, new BasicProperties
                         .Builder()
