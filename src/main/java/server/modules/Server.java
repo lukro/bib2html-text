@@ -150,6 +150,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     }
 
     private void handleDeliveredClientRequest(IClientRequest deliveredClientRequest, BasicProperties basicProperties) throws IOException {
+
+        //Generate Callback info
         String requestID = deliveredClientRequest.getClientID();
         BasicProperties replyProps = new BasicProperties
                 .Builder()
@@ -157,11 +159,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
                 .build();
         CallbackInformation callbackInformation = new CallbackInformation(basicProperties, replyProps);
         clientIDtoCallbackInformation.put(requestID, callbackInformation);
-//        clientIDtoCallbackInformation.put(requestID,
-//                new CallbackInformation(basicProperties, new BasicProperties
-//                        .Builder()
-//                        .correlationId(basicProperties.getCorrelationId())
-//                        .build()));
+
+        //Check for blacklisting and handle accordingly
         if (isBlacklisted(requestID)) {
             Log.log("Illegal ClientRequest with ID '" + requestID + "' refused.");
             channel.basicPublish("", basicProperties.getReplyTo(), clientIDtoCallbackInformation.get(requestID).replyProperties, SerializationUtils.serialize("Unfortunately you have been banned."));
