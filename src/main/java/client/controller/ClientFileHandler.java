@@ -43,7 +43,7 @@ public final class ClientFileHandler {
             result = parser.parse(fileReader);
             fileReader.close();
         } catch (Exception e) {
-            Log.log("invalid .bib-file.", LogLevel.WARNING);
+//            Log.log("invalid .bib-file.", LogLevel.WARNING);
         }
         return result;
     }

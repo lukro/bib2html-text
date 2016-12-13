@@ -102,7 +102,6 @@ public class ClientFileModel {
                     Log.log("couldn't add .csl-file '" + cslFileToAdd.getAbsolutePath() + "' to file-model.", LogLevel.WARNING);
                     return false;
                 }
-
             }
         }
         return false;
