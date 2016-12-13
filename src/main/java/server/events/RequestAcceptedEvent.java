@@ -1,7 +1,7 @@
 package server.events;
 
 /**
- * @author Maximilian Schirm (denkbares GmbH)
+ * @author Maximilian Schirm
  *         created 05.12.2016
  */
 
