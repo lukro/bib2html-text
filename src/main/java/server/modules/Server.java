@@ -26,13 +26,12 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     private final String serverID, hostIP, callbackQueueName;
     private final String CLIENT_REQUEST_QUEUE_NAME = "clientRequestQueue";
     private final String TASK_QUEUE_NAME = "taskQueue";
+
 //    private final URI address;
 
     private final Connection connection;
     private final Channel channel;
 
-
-    private final MicroServiceManager microServiceManager;
     private final PartialResultCollector partialResultCollector;
 
     public Server() throws IOException, TimeoutException {
@@ -52,7 +51,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         this.callbackQueueName = serverID;
         this.connection = factory.newConnection();
         this.channel = connection.createChannel();
-        this.microServiceManager = MicroServiceManager.getInstance();
+        //TODO KARSTEN IS THAT RIGHT?
+        MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
         this.partialResultCollector = PartialResultCollector.getInstance();
         EventManager.getInstance().registerListener(this);
         initConnectionPoint();
@@ -101,8 +101,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
             blacklistClient(toBlock);
         }
         else if(toNotify instanceof MicroserviceDisconnectionRequestEvent){
-            MicroService toDisconnect = ((MicroserviceDisconnectionRequestEvent) toNotify).getToDisconnect();
-            microServiceManager.disconnectMicroservice(toDisconnect);
+            String toDisconnect = ((MicroserviceDisconnectionRequestEvent) toNotify).getToDisconnectID();
+            MicroServiceManager.getInstance().stopMicroService(toDisconnect);
         }
     }
 

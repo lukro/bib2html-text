@@ -9,13 +9,13 @@ import microservice.MicroService;
 
 public class MicroserviceDisconnectionRequestEvent implements Event{
 
-    private final MicroService toDisconnect;
+    private final String toDisconnectID;
 
-    public MicroserviceDisconnectionRequestEvent(MicroService toDisconnect) {
-        this.toDisconnect = toDisconnect;
+    public MicroserviceDisconnectionRequestEvent(String toDisconnectID) {
+        this.toDisconnectID = toDisconnectID;
     }
 
-    public MicroService getToDisconnect() {
-        return toDisconnect;
+    public String getToDisconnectID() {
+        return toDisconnectID;
     }
 }

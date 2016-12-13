@@ -5,7 +5,7 @@ import microservice.MicroService;
 import java.util.Objects;
 
 /**
- * @author Maximilian Schirm (denkbares GmbH)
+ * @author Maximilian Schirm
  * @created 09.12.2016
  */
 
