@@ -161,7 +161,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
                         .build()));
         if (isBlacklisted(requestID)) {
             Log.log("Illegal ClientRequest with ID '" + requestID + "' refused.");
-            channel.basicPublish("", basicProperties.getReplyTo(), clientIDtoCallbackInformation.get(requestID).replyProperties, ("Unfortunately you have been banned.").getBytes());
+            channel.basicPublish("", basicProperties.getReplyTo(), clientIDtoCallbackInformation.get(requestID).replyProperties, SerializationUtils.serialize("Unfortunately you have been banned."));
             clientIDtoCallbackInformation.remove(requestID);
         } else {
             IEntry firstEntry = deliveredClientRequest.getEntries().stream().findFirst().get();

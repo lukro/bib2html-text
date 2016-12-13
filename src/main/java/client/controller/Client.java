@@ -1,14 +1,14 @@
 package client.controller;
 
-import com.rabbitmq.client.*;
 import client.model.ClientFileModel;
+import com.rabbitmq.client.*;
+import com.rabbitmq.client.AMQP.BasicProperties;
 import global.controller.IConnectionPoint;
 import global.logging.Log;
 import global.logging.LogLevel;
 import global.model.DefaultClientRequest;
 import global.model.IResult;
 import org.apache.commons.lang3.SerializationUtils;
-import com.rabbitmq.client.AMQP.BasicProperties;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -98,8 +98,8 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        Object deliveredObject = SerializationUtils.deserialize(bytes);
         Log.log("Message received.");
+        Object deliveredObject = SerializationUtils.deserialize(bytes);
         if (deliveredObject instanceof IResult) {
             //TODO: handle Result
             Log.log("Message is instance of IResult.");

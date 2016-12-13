@@ -152,7 +152,7 @@ public class ClientController {
                     successfullyAddedBibFilesCounter++;
                 }
             }
-            Log.log("Added " + successfullyAddedBibFilesCounter + " bib File(s)", LogLevel.INFO);
+            Log.log("Added " + successfullyAddedBibFilesCounter + " csl File(s)", LogLevel.INFO);
         }
     }
 
