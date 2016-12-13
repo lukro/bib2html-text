@@ -151,19 +151,27 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
 
     private void handleDeliveredClientRequest(IClientRequest deliveredClientRequest, BasicProperties basicProperties) throws IOException {
         String requestID = deliveredClientRequest.getClientID();
-        clientIDtoCallbackInformation.put(requestID,
-                new CallbackInformation(basicProperties, new BasicProperties
-                        .Builder()
-                        .correlationId(basicProperties.getCorrelationId())
-                        .build()));
+        BasicProperties replyProps = new BasicProperties
+                .Builder()
+                .correlationId(basicProperties.getCorrelationId())
+                .build();
+        CallbackInformation callbackInformation = new CallbackInformation(basicProperties, replyProps);
+        clientIDtoCallbackInformation.put(requestID, callbackInformation);
+//        clientIDtoCallbackInformation.put(requestID,
+//                new CallbackInformation(basicProperties, new BasicProperties
+//                        .Builder()
+//                        .correlationId(basicProperties.getCorrelationId())
+//                        .build()));
         if (isBlacklisted(requestID)) {
             Log.log("Illegal ClientRequest with ID '" + requestID + "' refused.");
             channel.basicPublish("", basicProperties.getReplyTo(), clientIDtoCallbackInformation.get(requestID).replyProperties, SerializationUtils.serialize("Unfortunately you have been banned."));
             clientIDtoCallbackInformation.remove(requestID);
         } else {
-            if(deliveredClientRequest.getEntries().isEmpty())
-                //TODO Handle 0 Entries request
-            else
+            if (deliveredClientRequest.getEntries().isEmpty()) {
+                Log.log("received request with 0 entries.", LogLevel.INFO);
+                channel.basicPublish("", basicProperties.getReplyTo(), clientIDtoCallbackInformation.get(requestID).replyProperties, SerializationUtils.serialize("Server received empty request. Conversion aborted."));
+                clientIDtoCallbackInformation.remove(requestID);
+            } else
                 processDeliveredClientRequest(deliveredClientRequest);
         }
     }
