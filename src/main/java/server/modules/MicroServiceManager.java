@@ -20,6 +20,8 @@ import java.util.concurrent.TimeoutException;
 public class MicroServiceManager {
 
     private static MicroServiceManager INSTANCE;
+    //The max. # of tasks per service.
+    private final int MAXIMUM_UTILIZATION = 50;
     //Key : ID | Value : IP
     private HashMap<String, String> microServices;
 
@@ -123,7 +125,7 @@ public class MicroServiceManager {
     /**
      * Checks the utilization of the system.
      * This method will start new microservices, until the number of tasks divided by the number of running services
-     * is below 50 (test-value!!)
+     * is below MAXIMUM_UTILIZATION (test-value!!)
      *
      * @return number of added services.
      * @return 0, if no new services where added.
@@ -132,7 +134,7 @@ public class MicroServiceManager {
 
         int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
         int returnValue = 0;
-        while(currTasks/microServices.size() > 50) {
+        while(currTasks/microServices.size() > MAXIMUM_UTILIZATION) {
             startMicroService();
             returnValue++;
         }
