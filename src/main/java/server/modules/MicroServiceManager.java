@@ -2,7 +2,6 @@ package server.modules;
 
 import com.rabbitmq.client.Channel;
 import global.logging.Log;
-import global.logging.LogLevel;
 import microservice.MicroService;
 
 import java.io.IOException;

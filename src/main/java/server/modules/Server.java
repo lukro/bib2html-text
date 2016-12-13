@@ -7,13 +7,14 @@ import global.logging.LogLevel;
 import global.model.DefaultEntry;
 import global.model.DefaultResult;
 import global.model.IClientRequest;
-import microservice.MicroService;
 import org.apache.commons.lang3.SerializationUtils;
 import server.events.*;
-import server.events.EventListener;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -51,7 +52,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         this.callbackQueueName = serverID;
         this.connection = factory.newConnection();
         this.channel = connection.createChannel();
-        //TODO KARSTEN IS THAT RIGHT?
         MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
         this.partialResultCollector = PartialResultCollector.getInstance();
         EventManager.getInstance().registerListener(this);
