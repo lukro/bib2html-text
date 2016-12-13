@@ -7,14 +7,15 @@ import global.logging.LogLevel;
 import global.model.DefaultEntry;
 import global.model.DefaultResult;
 import global.model.IClientRequest;
-import microservice.MicroService;
 import org.apache.commons.lang3.SerializationUtils;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import server.events.*;
-import server.events.EventListener;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -55,7 +56,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         this.callbackQueueName = serverID;
         this.connection = factory.newConnection();
         this.channel = connection.createChannel();
-        //TODO KARSTEN IS THAT RIGHT?
         MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
         this.partialResultCollector = PartialResultCollector.getInstance();
         EventManager.getInstance().registerListener(this);
@@ -65,8 +65,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     public boolean sendEntryToMicroServices(DefaultEntry entry) {
         try {
             //TODO : Implement properly after checking out how the rabbitmq publish works
-            String microServiceKey = MicroServiceManager.getInstance().getFreeMicroServiceKey();
-
+            MicroServiceManager.getInstance().checkUtilization();
+            channel.basicPublish("", TASK_QUEUE_NAME, null, SerializationUtils.serialize(entry));
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -161,10 +161,11 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
             int requestSize = deliveredClientRequest.getEntries().size();
             EventManager.getInstance().publishEvent(new RequestAcceptedEvent(clientID, requestSize));
 
-            //TODO: publish entries to microservices
 
             Log.log("Server received a message");
-            channel.basicPublish("", TASK_QUEUE_NAME, null, bytes);
+
+            //TODO: request verarbeiten, entries verschicken über sendEntryToMicroServices.
+
         }
     }
 
