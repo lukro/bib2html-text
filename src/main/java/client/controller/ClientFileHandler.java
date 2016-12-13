@@ -1,7 +1,5 @@
 package client.controller;
 
-import global.logging.Log;
-import global.logging.LogLevel;
 import org.jbibtex.*;
 
 import java.io.*;

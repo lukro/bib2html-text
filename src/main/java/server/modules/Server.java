@@ -9,6 +9,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import server.events.*;
 import server.events.EventListener;
+import sun.security.x509.IPAddressName;
 
 import java.io.IOException;
 import java.util.*;
@@ -31,8 +32,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     private final Channel channel;
     private final BasicProperties replyProps;
 
-    private HashMap<String, BasicProperties> clientID2basicProps = new HashMap<>();
-    private HashMap<BasicProperties, BasicProperties> basicProps2replyProps = new HashMap<>();
+    private HashMap<String, CallbackInformation> clientIDtoCallbackInformation = new HashMap<>();
 
     public Server() throws IOException, TimeoutException {
         this("localhost");
@@ -140,30 +140,47 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        //delivered object is a ClientRequest
-        if (basicProperties.getReplyTo() != null) {
-            IClientRequest deliveredClientRequest = SerializationUtils.deserialize(bytes);
-            handleDeliveredClientRequest(deliveredClientRequest, basicProperties);
-        } else {
-            //delivered object is a PartialResult
-            IPartialResult deliveredPartialResult = SerializationUtils.deserialize(bytes);
+        Object deliveredObject = SerializationUtils.deserialize(bytes);
+        if (deliveredObject instanceof IClientRequest) {
+            handleDeliveredClientRequest((IClientRequest) deliveredObject, basicProperties);
+        } else if (deliveredObject instanceof IPartialResult) {
+            IPartialResult deliveredPartialResult = (IPartialResult) deliveredObject;
             //TODO: put deliveredPartialResult into PartialResultCollector-Map
         }
     }
 
     private void handleDeliveredClientRequest(IClientRequest deliveredClientRequest, BasicProperties basicProperties) throws IOException {
-        storeClientCallbackInformation(basicProperties);
-        if (isBlacklisted(deliveredClientRequest.getClientID())) {
-            Log.log("Illegal ClientRequest with ID: " + deliveredClientRequest.getClientID() + " refused.");
-            channel.basicPublish("", basicProperties.getReplyTo(), basicProps2replyProps.get(basicProperties), ("Unfortunately you have been banned.").getBytes());
+        String requestID = deliveredClientRequest.getClientID();
+
+        blacklistClient(requestID);
+
+        clientIDtoCallbackInformation.put(requestID,
+                new CallbackInformation(basicProperties, new BasicProperties
+                        .Builder()
+                        .correlationId(basicProperties.getCorrelationId())
+                        .build()));
+        if (isBlacklisted(requestID)) {
+            Log.log("Illegal ClientRequest with ID '" + requestID + "' refused.");
+            channel.basicPublish("", basicProperties.getReplyTo(), clientIDtoCallbackInformation.get(requestID).replyProperties, ("Unfortunately you have been banned.").getBytes());
+            clientIDtoCallbackInformation.remove(requestID);
         } else {
             IEntry firstEntry = deliveredClientRequest.getEntries().stream().findFirst().get();
-            if(firstEntry != null) {
+            if (firstEntry != null) {
                 processDeliveredClientRequest(deliveredClientRequest, firstEntry);
-            }
-            else{
+            } else {
                 //TODO Handle 0 Entries request
             }
+        }
+    }
+
+    public class CallbackInformation {
+
+        BasicProperties basicProperties;
+        BasicProperties replyProperties;
+
+        public CallbackInformation(BasicProperties basicProperties, BasicProperties replyProperties) {
+            this.basicProperties = basicProperties;
+            this.replyProperties = replyProperties;
         }
     }
 
@@ -180,17 +197,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
 
         for (IEntry currentEntry : deliveredClientRequest.getEntries())
             channel.basicPublish("", TASK_QUEUE_NAME, replyProps, SerializationUtils.serialize(currentEntry));
-    }
-
-    private void storeClientCallbackInformation(BasicProperties basicProperties) {
-        clientID2basicProps.put(basicProperties.getCorrelationId(), basicProperties);
-        basicProps2replyProps.put(basicProperties,
-                new BasicProperties
-                        .Builder()
-                        .correlationId(basicProperties.getCorrelationId())
-                        .build());
-        //publish finished result object with this command
-        //channel.basicPublish("", basicProperties.getReplyTo(), basicProps2replyProps.get(basicProperties), ("RESULT_OBJECT").getBytes());
     }
 
     private Collection<String> blacklistedClients = new HashSet<>();
