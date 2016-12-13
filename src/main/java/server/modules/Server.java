@@ -154,15 +154,32 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     private void handleDeliveredClientRequest(IClientRequest deliveredClientRequest, BasicProperties basicProperties) throws IOException {
         storeClientCallbackInformation(basicProperties);
         if (isBlacklisted(deliveredClientRequest.getClientID())) {
-            Log.log("illegal ClientRequest with ID: " + deliveredClientRequest.getClientID() + " refused.");
-            channel.basicPublish("", basicProperties.getReplyTo(), basicProps2replyProps.get(basicProperties), ("Unfortunatelly you have been baned.").getBytes());
+            Log.log("Illegal ClientRequest with ID: " + deliveredClientRequest.getClientID() + " refused.");
+            channel.basicPublish("", basicProperties.getReplyTo(), basicProps2replyProps.get(basicProperties), ("Unfortunately you have been banned.").getBytes());
         } else {
-            EventManager.getInstance().publishEvent(new RequestAcceptedEvent(deliveredClientRequest.getClientID(), deliveredClientRequest.getEntries().size()));
-            Log.log("Server received a legal ClientRequest.");
-            for (IEntry currentEntry : deliveredClientRequest.getEntries()) {
-                channel.basicPublish("", TASK_QUEUE_NAME, replyProps, SerializationUtils.serialize(currentEntry));
+            IEntry firstEntry = deliveredClientRequest.getEntries().stream().findFirst().get();
+            if(firstEntry != null) {
+                processDeliveredClientRequest(deliveredClientRequest, firstEntry);
+            }
+            else{
+                //TODO Handle 0 Entries request
             }
         }
+    }
+
+    private void processDeliveredClientRequest(IClientRequest deliveredClientRequest, IEntry firstEntry) throws IOException {
+        int countOfEntries = deliveredClientRequest.getEntries().size();
+        int countOfCSL = firstEntry.getCslFiles().size();
+        int countOfTempl = firstEntry.getTemplates().size();
+        int requestSize = countOfEntries * countOfCSL * countOfTempl;
+
+        RequestAcceptedEvent requestAcceptedEvent = new RequestAcceptedEvent(deliveredClientRequest.getClientID(), requestSize);
+        EventManager.getInstance().publishEvent(requestAcceptedEvent);
+
+        Log.log("Server successfully received a ClientRequest.");
+
+        for (IEntry currentEntry : deliveredClientRequest.getEntries())
+            channel.basicPublish("", TASK_QUEUE_NAME, replyProps, SerializationUtils.serialize(currentEntry));
     }
 
     private void storeClientCallbackInformation(BasicProperties basicProperties) {
@@ -199,7 +216,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
      */
     public void blacklistClient(String clientIDToBlock) {
         blacklistedClients.add(clientIDToBlock);
-        //TODO : Disconnect Client
         Log.log("Blacklisted Client " + clientIDToBlock, LogLevel.WARNING);
     }
 

@@ -58,9 +58,8 @@ public class PartialResultCollector implements EventListener {
             int currentSize = mappingClientIDtoExpectedResultsSize.get(id);
             mappingClientIDtoExpectedResultsSize.put(id, currentSize - 1);
         } else if (toNotify instanceof RequestAcceptedEvent) {
-            RequestAcceptedEvent tempEvent = (RequestAcceptedEvent) toNotify;
-            String id = tempEvent.getRequestID();
-            int size = tempEvent.getReqSize();
+            String id = ((RequestAcceptedEvent) toNotify).getRequestID();
+            int size = ((RequestAcceptedEvent) toNotify).getReqSize();
             mappingClientIDtoExpectedResultsSize.put(id, size);
             mappingClientIDtoFinishedPartialResults.remove(id);
         }
