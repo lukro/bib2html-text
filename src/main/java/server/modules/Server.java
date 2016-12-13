@@ -161,12 +161,10 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
             channel.basicPublish("", basicProperties.getReplyTo(), clientIDtoCallbackInformation.get(requestID).replyProperties, SerializationUtils.serialize("Unfortunately you have been banned."));
             clientIDtoCallbackInformation.remove(requestID);
         } else {
-            IEntry firstEntry = deliveredClientRequest.getEntries().stream().findFirst().get();
-            if (firstEntry != null) {
-                processDeliveredClientRequest(deliveredClientRequest, firstEntry);
-            } else {
+            if(deliveredClientRequest.getEntries().isEmpty())
                 //TODO Handle 0 Entries request
-            }
+            else
+                processDeliveredClientRequest(deliveredClientRequest);
         }
     }
 
@@ -181,7 +179,9 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         }
     }
 
-    private void processDeliveredClientRequest(IClientRequest deliveredClientRequest, IEntry firstEntry) throws IOException {
+    private void processDeliveredClientRequest(IClientRequest deliveredClientRequest) throws IOException {
+        IEntry firstEntry = deliveredClientRequest.getEntries().stream().findFirst().get();
+
         int countOfEntries = deliveredClientRequest.getEntries().size();
         int countOfCSL = firstEntry.getCslFiles().size();
         int countOfTempl = firstEntry.getTemplates().size();
