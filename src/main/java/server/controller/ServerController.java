@@ -109,7 +109,7 @@ public class ServerController implements EventListener {
             MicroService toRemove = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvc();
             Log.log("Unregistered Microservice with ID " + toRemove.getID(), LogLevel.INFO);
             microServiceListView.getItems().remove(toRemove);
-        } else if (toNotify instanceof RequestStoppedEvent){
+        } else if (toNotify instanceof RequestStoppedEvent) {
             IClientRequest toRemove = ((StopRequestEvent) toNotify).getRequest();
             Log.log("Removed Request with ID " + toRemove.getClientID());
             clientRequestListView.getItems().remove(toRemove);
@@ -122,15 +122,15 @@ public class ServerController implements EventListener {
     }
 
     public void removeMicroserviceButtonPressed(ActionEvent actionEvent) {
-        if(microServiceListView.getSelectionModel().getSelectedItem() != null){
+        if (microServiceListView.getSelectionModel().getSelectedItem() != null) {
             MicroService serviceToRemove = microServiceListView.getSelectionModel().getSelectedItem();
             Log.log("Disconnecting MicroSerivce " + serviceToRemove.getID());
-            EventManager.getInstance().publishEvent(new MicroserviceDisconnectionRequestEvent(serviceToRemove));
+            EventManager.getInstance().publishEvent(new MicroserviceDisconnectionRequestEvent(serviceToRemove.getID()));
         }
     }
 
     public void removeClientButtonPressed(ActionEvent actionEvent) {
-        if(clientListView.getSelectionModel().getSelectedItem() != null) {
+        if (clientListView.getSelectionModel().getSelectedItem() != null) {
             String clientToBlock = clientListView.getSelectionModel().getSelectedItem().getID();
             Log.log("Blocking Client " + clientToBlock);
             EventManager.getInstance().publishEvent(new ClientBlockRequestEvent(clientToBlock));
@@ -138,7 +138,7 @@ public class ServerController implements EventListener {
     }
 
     public void cancelRequestButtonPressed(ActionEvent actionEvent) {
-        if(clientRequestListView.getSelectionModel().getSelectedItem() != null){
+        if (clientRequestListView.getSelectionModel().getSelectedItem() != null) {
             IClientRequest toStop = clientRequestListView.getSelectionModel().getSelectedItem();
             Log.log("Cancelling Request " + toStop.getClientID());
             EventManager.getInstance().publishEvent(new StopRequestEvent(toStop));

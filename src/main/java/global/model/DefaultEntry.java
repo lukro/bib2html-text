@@ -39,7 +39,7 @@ public class DefaultEntry implements IEntry {
     }
 
     @Override
-    public ArrayList<String> getTemplateFiles() {
+    public ArrayList<String> getTemplates() {
         return templateFiles;
     }
 
@@ -61,11 +61,11 @@ public class DefaultEntry implements IEntry {
         return Objects.equals(getEntryIdentifier(), that.getEntryIdentifier()) &&
                 Objects.equals(getContent(), that.getContent()) &&
                 Objects.equals(getCslFiles(), that.getCslFiles()) &&
-                Objects.equals(getTemplateFiles(), that.getTemplateFiles());
+                Objects.equals(getTemplates(), that.getTemplates());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getEntryIdentifier(), getContent(), getCslFiles(), getTemplateFiles());
+        return Objects.hash(getEntryIdentifier(), getContent(), getCslFiles(), getTemplates());
     }
 }

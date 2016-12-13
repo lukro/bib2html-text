@@ -17,7 +17,7 @@ public interface IEntry extends Serializable {
 
     ArrayList<String> getCslFiles();
 
-    ArrayList<String> getTemplateFiles();
+    ArrayList<String> getTemplates();
 
     String toString();
 

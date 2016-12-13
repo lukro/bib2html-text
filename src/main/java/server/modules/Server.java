@@ -9,6 +9,7 @@ import global.model.DefaultResult;
 import global.model.IClientRequest;
 import microservice.MicroService;
 import org.apache.commons.lang3.SerializationUtils;
+import com.rabbitmq.client.AMQP.BasicProperties;
 import server.events.*;
 import server.events.EventListener;
 
@@ -31,6 +32,9 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
 
     private final Connection connection;
     private final Channel channel;
+
+    private HashMap<String, BasicProperties> clientID2basicProps = new HashMap<>();
+    private HashMap<BasicProperties, BasicProperties> basicProps2replyProps = new HashMap<>();
 
     private final PartialResultCollector partialResultCollector;
 
@@ -75,7 +79,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         try {
             consumeIncomingQueues();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.log("failed to consume incoming queues in server.run()", e);
         }
     }
 
@@ -91,16 +95,13 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
             DefaultResult eventResult = ((FinishedCollectingResultEvent) toNotify).getResult();
             String clientID = eventResult.getClientID();
             //TODO : Publish to client
-        }
-        else if(toNotify instanceof StopRequestEvent) {
+        } else if (toNotify instanceof StopRequestEvent) {
             IClientRequest toStop = ((StopRequestEvent) toNotify).getRequest();
             stopRequest(toStop);
-        }
-        else if(toNotify instanceof ClientBlockRequestEvent){
+        } else if (toNotify instanceof ClientBlockRequestEvent) {
             String toBlock = ((ClientBlockRequestEvent) toNotify).getClientID();
             blacklistClient(toBlock);
-        }
-        else if(toNotify instanceof MicroserviceDisconnectionRequestEvent){
+        } else if (toNotify instanceof MicroserviceDisconnectionRequestEvent) {
             String toDisconnect = ((MicroserviceDisconnectionRequestEvent) toNotify).getToDisconnectID();
             MicroServiceManager.getInstance().stopMicroService(toDisconnect);
         }
@@ -141,13 +142,24 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
         IClientRequest deliveredClientRequest = SerializationUtils.deserialize(bytes);
+        System.out.println("replyTo: " + basicProperties.getReplyTo());
+        //store information for client-callback
+        clientID2basicProps.put(basicProperties.getCorrelationId(), basicProperties);
+        basicProps2replyProps.put(basicProperties,
+                new BasicProperties
+                        .Builder()
+                        .correlationId(basicProperties.getCorrelationId())
+                        .build());
+
+        channel.basicPublish("", basicProperties.getReplyTo(), basicProps2replyProps.get(basicProperties), ("RESULT_OBJECT").getBytes());
+
 
         String clientID = deliveredClientRequest.getClientID();
         if (isBlacklisted(clientID)) {
             Log.log("Illegal Client Request Refused. ID was " + clientID);
         } else {
             int requestSize = deliveredClientRequest.getEntries().size();
-            EventManager.getInstance().publishEvent(new RequestAcceptedEvent(clientID,requestSize));
+            EventManager.getInstance().publishEvent(new RequestAcceptedEvent(clientID, requestSize));
 
             //TODO: publish entries to microservices
 
@@ -162,6 +174,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
      * Tells us whether a certain client id was blacklisted.
      * Can later be expanded by persistent blacklist file.
      * TODO Make persistent
+     *
      * @param clientID The id for which we want to know the blacklisting state
      * @return A boolean.
      */
@@ -173,12 +186,13 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
      * Blacklists the client id.
      * Can be expanded by persistent blacklist file.
      * TODO Make persistent
+     *
      * @param clientToBlock The id to block.
      */
     public void blacklistClient(String clientToBlock) {
         blacklistedClients.add(clientToBlock);
         //TODO : Disconnect Client
-        Log.log("Blacklisted Client " +clientToBlock, LogLevel.WARNING);
+        Log.log("Blacklisted Client " + clientToBlock, LogLevel.WARNING);
     }
 
     /**
@@ -186,7 +200,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
      *
      * @param request
      */
-    private void stopRequest(IClientRequest request){
+    private void stopRequest(IClientRequest request) {
         //TODO : Fill...
         EventManager.getInstance().publishEvent(new RequestStoppedEvent(request));
     }

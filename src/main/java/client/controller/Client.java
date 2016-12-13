@@ -4,8 +4,10 @@ import com.rabbitmq.client.*;
 import client.model.ClientFileModel;
 import global.controller.IConnectionPoint;
 import global.logging.Log;
+import global.logging.LogLevel;
 import global.model.DefaultClientRequest;
 import org.apache.commons.lang3.SerializationUtils;
+import com.rabbitmq.client.AMQP.BasicProperties;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -22,6 +24,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     private Connection connection;
     private Channel channel;
+    private final BasicProperties replyProps;
 
     private final BibTeXEntryFormatter bibTeXEntryFormatter = BibTeXEntryFormatter.getINSTANCE();
     private ClientFileModel clientFileModel;
@@ -40,6 +43,11 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         this.clientID = clientID;
         this.callbackQueueName = clientID;
         this.clientFileModel = new ClientFileModel(this.clientID);
+        this.replyProps = new BasicProperties
+                .Builder()
+                .correlationId(clientID)
+                .replyTo(callbackQueueName)
+                .build();
         initConnectionPoint();
     }
 
@@ -48,7 +56,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         try {
             consumeIncomingQueues();
         } catch (IOException e) {
-            Log.log("Failure to run channel.basicConsume() in Client.run", e);
+            Log.log("failed to consume incoming queues in client.run()", e);
         }
     }
 
@@ -58,8 +66,8 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     }
 
     public void sendClientRequest() throws IOException {
-        channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, null, SerializationUtils.serialize(this.createClientRequest()));
-        Log.log("Client with ID: " + this.clientID + " sent a ClientRequest.");
+        channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, replyProps, SerializationUtils.serialize(this.createClientRequest()));
+        Log.log("Client with ID: " + this.clientID + " sent a ClientRequest.", LogLevel.INFO);
     }
 
     @Override
@@ -89,7 +97,10 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName);
+        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName, LogLevel.INFO);
+
+//     == null, if is reply
+//        System.out.println("replyTo: " + basicProperties.getReplyTo());
     }
 
     @Override
