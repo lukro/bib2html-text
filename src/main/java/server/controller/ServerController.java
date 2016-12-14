@@ -80,7 +80,7 @@ public class ServerController implements EventListener {
 
         logLevelChoiceBox.getItems().addAll(LogLevel.values());
         //TODO : Uncomment. Only Commented for incompatibility with local VM
-        //logLevelChoiceBox.onActionProperty().set(eventhandler -> Log.alterMinimumRequiredLevel(logLevelChoiceBox.getValue()));
+        logLevelChoiceBox.onActionProperty().set(eventhandler -> Log.alterMinimumRequiredLevel(logLevelChoiceBox.getValue()));
 
         try {
             serverAdressLabel.setText(Inet4Address.getLocalHost().getHostAddress());

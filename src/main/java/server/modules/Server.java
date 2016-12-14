@@ -2,6 +2,7 @@ package server.modules;
 
 import com.rabbitmq.client.*;
 import global.controller.IConnectionPoint;
+import global.identifiers.PartialResultIdentifier;
 import global.logging.Log;
 import global.logging.LogLevel;
 import global.model.*;
@@ -53,6 +54,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         this.channel = connection.createChannel();
         MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
         EventManager.getInstance().registerListener(this);
+        PartialResultCollector.getInstance();
+        MicroServiceManager.getInstance();
         this.replyProps = new BasicProperties
                 .Builder()
                 .correlationId(serverID)
@@ -79,9 +82,14 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     @Override
     public void notify(Event toNotify) {
         if (toNotify instanceof FinishedCollectingResultEvent) {
-            DefaultResult eventResult = ((FinishedCollectingResultEvent) toNotify).getResult();
-            String clientID = eventResult.getClientID();
-            //TODO : Publish to client
+            String clientID = ((FinishedCollectingResultEvent)toNotify).getResult().getClientID();
+            CallbackInformation clientCBI = clientIDtoCallbackInformation.get(clientID);
+            try {
+                channel.basicPublish("", clientCBI.basicProperties.getReplyTo(), clientCBI.replyProperties, SerializationUtils.serialize(((FinishedCollectingResultEvent) toNotify).getResult()));
+            } catch (IOException e) {
+                Log.log("COULD NOT RETURN RESULT TO CLIENT", LogLevel.SEVERE);
+                Log.log("",e);
+            }
         } else if (toNotify instanceof StopRequestEvent) {
             IClientRequest toStop = ((StopRequestEvent) toNotify).getRequest();
             stopRequest(toStop);
@@ -96,7 +104,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
 
     @Override
     public Set<Class<? extends Event>> getEvents() {
-        Set<Class<? extends Event>> evts = new HashSet<>();
+        Set<Class<? extends Event>> evts = new HashSet<>(); //TODO ADD EVENTS
         evts.add(FinishedCollectingResultEvent.class);
         return evts;
     }
@@ -129,6 +137,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
         Object deliveredObject = SerializationUtils.deserialize(bytes);
+        Log.log("Received a message...", LogLevel.INFO);
         if (deliveredObject instanceof IClientRequest) {
             handleDeliveredClientRequest((IClientRequest) deliveredObject, basicProperties);
         } else if (deliveredObject instanceof IPartialResult) {

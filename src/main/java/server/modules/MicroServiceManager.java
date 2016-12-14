@@ -2,11 +2,14 @@ package server.modules;
 
 import com.rabbitmq.client.Channel;
 import global.logging.Log;
+import global.logging.LogLevel;
 import microservice.MicroService;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -23,7 +26,7 @@ public class MicroServiceManager {
     //The max. # of tasks per service.
     private final int MAXIMUM_UTILIZATION = 50;
     //Key : ID | Value : IP
-    private HashMap<String, String> microServices;
+    private HashMap<String, String> microServices = new HashMap<>();
 
     private final Channel channel;
     private final String TASK_QUEUE_NAME;
@@ -31,6 +34,23 @@ public class MicroServiceManager {
     private MicroServiceManager(Channel channel, String taskQueueName) {
         this.channel = channel;
         this.TASK_QUEUE_NAME = taskQueueName;
+
+        //TODO : remove after fixing /0 exception in Util WHILE
+        startMicroService();
+
+        TimerTask utilizationCheckerTask = new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    checkUtilization();
+                    Log.log("Utilization Checker Task did another round...", LogLevel.LOW);
+                } catch (IOException e) {
+                    Log.log("Utilization Checker ran into Problems",e);
+                }
+            }
+        };
+        Timer timer = new Timer();
+        timer.schedule(utilizationCheckerTask, 0, 1000);
     }
 
 
@@ -134,6 +154,7 @@ public class MicroServiceManager {
 
         int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
         int returnValue = 0;
+
         while(currTasks/microServices.size() > MAXIMUM_UTILIZATION) {
             startMicroService();
             returnValue++;

@@ -2,8 +2,13 @@ package microservice;
 
 import com.rabbitmq.client.*;
 import global.controller.IConnectionPoint;
+import global.identifiers.PartialResultIdentifier;
 import global.model.DefaultEntry;
 import global.model.DefaultPartialResult;
+import global.model.IEntry;
+import global.model.IPartialResult;
+import org.apache.commons.lang3.SerializationUtils;
+import server.modules.Server;
 
 import java.io.File;
 import java.io.IOException;
@@ -108,7 +113,19 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
         System.out.println("MicroService received message");
+        doHardWorkEfficiently(basicProperties, bytes);
         envelope.getDeliveryTag();
+    }
+
+    private void doHardWorkEfficiently(AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
+        IEntry entryReceived = SerializationUtils.deserialize(bytes);
+        String dummyContent = entryReceived.getContent();
+        AMQP.BasicProperties replyProps = new AMQP.BasicProperties
+                .Builder()
+                .correlationId(basicProperties.getCorrelationId())
+                .build();
+        IPartialResult dummyResult = new DefaultPartialResult(dummyContent, new PartialResultIdentifier(entryReceived.getEntryIdentifier(), 1,1,false));
+        channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(dummyResult));
     }
 
     @Override
