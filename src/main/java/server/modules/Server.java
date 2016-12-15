@@ -1,16 +1,16 @@
 package server.modules;
 
 import com.rabbitmq.client.*;
+import com.rabbitmq.client.AMQP.BasicProperties;
 import global.controller.IConnectionPoint;
-import global.identifiers.PartialResultIdentifier;
 import global.logging.Log;
 import global.logging.LogLevel;
-import global.model.*;
+import global.model.IClientRequest;
+import global.model.IEntry;
+import global.model.IPartialResult;
 import org.apache.commons.lang3.SerializationUtils;
-import com.rabbitmq.client.AMQP.BasicProperties;
 import server.events.*;
 import server.events.EventListener;
-import sun.security.x509.IPAddressName;
 
 import java.io.IOException;
 import java.util.*;
@@ -52,6 +52,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         this.callbackQueueName = serverID;
         this.connection = factory.newConnection();
         this.channel = connection.createChannel();
+        initConnectionPoint();
         MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
         EventManager.getInstance().registerListener(this);
         PartialResultCollector.getInstance();
@@ -61,7 +62,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
                 .correlationId(serverID)
                 .replyTo(callbackQueueName)
                 .build();
-        initConnectionPoint();
     }
 
     @Override
@@ -241,7 +241,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     /**
      * Stops a running Request.
      *
-     * @param request
+     * @param request the request object to be stopped
      */
     private void stopRequest(IClientRequest request) {
         //TODO : Fill...
@@ -277,6 +277,19 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     @Override
     public String getID() {
         return serverID;
+    }
+
+    /**
+     * clears client request queue and task queue
+     */
+    private void clearQueues() {
+        try {
+            channel.queuePurge(TASK_QUEUE_NAME);
+            channel.queuePurge(CLIENT_REQUEST_QUEUE_NAME);
+            Log.log("cleared client_request_queue and task_queue");
+        } catch (IOException e) {
+            Log.log("failed to clear queues", LogLevel.ERROR);
+        }
     }
 
 }

@@ -6,10 +6,7 @@ import global.logging.LogLevel;
 import microservice.MicroService;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -34,9 +31,6 @@ public class MicroServiceManager {
     private MicroServiceManager(Channel channel, String taskQueueName) {
         this.channel = channel;
         this.TASK_QUEUE_NAME = taskQueueName;
-
-        //TODO : remove after fixing /0 exception in Util WHILE
-        startMicroService();
 
         TimerTask utilizationCheckerTask = new TimerTask() {
             @Override
@@ -77,7 +71,7 @@ public class MicroServiceManager {
      *
      * @return Key of a new Service.
      */
-    public String startMicroService() {
+    private String startMicroService() {
         //TODO : Fill... Add Port to newService.getHostIP()
         try {
             Log.log("Starting microservice on server");
@@ -100,8 +94,11 @@ public class MicroServiceManager {
      *
      * @param idToStop The ID of the MiroService we want to stop.
      */
+    @Deprecated
     private void sendStopMessage(String idToStop){
         //TODO :Publish to that MicroService's Queue a stop package.
+        //DEPRECATED: die Services haben keine eigenen queues mehr, wir können keine gezielten stop-pakete senden.
+        //TODO: methode erneuern/ggf. entfernen
     }
 
 
@@ -113,16 +110,21 @@ public class MicroServiceManager {
      */
     public boolean stopMicroService(String microserviceID) {
         Objects.requireNonNull(microserviceID);
-
-        if(disconnectMicroService(microserviceID)){
-            sendStopMessage(microserviceID);
-            //TODO : Fill...
+        //TODO: microServiceID != consumerTag? basicCancel braucht den von rmq bestimmten consumerTag!
+        try {
+            channel.basicCancel(microserviceID);
+            Log.log("Sending Cancel to service: " + microserviceID);
             return true;
-        }
-        else {
-            Log.log("Failed to disconnect MicroService ");
+        } catch (IOException e) {
+            Log.log("failed to send cancel request", e);
             return false;
         }
+    }
+
+    public boolean stopMicroService() {
+
+        //TODO: logik fürs stoppen. interne methode im MS aufrufen oder stop-paket senden?
+        return true;
     }
 
     /**
@@ -155,6 +157,9 @@ public class MicroServiceManager {
         int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
         int returnValue = 0;
 
+        if (microServices.isEmpty()) {
+            startMicroService();
+        }
         while(currTasks/microServices.size() > MAXIMUM_UTILIZATION) {
             startMicroService();
             returnValue++;
