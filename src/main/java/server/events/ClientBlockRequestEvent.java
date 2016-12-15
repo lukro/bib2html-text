@@ -2,7 +2,7 @@ package server.events;
 
 /**
  * @author Maximilian Schirm
- * @created 10.12.2016
+ *         created 10.12.2016
  */
 public class ClientBlockRequestEvent implements Event {
 

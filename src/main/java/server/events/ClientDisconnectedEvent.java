@@ -6,7 +6,7 @@ import java.util.Objects;
 
 /**
  * @author Maximilian Schirm
- * @created 09.12.2016
+ *         created 09.12.2016
  */
 public class ClientDisconnectedEvent implements Event {
 

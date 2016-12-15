@@ -80,7 +80,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             throw new IllegalArgumentException("A file with that name might not exist!");
 
         String command = "pandoc --filter=pandoc-citeproc --csl=" + cslName + ".csl --standalone " + wrapperName + ".md -o " + cslName + ".HTML";
-        channel.basicAck(currentDeliveryTag,false);
+        channel.basicAck(currentDeliveryTag, false);
         return Runtime.getRuntime().exec(command, null, directory).waitFor();
 
     }
@@ -124,7 +124,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
                 .Builder()
                 .correlationId(basicProperties.getCorrelationId())
                 .build();
-        IPartialResult dummyResult = new DefaultPartialResult(dummyContent, new PartialResultIdentifier(entryReceived.getEntryIdentifier(), 1,1,false));
+        IPartialResult dummyResult = new DefaultPartialResult(dummyContent, new PartialResultIdentifier(entryReceived.getEntryIdentifier(), 1, 1, false));
         channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(dummyResult));
     }
 
@@ -133,7 +133,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         try {
             consumeIncomingQueues();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.log("failed to consume incoming queues in microservice.run()", e);
         }
     }
 
