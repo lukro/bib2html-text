@@ -1,16 +1,16 @@
 package server.modules;
 
 import com.rabbitmq.client.*;
+import com.rabbitmq.client.AMQP.BasicProperties;
 import global.controller.IConnectionPoint;
-import global.identifiers.PartialResultIdentifier;
 import global.logging.Log;
 import global.logging.LogLevel;
-import global.model.*;
+import global.model.IClientRequest;
+import global.model.IEntry;
+import global.model.IPartialResult;
 import org.apache.commons.lang3.SerializationUtils;
-import com.rabbitmq.client.AMQP.BasicProperties;
 import server.events.*;
 import server.events.EventListener;
-import sun.security.x509.IPAddressName;
 
 import java.io.IOException;
 import java.util.*;
@@ -23,17 +23,15 @@ import java.util.concurrent.TimeoutException;
 
 public class Server implements IConnectionPoint, Runnable, Consumer, EventListener {
 
+    private final static String CLIENT_REQUEST_QUEUE_NAME = "clientRequestQueue";
+    private final static String TASK_QUEUE_NAME = "taskQueue";
+
     private final String serverID, hostIP, callbackQueueName;
-    private final String CLIENT_REQUEST_QUEUE_NAME = "clientRequestQueue";
-    private final String TASK_QUEUE_NAME = "taskQueue";
-
-//    private final URI address;
-
     private final Connection connection;
     private final Channel channel;
     private final BasicProperties replyProps;
-
     private HashMap<String, CallbackInformation> clientIDtoCallbackInformation = new HashMap<>();
+
 
     public Server() throws IOException, TimeoutException {
         this("localhost");
@@ -44,23 +42,28 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     }
 
     public Server(String hostIP, String serverID) throws IOException, TimeoutException {
+
+        //Create connection and channel with new ConnectionFactory
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(hostIP);
-        this.hostIP = hostIP;
-//        this.address = URI.create(getHostIP());
-        this.serverID = serverID;
-        this.callbackQueueName = serverID;
         this.connection = factory.newConnection();
         this.channel = connection.createChannel();
-        MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
-        EventManager.getInstance().registerListener(this);
-        PartialResultCollector.getInstance();
-        MicroServiceManager.getInstance();
+
+        //Assign final fields
+        this.hostIP = hostIP;
+        this.serverID = serverID;
+        this.callbackQueueName = serverID;
         this.replyProps = new BasicProperties
                 .Builder()
                 .correlationId(serverID)
                 .replyTo(callbackQueueName)
                 .build();
+
+        //Initialize modules
+        MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
+        //MicroServiceManager.getInstance(); TODO Uncomment if issues appear
+        PartialResultCollector.getInstance();
+        EventManager.getInstance().registerListener(this);
         initConnectionPoint();
     }
 
@@ -82,17 +85,9 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     @Override
     public void notify(Event toNotify) {
         if (toNotify instanceof FinishedCollectingResultEvent) {
-            String clientID = ((FinishedCollectingResultEvent)toNotify).getResult().getClientID();
-            CallbackInformation clientCBI = clientIDtoCallbackInformation.get(clientID);
-            try {
-                channel.basicPublish("", clientCBI.basicProperties.getReplyTo(), clientCBI.replyProperties, SerializationUtils.serialize(((FinishedCollectingResultEvent) toNotify).getResult()));
-            } catch (IOException e) {
-                Log.log("COULD NOT RETURN RESULT TO CLIENT", LogLevel.SEVERE);
-                Log.log("",e);
-            }
-        } else if (toNotify instanceof StopRequestEvent) {
-            IClientRequest toStop = ((StopRequestEvent) toNotify).getRequest();
-            stopRequest(toStop);
+            handleFinishedCollectingResultEvent((FinishedCollectingResultEvent) toNotify);
+        } else if (toNotify instanceof RequestStoppedEvent) {
+            handleRequestStoppedEvent((RequestStoppedEvent) toNotify);
         } else if (toNotify instanceof ClientBlockRequestEvent) {
             String toBlock = ((ClientBlockRequestEvent) toNotify).getClientID();
             blacklistClient(toBlock);
@@ -102,36 +97,48 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         }
     }
 
+    /**
+     * The action to take when a RequestStoppedEvent is registered.
+     * <p>
+     * (Extracted as it's own method for readability improvement)
+     *
+     * @param toNotify The event that was registered.
+     */
+    private void handleRequestStoppedEvent(RequestStoppedEvent toNotify) {
+        String toStopClientID = toNotify.getStoppedRequestClientID();
+        CallbackInformation clientCBI = clientIDtoCallbackInformation.get(toStopClientID);
+        try {
+            channel.basicPublish("", clientCBI.basicProperties.getReplyTo(), clientCBI.replyProperties, SerializationUtils.serialize("Server Admin forcefully stopped your Request."));
+        } catch (IOException e) {
+            Log.log("COULD NOT RETURN RESULT TO CLIENT", LogLevel.SEVERE);
+            Log.log("", e);
+        }
+    }
+
+    /**
+     * The action to take when a FinishedCollectingResultEvent is registered.
+     * <p>
+     * (Extracted as it's own method for readability improvement)
+     *
+     * @param toNotify The event that was registered.
+     */
+    private void handleFinishedCollectingResultEvent(FinishedCollectingResultEvent toNotify) {
+        String clientID = toNotify.getResult().getClientID();
+        CallbackInformation clientCBI = clientIDtoCallbackInformation.get(clientID);
+        try {
+            channel.basicPublish("", clientCBI.basicProperties.getReplyTo(), clientCBI.replyProperties, SerializationUtils.serialize(toNotify.getResult()));
+        } catch (IOException e) {
+            Log.log("COULD NOT RETURN RESULT TO CLIENT", LogLevel.SEVERE);
+            Log.log("", e);
+        }
+    }
+
+
     @Override
     public Set<Class<? extends Event>> getEvents() {
-        Set<Class<? extends Event>> evts = new HashSet<>(); //TODO ADD EVENTS
-        evts.add(FinishedCollectingResultEvent.class);
+        Set<Class<? extends Event>> evts = new HashSet<>();
+        evts.addAll(Arrays.asList(FinishedCollectingResultEvent.class, RequestStoppedEvent.class, ClientBlockRequestEvent.class, MicroserviceDisconnectionRequestEvent.class));
         return evts;
-    }
-
-    @Override
-    public void handleConsumeOk(String s) {
-
-    }
-
-    @Override
-    public void handleCancelOk(String s) {
-
-    }
-
-    @Override
-    public void handleCancel(String s) throws IOException {
-
-    }
-
-    @Override
-    public void handleShutdownSignal(String s, ShutdownSignalException e) {
-
-    }
-
-    @Override
-    public void handleRecoverOk(String s) {
-
     }
 
     @Override
@@ -146,8 +153,15 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         }
     }
 
+    /**
+     * Conducts all necessary operations for handling a received ClientRequest.
+     * (Checks for blacklisting of Client and does other preprocessing checks, then sends the IClientRequest to processing).
+     *
+     * @param deliveredClientRequest The received request.
+     * @param basicProperties The basic properties of the received package. Used for replying to bad requests.
+     * @throws IOException Thrown in case an issue with the callback queue occurs.
+     */
     private void handleDeliveredClientRequest(IClientRequest deliveredClientRequest, BasicProperties basicProperties) throws IOException {
-
         //Generate Callback info
         String requestID = deliveredClientRequest.getClientID();
         BasicProperties replyProps = new BasicProperties
@@ -172,12 +186,14 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         }
     }
 
-    public class CallbackInformation {
-
+    /**
+     * Class for clean storing of a tuple of BasicProperties.
+     */
+    private class CallbackInformation {
         BasicProperties basicProperties;
         BasicProperties replyProperties;
 
-        public CallbackInformation(BasicProperties basicProperties, BasicProperties replyProperties) {
+        private CallbackInformation(BasicProperties basicProperties, BasicProperties replyProperties) {
             this.basicProperties = basicProperties;
             this.replyProperties = replyProperties;
         }
@@ -187,10 +203,10 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
      * Processes the received Request.
      *
      * @param deliveredClientRequest A IClientRequest with at least one Entry
-     * @throws IOException
+     * @throws IOException Thrown in case the publishing to the channel fails.
      */
     private void processDeliveredClientRequest(IClientRequest deliveredClientRequest) throws IOException {
-        IEntry firstEntry = deliveredClientRequest.getEntries().stream().findFirst().get();
+        IEntry firstEntry = deliveredClientRequest.getEntries().get(0);
 
         int countOfEntries = deliveredClientRequest.getEntries().size();
         int countOfCSL = firstEntry.getCslFiles().size();
@@ -233,31 +249,21 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
      *
      * @param clientIDToBlock The id to block.
      */
-    public void blacklistClient(String clientIDToBlock) {
+    private void blacklistClient(String clientIDToBlock) {
         blacklistedClients.add(clientIDToBlock);
         Log.log("Blacklisted Client " + clientIDToBlock, LogLevel.WARNING);
-    }
-
-    /**
-     * Stops a running Request.
-     *
-     * @param request
-     */
-    private void stopRequest(IClientRequest request) {
-        //TODO : Fill...
-        EventManager.getInstance().publishEvent(new RequestStoppedEvent(request));
-    }
-
-    @Override
-    public void closeConnection() throws IOException, TimeoutException {
-        channel.close();
-        connection.close();
     }
 
     @Override
     public void initConnectionPoint() throws IOException {
         declareQueues();
         run();
+    }
+
+    @Override
+    public void closeConnection() throws IOException, TimeoutException {
+        channel.close();
+        connection.close();
     }
 
     @Override
@@ -269,6 +275,9 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         channel.queueDeclare(callbackQueueName, false, false, false, null);
     }
 
+
+    //Empty (i.e. not yet used) methods from interface.
+
     @Override
     public String getHostIP() {
         return hostIP;
@@ -277,6 +286,30 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     @Override
     public String getID() {
         return serverID;
+    }
+
+    @Override
+    public void handleConsumeOk(String s) {
+    }
+
+    @Override
+    public void handleCancelOk(String s) {
+
+    }
+
+    @Override
+    public void handleCancel(String s) throws IOException {
+
+    }
+
+    @Override
+    public void handleShutdownSignal(String s, ShutdownSignalException e) {
+
+    }
+
+    @Override
+    public void handleRecoverOk(String s) {
+
     }
 
 }

@@ -6,7 +6,6 @@ import global.model.DefaultResult;
 import global.model.IPartialResult;
 import server.events.*;
 import server.events.EventListener;
-import global.model.DefaultPartialResult;
 
 import java.util.*;
 
@@ -19,8 +18,8 @@ import java.util.*;
 public class PartialResultCollector implements EventListener {
 
     private static final PartialResultCollector INSTANCE = new PartialResultCollector();
-    private HashMap<String, Collection<IPartialResult>> mappingClientIDtoFinishedPartialResults;
-    private HashMap<String, Integer> mappingClientIDtoExpectedResultsSize;
+    private final HashMap<String, Collection<IPartialResult>> mappingClientIDtoFinishedPartialResults;
+    private final HashMap<String, Integer> mappingClientIDtoExpectedResultsSize;
 
     private PartialResultCollector() {
         EventManager.getInstance().registerListener(this);
@@ -39,17 +38,17 @@ public class PartialResultCollector implements EventListener {
         timer.schedule(updateLoop, 0, 2000);
     }
 
-    public static PartialResultCollector getInstance() {
+    protected static PartialResultCollector getInstance() {
         return INSTANCE;
     }
 
     @Override
     public void notify(Event toNotify) {
         if (toNotify instanceof ReceivedPartialResultEvent) {
-            IPartialResult partialResult = ((ReceivedPartialResultEvent)toNotify).getPartialResult();
+            IPartialResult partialResult = ((ReceivedPartialResultEvent) toNotify).getPartialResult();
             String id = partialResult.getIdentifier().getClientID();
             Collection<IPartialResult> presentResults = mappingClientIDtoFinishedPartialResults.get(id);
-            if(presentResults == null){
+            if (presentResults == null) {
                 presentResults = new HashSet<>();
             }
             presentResults.add(partialResult);

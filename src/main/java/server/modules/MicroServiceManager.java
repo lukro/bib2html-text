@@ -19,7 +19,6 @@ import java.util.concurrent.TimeoutException;
  *         Singleton class with greedy init
  *         Creates and stops MicroServices for a Server
  */
-
 public class MicroServiceManager {
 
     private static MicroServiceManager INSTANCE;
@@ -45,7 +44,7 @@ public class MicroServiceManager {
                     checkUtilization();
                     Log.log("Utilization Checker Task did another round...", LogLevel.LOW);
                 } catch (IOException e) {
-                    Log.log("Utilization Checker ran into Problems",e);
+                    Log.log("Utilization Checker ran into Problems", e);
                 }
             }
         };
@@ -57,8 +56,8 @@ public class MicroServiceManager {
     /**
      * Has to be called for instance to not be null.
      */
-    public static MicroServiceManager initialize(Channel channel, String taskQueueName) {
-        if(INSTANCE == null)
+    protected static MicroServiceManager initialize(Channel channel, String taskQueueName) {
+        if (INSTANCE == null)
             INSTANCE = new MicroServiceManager(channel, taskQueueName);
         return INSTANCE;
     }
@@ -66,8 +65,9 @@ public class MicroServiceManager {
     /**
      * Returns the INSTANCE of the MicroServiceManager
      */
-    public static MicroServiceManager getInstance() {
-        if (INSTANCE == null) Log.log("MicroServiceManager was not initialized properly", new InstantiationException("initialize() was not called before getInstance()"));
+    protected static MicroServiceManager getInstance() {
+        if (INSTANCE == null)
+            Log.log("MicroServiceManager was not initialized properly", new InstantiationException("initialize() was not called before getInstance()"));
         return INSTANCE;
     }
 
@@ -77,7 +77,7 @@ public class MicroServiceManager {
      *
      * @return Key of a new Service.
      */
-    public String startMicroService() {
+    private String startMicroService() {
         //TODO : Fill... Add Port to newService.getHostIP()
         try {
             Log.log("Starting microservice on server");
@@ -87,23 +87,10 @@ public class MicroServiceManager {
             Log.log("Successfully started microservice");
             return newService.getID();
         } catch (IOException | TimeoutException e) {
-            Log.log("Failed to create a new MicroService, returned null",e);
+            Log.log("Failed to create a new MicroService, returned null", e);
             return null;
         }
     }
-
-    /**
-     * Sends a STOP Message to the MicroService.
-     *
-     * DO NOT confuse this method with stopMicroService() - outstanding tasks will not be redistributed.
-     * USE THIS for the act of sending the stop message only.
-     *
-     * @param idToStop The ID of the MiroService we want to stop.
-     */
-    private void sendStopMessage(String idToStop){
-        //TODO :Publish to that MicroService's Queue a stop package.
-    }
-
 
     /**
      * Disconnects and then stops the MicroService.
@@ -111,15 +98,13 @@ public class MicroServiceManager {
      * @param microserviceID The ID of the Service to stop.
      * @return Whether the stopping was successful.
      */
-    public boolean stopMicroService(String microserviceID) {
+    protected boolean stopMicroService(String microserviceID) {
         Objects.requireNonNull(microserviceID);
 
-        if(disconnectMicroService(microserviceID)){
-            sendStopMessage(microserviceID);
+        if (disconnectMicroService(microserviceID)) {
             //TODO : Fill...
             return true;
-        }
-        else {
+        } else {
             Log.log("Failed to disconnect MicroService ");
             return false;
         }
@@ -128,14 +113,14 @@ public class MicroServiceManager {
     /**
      * Disconnects the MicroService with the ID.
      * A disconnection means that the remaining Tasks for that MicroService will be redistributed.
-     *
-     *  DO NOT Confuse this Method with stopMicroService(), as it will not issue a STOP Command to that Service
+     * <p>
+     * DO NOT Confuse this Method with stopMicroService(), as it will not issue a STOP Command to that Service
      * USE THIS Method for disconnecting from Services before stopping them or when communicating with externals.
      *
      * @param idToRemove The ID of the MicroService to disconnect.
      * @return A boolean whether the disconnection was successful.
      */
-    private boolean disconnectMicroService(String idToRemove){
+    private boolean disconnectMicroService(String idToRemove) {
         Log.log("Disconnecting MicroService " + idToRemove + "...");
         String oldValue = microServices.get(idToRemove);
         //TODO : Fill in the disconnection message.
@@ -147,15 +132,14 @@ public class MicroServiceManager {
      * This method will start new microservices, until the number of tasks divided by the number of running services
      * is below MAXIMUM_UTILIZATION (test-value!!)
      *
-     * @return number of added services.
-     * @return 0, if no new services where added.
+     * @return number of added services. 0, if no new services where added.
      */
-    public int checkUtilization() throws IOException {
+    private int checkUtilization() throws IOException {
 
         int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
         int returnValue = 0;
 
-        while(currTasks/microServices.size() > MAXIMUM_UTILIZATION) {
+        while (currTasks / microServices.size() > MAXIMUM_UTILIZATION) {
             startMicroService();
             returnValue++;
         }

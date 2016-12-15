@@ -1,21 +1,18 @@
 package server.events;
 
-import global.model.IClientRequest;
-
 /**
- * @author Maximilian Schirm (denkbares GmbH)
+ * @author Maximilian Schirm
  * @created 10.12.2016
  */
-
 public class RequestStoppedEvent implements Event {
 
-    private final IClientRequest stoppedRequest;
+    private final String clientIDofStoppedRequest;
 
-    public RequestStoppedEvent(IClientRequest request) {
-        stoppedRequest = request;
+    public RequestStoppedEvent(String requestClientID) {
+        clientIDofStoppedRequest = requestClientID;
     }
 
-    public IClientRequest getStoppedRequest() {
-        return stoppedRequest;
+    public String getStoppedRequestClientID() {
+        return clientIDofStoppedRequest;
     }
 }

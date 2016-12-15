@@ -3,8 +3,6 @@ package server.controller;
 import client.controller.Client;
 import global.logging.Log;
 import global.logging.LogLevel;
-import global.model.IClientRequest;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
@@ -30,11 +28,11 @@ import java.util.concurrent.TimeoutException;
 
 public class ServerController implements EventListener {
 
-    public class Console extends OutputStream {
+    private class Console extends OutputStream {
 
         TextArea textArea;
 
-        public Console(TextArea textArea) {
+        private Console(TextArea textArea) {
             this.textArea = textArea;
         }
 
@@ -63,7 +61,7 @@ public class ServerController implements EventListener {
     ListView<MicroService> microServiceListView;
 
     @FXML
-    ListView<IClientRequest> clientRequestListView;
+    ListView<String> clientRequestListView;
 
     public ServerController() {
         try {
@@ -75,9 +73,11 @@ public class ServerController implements EventListener {
 
     @FXML
     public void initialize() {
+        //Initialize the Console and the Log
         consoleStream = new Console(serverConsoleTextArea);
         Log.alterOutputStream(consoleStream);
 
+        //Fill UI elements
         logLevelChoiceBox.getItems().addAll(LogLevel.values());
         //TODO : Uncomment. Only Commented for incompatibility with local VM
         logLevelChoiceBox.onActionProperty().set(eventhandler -> Log.alterMinimumRequiredLevel(logLevelChoiceBox.getValue()));
@@ -99,29 +99,29 @@ public class ServerController implements EventListener {
             clientListView.getItems().add(toAdd);
         } else if (toNotify instanceof ClientDisconnectedEvent) {
             Client toRemove = ((ClientDisconnectedEvent) toNotify).getDisconnectedClient();
-            Log.log("Disconnected Client with ID " + toRemove.getID(), LogLevel.INFO);
+            Log.log("Disconnected Client with ID " + toRemove.getID(), LogLevel.WARNING);
             clientListView.getItems().remove(toRemove);
         } else if (toNotify instanceof MicroServiceConnectedEvent) {
             MicroService toAdd = ((MicroServiceConnectedEvent) toNotify).getConnectedSvc();
-            Log.log("Registered Microservice with ID " + toAdd.getID(), LogLevel.INFO);
+            Log.log("Registered Microservice with ID " + toAdd.getID(), LogLevel.WARNING);
             microServiceListView.getItems().add(toAdd);
         } else if (toNotify instanceof MicroServiceDisconnectedEvent) {
             MicroService toRemove = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvc();
-            Log.log("Unregistered Microservice with ID " + toRemove.getID(), LogLevel.INFO);
+            Log.log("Unregistered Microservice with ID " + toRemove.getID(), LogLevel.WARNING);
             microServiceListView.getItems().remove(toRemove);
         } else if (toNotify instanceof RequestStoppedEvent) {
-            IClientRequest toRemove = ((StopRequestEvent) toNotify).getRequest();
-            Log.log("Removed Request with ID " + toRemove.getClientID());
-            clientRequestListView.getItems().remove(toRemove);
+            String toRemoveClientID = ((RequestStoppedEvent) toNotify).getStoppedRequestClientID();
+            Log.log("Removed Request with ID " + toRemoveClientID, LogLevel.WARNING);
+            clientRequestListView.getItems().remove(toRemoveClientID);
         }
     }
 
     @Override
     public Set<Class<? extends Event>> getEvents() {
-        return new HashSet(Arrays.asList(ClientRegisteredEvent.class, ClientDisconnectedEvent.class, MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class));
+        return new HashSet(Arrays.asList(ClientRegisteredEvent.class, ClientDisconnectedEvent.class, MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, RequestStoppedEvent.class));
     }
 
-    public void removeMicroserviceButtonPressed(ActionEvent actionEvent) {
+    public void removeMicroserviceButtonPressed() {
         if (microServiceListView.getSelectionModel().getSelectedItem() != null) {
             MicroService serviceToRemove = microServiceListView.getSelectionModel().getSelectedItem();
             Log.log("Disconnecting MicroSerivce " + serviceToRemove.getID());
@@ -129,7 +129,7 @@ public class ServerController implements EventListener {
         }
     }
 
-    public void removeClientButtonPressed(ActionEvent actionEvent) {
+    public void removeClientButtonPressed() {
         if (clientListView.getSelectionModel().getSelectedItem() != null) {
             String clientToBlock = clientListView.getSelectionModel().getSelectedItem().getID();
             Log.log("Blocking Client " + clientToBlock);
@@ -137,15 +137,11 @@ public class ServerController implements EventListener {
         }
     }
 
-    public void cancelRequestButtonPressed(ActionEvent actionEvent) {
+    public void cancelRequestButtonPressed() {
         if (clientRequestListView.getSelectionModel().getSelectedItem() != null) {
-            IClientRequest toStop = clientRequestListView.getSelectionModel().getSelectedItem();
-            Log.log("Cancelling Request " + toStop.getClientID());
-            EventManager.getInstance().publishEvent(new StopRequestEvent(toStop));
+            String toStopClientID = clientRequestListView.getSelectionModel().getSelectedItem();
+            Log.log("Cancelling Request " + toStopClientID);
+            EventManager.getInstance().publishEvent(new RequestStoppedEvent(toStopClientID));
         }
-    }
-
-    public OutputStream getConsolePrintStream() {
-        return consoleStream;
     }
 }

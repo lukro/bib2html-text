@@ -6,7 +6,6 @@ import global.model.DefaultResult;
  * @author Maximilian Schirm
  *         created 05.12.2016
  */
-
 public class FinishedCollectingResultEvent implements Event {
 
     private final DefaultResult result;
