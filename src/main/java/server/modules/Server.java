@@ -59,11 +59,11 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
                 .build();
 
         //Initialize modules
+        initConnectionPoint();
         MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
-        //MicroServiceManager.getInstance(); TODO Uncomment if issues appear
+//        MicroServiceManager.getInstance(); TODO Uncomment if issues appear
         PartialResultCollector.getInstance();
         EventManager.getInstance().registerListener(this);
-        initConnectionPoint();
     }
 
     @Override
@@ -157,7 +157,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
      * (Checks for blacklisting of Client and does other preprocessing checks, then sends the IClientRequest to processing).
      *
      * @param deliveredClientRequest The received request.
-     * @param basicProperties The basic properties of the received package. Used for replying to bad requests.
+     * @param basicProperties        The basic properties of the received package. Used for replying to bad requests.
      * @throws IOException Thrown in case an issue with the callback queue occurs.
      */
     private void handleDeliveredClientRequest(IClientRequest deliveredClientRequest, BasicProperties basicProperties) throws IOException {
