@@ -72,8 +72,11 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     private long timeStart = 0;
 
     void sendClientRequest() throws IOException {
+        //time measuring starts before request creation
+        //timeStart = System.currentTimeMillis();
         channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, replyProps, SerializationUtils.serialize(this.createClientRequest()));
-        timeStart = System.nanoTime();
+        //time measuring starts after request creation
+        timeStart = System.currentTimeMillis();
         Log.log("Client with ID: " + this.clientID + " sent a ClientRequest. (@" + timeStart + ")", LogLevel.INFO);
     }
 
@@ -104,9 +107,9 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        long timeEnd = System.nanoTime();
+        long timeEnd = System.currentTimeMillis();
         Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName + "(@" + timeEnd + ")", LogLevel.LOW);
-        Log.log("TIME TAKEN : " + (timeEnd - timeStart));
+        Log.log("TIME TAKEN : " + ((timeEnd - timeStart) / 1000.0) + " sec");
         Object deliveredObject = SerializationUtils.deserialize(bytes);
         if (deliveredObject instanceof IResult) {
             //TODO: handle Result
