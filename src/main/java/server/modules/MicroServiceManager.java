@@ -98,10 +98,7 @@ public class MicroServiceManager {
     protected boolean stopMicroService(String microserviceID) {
         Objects.requireNonNull(microserviceID);
 
-        if (disconnectMicroService(microserviceID))
-            return true;
-        else
-            return false;
+        return disconnectMicroService(microserviceID);
     }
 
     /**
@@ -119,6 +116,7 @@ public class MicroServiceManager {
 
         try {
             channel.basicCancel(idToRemove);
+            String oldValue = microServices.get(idToRemove);
             microServices.remove(idToRemove, oldValue);
             Log.log("Successfully disconnected service " + idToRemove, LogLevel.WARNING);
             return true;
