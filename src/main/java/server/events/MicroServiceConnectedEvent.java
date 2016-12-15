@@ -10,14 +10,13 @@ import java.util.Objects;
  */
 public class MicroServiceConnectedEvent implements Event {
 
-    private final MicroService connectedSvc;
+    private final String connectedSvcID;
 
-    public MicroServiceConnectedEvent(MicroService connectedSvc) {
-        Objects.requireNonNull(connectedSvc);
-        this.connectedSvc = connectedSvc;
+    public MicroServiceConnectedEvent(String connectedSvcID) {
+        this.connectedSvcID = connectedSvcID;
     }
 
-    public MicroService getConnectedSvc() {
-        return connectedSvc;
+    public String getConnectedSvcID() {
+        return connectedSvcID;
     }
 }

@@ -20,7 +20,6 @@ import java.util.List;
  * @author Maximilian Schirm, daan
  *         created on 09.12.2016
  */
-
 public class ClientController {
 
     private Client client;

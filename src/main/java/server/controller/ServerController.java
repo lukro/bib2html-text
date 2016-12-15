@@ -62,7 +62,7 @@ public class ServerController implements EventListener {
     ListView<Client> clientListView;
 
     @FXML
-    ListView<MicroService> microServiceListView;
+    ListView<String> microServiceListView;
 
     @FXML
     ListView<String> clientRequestListView;
@@ -106,9 +106,9 @@ public class ServerController implements EventListener {
             Log.log("Disconnected Client with ID " + toRemove.getID(), LogLevel.WARNING);
             clientListView.getItems().remove(toRemove);
         } else if (toNotify instanceof MicroServiceConnectedEvent) {
-            MicroService toAdd = ((MicroServiceConnectedEvent) toNotify).getConnectedSvc();
-            Log.log("Registered Microservice with ID " + toAdd.getID(), LogLevel.WARNING);
-            microServiceListView.getItems().add(toAdd);
+            String toAddID = ((MicroServiceConnectedEvent) toNotify).getConnectedSvcID();
+            Log.log("Registered Microservice with ID " + toAddID, LogLevel.WARNING);
+            microServiceListView.getItems().add(toAddID);
         } else if (toNotify instanceof MicroServiceDisconnectedEvent) {
             MicroService toRemove = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvc();
             Log.log("Unregistered Microservice with ID " + toRemove.getID(), LogLevel.WARNING);
@@ -127,9 +127,9 @@ public class ServerController implements EventListener {
 
     public void removeMicroserviceButtonPressed() {
         if (microServiceListView.getSelectionModel().getSelectedItem() != null) {
-            MicroService serviceToRemove = microServiceListView.getSelectionModel().getSelectedItem();
-            Log.log("Disconnecting MicroSerivce " + serviceToRemove.getID());
-            EventManager.getInstance().publishEvent(new MicroserviceDisconnectionRequestEvent(serviceToRemove.getID()));
+            String serviceIDToRemove = microServiceListView.getSelectionModel().getSelectedItem();
+            Log.log("Disconnecting MicroSerivce " + serviceIDToRemove);
+            EventManager.getInstance().publishEvent(new MicroserviceDisconnectionRequestEvent(serviceIDToRemove));
         }
     }
 

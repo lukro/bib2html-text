@@ -4,6 +4,8 @@ import com.rabbitmq.client.Channel;
 import global.logging.Log;
 import global.logging.LogLevel;
 import microservice.MicroService;
+import server.events.EventManager;
+import server.events.MicroServiceConnectedEvent;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -81,6 +83,7 @@ public class MicroServiceManager {
             MicroService newService = new MicroService();
             microServices.put(newService.getID(), newService.getHostIP());
             newService.run();
+            EventManager.getInstance().publishEvent(new MicroServiceConnectedEvent(newService.getID()));
             Log.log("Successfully started microservice");
             return newService.getID();
         } catch (IOException | TimeoutException e) {
