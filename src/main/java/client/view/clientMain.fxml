@@ -125,7 +125,15 @@
                               </Label>
                            </children>
                         </HBox>
-                        <TextArea fx:id="clientConsoleTextArea" prefHeight="565.0" prefWidth="420.0" style="-fx-background-color: White;" />
+                        <Button mnemonicParsing="false" onAction="#clearLogButtonPressed" prefWidth="75.0" text="Clear Log">
+                           <VBox.margin>
+                              <Insets left="25.0" />
+                           </VBox.margin>
+                        </Button>
+                        <TextArea fx:id="clientConsoleTextArea" prefHeight="565.0" prefWidth="420.0" style="-fx-background-color: White;">
+                           <VBox.margin>
+                              <Insets top="2.0" />
+                           </VBox.margin></TextArea>
                         <Button mnemonicParsing="false" onAction="#startConversionButtonPressed" prefWidth="150.0" text="Start Conversion">
                            <VBox.margin>
                               <Insets left="125.0" top="7.0" />

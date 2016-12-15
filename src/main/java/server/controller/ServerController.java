@@ -36,6 +36,10 @@ public class ServerController implements EventListener {
             this.textArea = textArea;
         }
 
+        public void clearTextArea() {
+            textArea.clear();
+        }
+
         @Override
         public void write(int b) throws IOException {
             textArea.appendText(String.valueOf((char) b));
@@ -143,5 +147,13 @@ public class ServerController implements EventListener {
             Log.log("Cancelling Request " + toStopClientID);
             EventManager.getInstance().publishEvent(new RequestStoppedEvent(toStopClientID));
         }
+    }
+
+    public void clearLogButtonPressed() {
+        clearConsole();
+    }
+
+    public void clearConsole() {
+        consoleStream.clearTextArea();
     }
 }

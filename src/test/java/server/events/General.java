@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @author Maximilian Schirm (denkbares GmbH)
+ * @author Maximilian Schirm
  * @created 05.12.2016
  */
 

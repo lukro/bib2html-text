@@ -2,6 +2,7 @@ package client.controller;
 
 import global.logging.Log;
 import global.logging.LogLevel;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
@@ -41,8 +42,8 @@ public class ClientController {
         public void clearTextArea() {
             textArea.clear();
         }
-    }
 
+    }
     public ClientController() {
         try {
             client = new Client();
@@ -133,8 +134,8 @@ public class ClientController {
         }
     }
 
-
     //BIB LIST BUTTONS
+
 
     @FXML
     public void addBibButtonPressed() {
@@ -172,8 +173,8 @@ public class ClientController {
         Log.log("Removed all bib files from the selection.", LogLevel.INFO);
     }
 
-
     //CSL LIST BUTTONS
+
 
     @FXML
     public void addCslButtonPressed() {
@@ -210,6 +211,10 @@ public class ClientController {
         client.getClientFileModel().clearCslFiles();
         cslFilesListView.getItems().clear();
         Log.log("Removed all csl files from the selection.", LogLevel.INFO);
+    }
+
+    public void clearLogButtonPressed() {
+        clearConsole();
     }
 
     public void clearConsole() {

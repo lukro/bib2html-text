@@ -59,11 +59,11 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
                 .build();
 
         //Initialize modules
+        initConnectionPoint();
         MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
         //MicroServiceManager.getInstance(); TODO Uncomment if issues appear
         PartialResultCollector.getInstance();
         EventManager.getInstance().registerListener(this);
-        initConnectionPoint();
     }
 
     @Override
@@ -143,7 +143,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
         Object deliveredObject = SerializationUtils.deserialize(bytes);
-        Log.log("Received a message...", LogLevel.INFO);
         if (deliveredObject instanceof IClientRequest) {
             handleDeliveredClientRequest((IClientRequest) deliveredObject, basicProperties);
         } else if (deliveredObject instanceof IPartialResult) {

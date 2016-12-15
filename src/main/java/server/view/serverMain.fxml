@@ -83,9 +83,14 @@
                                           </Label>
                                        </children>
                                     </HBox>
+                                    <Button mnemonicParsing="false" onAction="#clearLogButtonPressed" text="Clear Log">
+                                       <VBox.margin>
+                                          <Insets left="15.0" top="2.0" />
+                                       </VBox.margin>
+                                    </Button>
                                     <TextArea fx:id="serverConsoleTextArea" prefHeight="212.0" prefWidth="420.0">
                                        <VBox.margin>
-                                          <Insets top="5.0" />
+                                          <Insets top="2.0" />
                                        </VBox.margin>
                                     </TextArea>
                                     <BorderPane prefHeight="450.0" prefWidth="420.0">

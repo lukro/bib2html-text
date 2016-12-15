@@ -6,7 +6,7 @@
 
     <groupId>edu.swp.teampiotr</groupId>
     <artifactId>bib2html-text</artifactId>
-    <version>0.0.1</version>
+    <version>0.1.0</version>
 
     <dependencies>
         <!-- RabbitMQ -->
@@ -43,6 +43,12 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

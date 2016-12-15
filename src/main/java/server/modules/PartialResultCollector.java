@@ -8,6 +8,8 @@ import server.events.*;
 import server.events.EventListener;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Maximilian Schirm
@@ -18,13 +20,13 @@ import java.util.*;
 public class PartialResultCollector implements EventListener {
 
     private static final PartialResultCollector INSTANCE = new PartialResultCollector();
-    private final HashMap<String, Collection<IPartialResult>> mappingClientIDtoFinishedPartialResults;
-    private final HashMap<String, Integer> mappingClientIDtoExpectedResultsSize;
+    private final ConcurrentMap<String, Collection<IPartialResult>> mappingClientIDtoFinishedPartialResults;
+    private final ConcurrentMap<String, Integer> mappingClientIDtoExpectedResultsSize;
 
     private PartialResultCollector() {
         EventManager.getInstance().registerListener(this);
-        mappingClientIDtoExpectedResultsSize = new HashMap<>();
-        mappingClientIDtoFinishedPartialResults = new HashMap<>();
+        mappingClientIDtoFinishedPartialResults = new ConcurrentHashMap<>();
+        mappingClientIDtoExpectedResultsSize = new ConcurrentHashMap<>();
 
         //Starts the update loop
         TimerTask updateLoop = new TimerTask() {
@@ -75,8 +77,11 @@ public class PartialResultCollector implements EventListener {
             mappingClientIDtoExpectedResultsSize.forEach((key, size) -> {
                 Collection<IPartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
                 if (parts != null)
-                    if (parts.size() == size)
+                    if (parts.size() == size) {
                         EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(DefaultResult.buildResultfromPartials(parts)));
+                        mappingClientIDtoFinishedPartialResults.remove(key);
+                        mappingClientIDtoExpectedResultsSize.remove(key);
+                    }
             });
         }
     }
