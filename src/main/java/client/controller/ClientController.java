@@ -153,7 +153,7 @@ public class ClientController {
                     successfullyAddedBibFilesCounter++;
                 }
             }
-            Log.log("Added " + successfullyAddedBibFilesCounter + " csl File(s)", LogLevel.INFO);
+            Log.log("Added " + successfullyAddedBibFilesCounter + " .bib-file(s)", LogLevel.INFO);
         }
     }
 
@@ -162,7 +162,7 @@ public class ClientController {
         File toRemove = bibFilesListView.getSelectionModel().getSelectedItem();
         if (client.getClientFileModel().removeBibFile(toRemove)) {
             bibFilesListView.getItems().remove(toRemove);
-            Log.log("Removed bib " + toRemove + " from the selection.", LogLevel.INFO);
+            Log.log("Removed .bib-file '" + toRemove + "' from the selection.", LogLevel.INFO);
         }
     }
 
@@ -170,7 +170,7 @@ public class ClientController {
     public void clearBibButtonPressed() {
         client.getClientFileModel().clearBibFiles();
         bibFilesListView.getItems().clear();
-        Log.log("Removed all bib files from the selection.", LogLevel.INFO);
+        Log.log("Removed all .bib-files from the selection.", LogLevel.INFO);
     }
 
     //CSL LIST BUTTONS
@@ -192,7 +192,7 @@ public class ClientController {
                     successfullyAddedCslFilesCounter++;
                 }
             }
-            Log.log("Added " + successfullyAddedCslFilesCounter + " bib File(s)", LogLevel.INFO);
+            Log.log("Added " + successfullyAddedCslFilesCounter + " .csl-file(s)", LogLevel.INFO);
         }
     }
 
@@ -201,7 +201,7 @@ public class ClientController {
         File toRemove = cslFilesListView.getSelectionModel().getSelectedItem();
         if (client.getClientFileModel().removeCslFile(toRemove)) {
             cslFilesListView.getItems().remove(toRemove);
-            Log.log("Removed csl " + toRemove + " from the selection.", LogLevel.INFO);
+            Log.log("Removed .csl-file '" + toRemove + "' from the selection.", LogLevel.INFO);
         }
 
     }
@@ -210,7 +210,7 @@ public class ClientController {
     public void clearCslButtonPressed() {
         client.getClientFileModel().clearCslFiles();
         cslFilesListView.getItems().clear();
-        Log.log("Removed all csl files from the selection.", LogLevel.INFO);
+        Log.log("Removed all .csl-files from the selection.", LogLevel.INFO);
     }
 
     public void clearLogButtonPressed() {

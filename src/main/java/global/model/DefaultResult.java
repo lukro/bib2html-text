@@ -40,7 +40,7 @@ public class DefaultResult implements IResult {
         Map<PartialResultIdentifier, Collection<IPartialResult>> collectionMap = new HashMap<>();
         partials.forEach(partial -> {
             PartialResultIdentifier identifier = partial.getIdentifier();
-            if(collectionMap.containsKey(identifier))
+            if (collectionMap.containsKey(identifier))
                 collectionMap.get(identifier).add(partial);
             else {
                 HashSet<IPartialResult> tempSet = new HashSet<>();
@@ -60,11 +60,11 @@ public class DefaultResult implements IResult {
 
         //Extract Client ID
         String cid = partials.stream()
-                            .findFirst()
-                            .get()
-                            .getIdentifier()
-                            .getClientID();
+                .findFirst()
+                .get()
+                .getIdentifier()
+                .getClientID();
 
-        return new DefaultResult(cid,generatedStrings);
+        return new DefaultResult(cid, generatedStrings);
     }
 }
