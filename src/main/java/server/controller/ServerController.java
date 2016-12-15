@@ -1,7 +1,7 @@
 package server.controller;
 
 import client.controller.Client;
-import global.controller.IConsoleController;
+import global.controller.Console;
 import global.logging.Log;
 import global.logging.LogLevel;
 import javafx.fxml.FXML;
@@ -14,7 +14,6 @@ import server.events.*;
 import server.modules.Server;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -27,25 +26,7 @@ import java.util.concurrent.TimeoutException;
  *         created on 08.12.2016
  */
 
-public class ServerController implements EventListener, IConsoleController {
-
-    private class Console extends OutputStream {
-
-        TextArea textArea;
-
-        private Console(TextArea textArea) {
-            this.textArea = textArea;
-        }
-
-        public void clearTextArea() {
-            textArea.clear();
-        }
-
-        @Override
-        public void write(int b) throws IOException {
-            textArea.appendText(String.valueOf((char) b));
-        }
-    }
+public class ServerController implements EventListener {
 
     private Server server;
     private Console consoleStream;
@@ -81,9 +62,11 @@ public class ServerController implements EventListener, IConsoleController {
         //Initialize the Console and the Log
         consoleStream = new Console(serverConsoleTextArea);
         Log.alterOutputStream(consoleStream);
+        Log.alterMinimumRequiredLevel(LogLevel.INFO);
 
         //Fill UI elements
         logLevelChoiceBox.getItems().addAll(LogLevel.values());
+        logLevelChoiceBox.getSelectionModel().select(LogLevel.INFO);
         //TODO : Uncomment. Only Commented for incompatibility with local VM
         logLevelChoiceBox.onActionProperty().set(eventhandler -> Log.alterMinimumRequiredLevel(logLevelChoiceBox.getValue()));
 
@@ -151,11 +134,6 @@ public class ServerController implements EventListener, IConsoleController {
     }
 
     public void clearLogButtonPressed() {
-        clearConsole();
-    }
-
-    @Override
-    public void clearConsole() {
         consoleStream.clearTextArea();
     }
 }

@@ -1,9 +1,8 @@
 package client.controller;
 
-import global.controller.IConsoleController;
+import global.controller.Console;
 import global.logging.Log;
 import global.logging.LogLevel;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
@@ -14,7 +13,6 @@ import javafx.stage.Popup;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -25,25 +23,6 @@ public class ClientController {
 
     private Client client;
     private Console consoleStream;
-
-    public class Console extends OutputStream {
-
-        TextArea textArea;
-
-        public Console(TextArea textArea) {
-            this.textArea = textArea;
-        }
-
-        @Override
-        public void write(int b) throws IOException {
-            textArea.appendText(String.valueOf((char) b));
-        }
-
-        public void clearTextArea() {
-            textArea.clear();
-        }
-
-    }
 
     public ClientController() {
         try {
@@ -215,11 +194,6 @@ public class ClientController {
     }
 
     public void clearLogButtonPressed() {
-        clearConsole();
-    }
-
-    @Override
-    public void clearConsole() {
         consoleStream.clearTextArea();
     }
 }

@@ -9,6 +9,7 @@ import global.logging.LogLevel;
 import global.model.DefaultClientRequest;
 import global.model.IResult;
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,9 +69,12 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         channel.basicConsume(callbackQueueName, true, this);
     }
 
+    long timeStart = 0;
+
     public void sendClientRequest() throws IOException {
         channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, replyProps, SerializationUtils.serialize(this.createClientRequest()));
-        Log.log("Client with ID: " + this.clientID + " sent a ClientRequest.", LogLevel.INFO);
+        timeStart = System.nanoTime();
+        Log.log("Client with ID: " + this.clientID + " sent a ClientRequest. (@"+timeStart+")", LogLevel.INFO);
     }
 
     @Override
@@ -100,7 +104,9 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName, LogLevel.LOW);
+        long timeEnd = System.nanoTime();
+        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName + "(@"+timeEnd+")", LogLevel.LOW);
+        Log.log("TIME TAKEN : " +  (timeEnd - timeStart));
         Object deliveredObject = SerializationUtils.deserialize(bytes);
         if (deliveredObject instanceof IResult) {
             //TODO: handle Result
