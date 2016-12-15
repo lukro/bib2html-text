@@ -2,19 +2,20 @@ package microservice;
 
 import com.rabbitmq.client.*;
 import global.controller.IConnectionPoint;
+import global.identifiers.EntryIdentifier;
 import global.identifiers.PartialResultIdentifier;
-import global.logging.Log;
 import global.model.DefaultEntry;
 import global.model.DefaultPartialResult;
 import global.model.IEntry;
 import global.model.IPartialResult;
 import org.apache.commons.lang3.SerializationUtils;
+import server.modules.Server;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.UUID;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -38,6 +39,93 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         this("localhost");
     }
 
+    public void main(String[] args) throws IOException, TimeoutException, InterruptedException {
+        MicroService test = new MicroService();
+        Collection<String> cslFiles = new ArrayList<String>();
+        Collection<String> templates = new ArrayList<String>();
+        String csl = "<?xml version=\"1.0\" encoding=\"utf-8\"?>  <style xmlns=\"http://purl.org/net/xbiblio/csl\" version=\"1.0\" default-locale=\"en-US\">  <info> <title>AAPG Bulletin</title> <id>http://www.zotero.org/styles/aapg-bulletin</id> <link href=\"http://www.zotero.org/styles/aapg-bulletin\" rel=\"self\"/> <link href=\"http://www.zotero.org/styles/american-association-of-petroleum-geologists\" rel=\"independent-parent\"/> <link href=\"http://www.aapg.org/bulletin/reference.cfm\" rel=\"documentation\"/> <category citation-format=\"author-date\"/> <category field=\"geology\"/> <issn>0149-1423</issn> <updated>2013-03-29T23:50:45+00:00</updated> <rights license=\"http://creativecommons.org/licenses/by-sa/3.0/\">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights> </info> </style>";
+        cslFiles.add (csl);
+        String template = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+                "<html xmlns=\"http://www.w3.org/1999/xhtml\"$if(lang)$ lang=\"$lang$\" xml:lang=\"$lang$\"$endif$$if(dir)$ dir=\"$dir$\"$endif$>\n" +
+                "<head>\n" +
+                "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n" +
+                "  <meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n" +
+                "  <meta name=\"generator\" content=\"pandoc\" />\n" +
+                "$for(author-meta)$\n" +
+                "  <meta name=\"author\" content=\"$author-meta$\" />\n" +
+                "$endfor$\n" +
+                "$if(date-meta)$\n" +
+                "  <meta name=\"date\" content=\"$date-meta$\" />\n" +
+                "$endif$\n" +
+                "$if(keywords)$\n" +
+                "  <meta name=\"keywords\" content=\"$for(keywords)$$keywords$$sep$, $endfor$\" />\n" +
+                "$endif$\n" +
+                "  <title>$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$</title>\n" +
+                "  <style type=\"text/css\">code{white-space: pre;}</style>\n" +
+                "$if(quotes)$\n" +
+                "  <style type=\"text/css\">q { quotes: \"“\" \"”\" \"‘\" \"’\"; }</style>\n" +
+                "$endif$\n" +
+                "$if(highlighting-css)$\n" +
+                "  <style type=\"text/css\">\n" +
+                "$highlighting-css$\n" +
+                "  </style>\n" +
+                "$endif$\n" +
+                "$for(css)$\n" +
+                "  <link rel=\"stylesheet\" href=\"$css$\" type=\"text/css\" />\n" +
+                "$endfor$\n" +
+                "$if(math)$\n" +
+                "  $math$\n" +
+                "$endif$\n" +
+                "$for(header-includes)$\n" +
+                "  $header-includes$\n" +
+                "$endfor$\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "$for(include-before)$\n" +
+                "$include-before$\n" +
+                "$endfor$\n" +
+                "$if(title)$\n" +
+                "<div id=\"$idprefix$header\">\n" +
+                "<h1 class=\"title\">$title$</h1>\n" +
+                "$if(subtitle)$\n" +
+                "<h1 class=\"subtitle\">$subtitle$</h1>\n" +
+                "$endif$\n" +
+                "$for(author)$\n" +
+                "<h2 class=\"author\">$author$</h2>\n" +
+                "$endfor$\n" +
+                "$if(date)$\n" +
+                "<h3 class=\"date\">$date$</h3>\n" +
+                "$endif$\n" +
+                "</div>\n" +
+                "$endif$\n" +
+                "$if(toc)$\n" +
+                "<div id=\"$idprefix$TOC\">\n" +
+                "$toc$\n" +
+                "</div>\n" +
+                "$endif$\n" +
+                "$body$\n" +
+                "$for(include-after)$\n" +
+                "$include-after$\n" +
+                "$endfor$\n" +
+                "</body>\n" +
+                "</html>";
+        templates.add(template);
+        String bibEntry = "@article{bkns-blol-10,\n" +
+            "  author =\t {Michael A. Bekos and Michael Kaufmann and Martin\n" +
+                    "                  N{\\\"o}llenburg and Antonios Symvonis},\n" +
+                    "  title =\t {Boundary Labeling with Octilinear Leaders},\n" +
+                    "  journal =\t {Algorithmica},\n" +
+                    "  volume =\t 57,\n" +
+                    "  number =\t 3,\n" +
+                    "  year =\t 2010,\n" +
+                    "  pages =\t {436-461},\n" +
+                    "  ee =\t\t {http://dx.doi.org/10.1007/s00453-009-9283-6},\n" +
+                    "}";
+
+        DefaultEntry toConvert = new DefaultEntry("1",bibEntry,1,1, cslFiles, templates);
+        test.convertEntry(toConvert);
+    }
+
     public MicroService(String hostIP) throws IOException, TimeoutException {
         this(hostIP, UUID.randomUUID().toString());
     }
@@ -52,12 +140,30 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         initConnectionPoint();
     }
 
-    private DefaultPartialResult convertEntry(DefaultEntry toConvert) {
+    private DefaultPartialResult convertEntry(DefaultEntry toConvert) throws IOException, InterruptedException {
         //TODO : Replace Dummy code
-        return null;
+        String identifier = toConvert.getEntryIdentifier().toString();
+        String cslName = identifier + ".csl";
+        String templateName = identifier + "_template.html";
+        String bibName = identifier + ".bib";
+        String mdName = identifier + ".md";
+        // directoryName = "temp";
+        PrintWriter csl = new PrintWriter(cslName,"UTF-8");
+        PrintWriter template = new PrintWriter(templateName,"UTF-8");
+        PrintWriter bib = new PrintWriter(bibName,"UTF-8");
+        PrintWriter md = new PrintWriter(mdName,"UTF-8");
+        bib.write(toConvert.getContent());
+        csl.write(toConvert.getTemplates().get(0));
+        template.write(toConvert.getTemplates().get(0));
+        md.write("--- + bibliography: test.bib nocite: \"@*\"...");
+        pandocDoWork(templateName, cslName, mdName, channel, 1, toConvert.getEntryIdentifier());
+        byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(identifier + "_result.html"));
+        String convertedContent = new String(convertedContentEncoded);
+        DefaultPartialResult convertedEntry = new DefaultPartialResult(convertedContent, new PartialResultIdentifier(toConvert.getEntryIdentifier(),1,1));
+        return convertedEntry;
     }
 
-    private boolean[] validateTemplates(DefaultEntry defaultEntry, HashSet<byte[]> templateFiles) {
+    private boolean[] validateTempaltes(DefaultEntry defaultEntry, HashSet<byte[]> templateFiles) {
         boolean[] output = new boolean[templateFiles.size()];
         for (int i = 0; i < templateFiles.size(); i++) {
             //TODO : Use pandocDoWork(..) to retrieve execution success.
@@ -68,20 +174,20 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         return output;
     }
 
-    private static int pandocDoWork(File directory, String cslName, String wrapperName, Channel channel, long currentDeliveryTag) throws IOException, InterruptedException {
-        Objects.requireNonNull(directory);
+    private static int pandocDoWork(String cslName, String templateName, String wrapperName, Channel channel, long currentDeliveryTag, EntryIdentifier entryIdentifier) throws IOException, InterruptedException {
         Objects.requireNonNull(cslName);
         Objects.requireNonNull(wrapperName);
 
-        File cslFile = new File(directory, cslName);
-        File wrapperFile = new File(directory, wrapperName);
+        File cslFile = new File(cslName);
+        File wrapperFile = new File(wrapperName);
+        File template = new File(templateName);
 
         if (!cslFile.exists() || !wrapperFile.exists())
             throw new IllegalArgumentException("A file with that name might not exist!");
 
-        String command = "pandoc --filter=pandoc-citeproc --csl=" + cslName + ".csl --standalone " + wrapperName + ".md -o " + cslName + ".HTML";
-        channel.basicAck(currentDeliveryTag, false);
-        return Runtime.getRuntime().exec(command, null, directory).waitFor();
+        String command = "pandoc --filter=pandoc-citeproc --template" + templateName + " --csl=" + cslName + ".csl --standalone " + wrapperName + ".md -o " + entryIdentifier + "_result.html";
+        channel.basicAck(currentDeliveryTag,false);
+        return Runtime.getRuntime().exec(command, null).waitFor();
 
     }
 
@@ -97,7 +203,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleCancel(String s) throws IOException {
-        Log.log("MicroService cancelled: " + s);
+
     }
 
     @Override
@@ -124,7 +230,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
                 .Builder()
                 .correlationId(basicProperties.getCorrelationId())
                 .build();
-        IPartialResult dummyResult = new DefaultPartialResult(dummyContent, new PartialResultIdentifier(entryReceived.getEntryIdentifier(), 1, 1, false));
+        IPartialResult dummyResult = new DefaultPartialResult(dummyContent, new PartialResultIdentifier(entryReceived.getEntryIdentifier(), 1,1,false));
         channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(dummyResult));
     }
 
@@ -133,13 +239,13 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         try {
             consumeIncomingQueues();
         } catch (IOException e) {
-            Log.log("failed to consume incoming queues in microservice.run()", e);
+            e.printStackTrace();
         }
     }
 
     @Override
     public void consumeIncomingQueues() throws IOException {
-        channel.basicConsume(TASK_QUEUE_NAME, true, this);
+        channel.basicConsume(TASK_QUEUE_NAME, false, this);
     }
 
 
