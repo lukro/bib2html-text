@@ -3,12 +3,12 @@ package microservice;
 import com.rabbitmq.client.*;
 import global.controller.IConnectionPoint;
 import global.identifiers.PartialResultIdentifier;
+import global.logging.Log;
 import global.model.DefaultEntry;
 import global.model.DefaultPartialResult;
 import global.model.IEntry;
 import global.model.IPartialResult;
 import org.apache.commons.lang3.SerializationUtils;
-import server.modules.Server;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +57,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         return null;
     }
 
-    private boolean[] validateTempaltes(DefaultEntry defaultEntry, HashSet<byte[]> templateFiles) {
+    private boolean[] validateTemplates(DefaultEntry defaultEntry, HashSet<byte[]> templateFiles) {
         boolean[] output = new boolean[templateFiles.size()];
         for (int i = 0; i < templateFiles.size(); i++) {
             //TODO : Use pandocDoWork(..) to retrieve execution success.
@@ -97,7 +97,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleCancel(String s) throws IOException {
-
+        Log.log("MicroService cancelled: " + s);
     }
 
     @Override

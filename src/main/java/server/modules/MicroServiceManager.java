@@ -34,9 +34,6 @@ public class MicroServiceManager {
         this.channel = channel;
         this.TASK_QUEUE_NAME = taskQueueName;
 
-        //TODO : remove after fixing /0 exception in Util WHILE
-        startMicroService();
-
         TimerTask utilizationCheckerTask = new TimerTask() {
             @Override
             public void run() {
@@ -101,13 +98,10 @@ public class MicroServiceManager {
     protected boolean stopMicroService(String microserviceID) {
         Objects.requireNonNull(microserviceID);
 
-        if (disconnectMicroService(microserviceID)) {
-            //TODO : Fill...
+        if (disconnectMicroService(microserviceID))
             return true;
-        } else {
-            Log.log("Failed to disconnect MicroService ");
+        else
             return false;
-        }
     }
 
     /**
@@ -122,9 +116,16 @@ public class MicroServiceManager {
      */
     private boolean disconnectMicroService(String idToRemove) {
         Log.log("Disconnecting MicroService " + idToRemove + "...");
-        String oldValue = microServices.get(idToRemove);
-        //TODO : Fill in the disconnection message.
-        return microServices.remove(idToRemove, oldValue);
+
+        try {
+            channel.basicCancel(idToRemove);
+            microServices.remove(idToRemove, oldValue);
+            Log.log("Successfully disconnected service " + idToRemove, LogLevel.WARNING);
+            return true;
+        } catch (IOException e) {
+            Log.log("Failed to send cancel request to service " + idToRemove, e);
+            return false;
+        }
     }
 
     /**
@@ -139,10 +140,15 @@ public class MicroServiceManager {
         int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
         int returnValue = 0;
 
+        //To avoid dividing by 0
+        if (microServices.isEmpty())
+            startMicroService();
+
         while (currTasks / microServices.size() > MAXIMUM_UTILIZATION) {
             startMicroService();
             returnValue++;
         }
+
         return returnValue;
     }
 }

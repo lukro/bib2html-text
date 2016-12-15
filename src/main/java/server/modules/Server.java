@@ -42,7 +42,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     }
 
     public Server(String hostIP, String serverID) throws IOException, TimeoutException {
-
         //Create connection and channel with new ConnectionFactory
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(hostIP);
@@ -286,6 +285,19 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     @Override
     public String getID() {
         return serverID;
+    }
+
+    /**
+     * clears client request queue and task queue
+     */
+    private void clearQueues() {
+        try {
+            channel.queuePurge(TASK_QUEUE_NAME);
+            channel.queuePurge(CLIENT_REQUEST_QUEUE_NAME);
+            Log.log("cleared client_request_queue and task_queue");
+        } catch (IOException e) {
+            Log.log("failed to clear queues", LogLevel.ERROR);
+        }
     }
 
     @Override
