@@ -48,7 +48,7 @@ public class MicroServiceManager {
             }
         };
         Timer timer = new Timer();
-        timer.schedule(utilizationCheckerTask, 0, 1000);
+        timer.schedule(utilizationCheckerTask, 1500, 1000);
     }
 
 
