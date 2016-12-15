@@ -1,6 +1,7 @@
 package server.controller;
 
 import client.controller.Client;
+import global.controller.IConsoleController;
 import global.logging.Log;
 import global.logging.LogLevel;
 import javafx.fxml.FXML;
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeoutException;
  *         created on 08.12.2016
  */
 
-public class ServerController implements EventListener {
+public class ServerController implements EventListener, IConsoleController {
 
     private class Console extends OutputStream {
 
@@ -153,6 +154,7 @@ public class ServerController implements EventListener {
         clearConsole();
     }
 
+    @Override
     public void clearConsole() {
         consoleStream.clearTextArea();
     }
