@@ -4,6 +4,8 @@ import client.controller.Client;
 import global.controller.Console;
 import global.logging.Log;
 import global.logging.LogLevel;
+import global.model.IResult;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
@@ -76,6 +78,7 @@ public class ServerController implements EventListener {
             Log.log("Failed to display Host IP", e);
         }
 
+        EventManager.getInstance().registerListener(this);
         Log.log("Initialized the Server.", LogLevel.INFO);
     }
 
@@ -84,29 +87,39 @@ public class ServerController implements EventListener {
         if (toNotify instanceof ClientRegisteredEvent) {
             Client toAdd = ((ClientRegisteredEvent) toNotify).getRegisteredClient();
             Log.log("Registered Client with ID " + toAdd.getID(), LogLevel.INFO);
-            clientListView.getItems().add(toAdd);
+            Platform.runLater(() -> clientListView.getItems().add(toAdd));
         } else if (toNotify instanceof ClientDisconnectedEvent) {
             Client toRemove = ((ClientDisconnectedEvent) toNotify).getDisconnectedClient();
             Log.log("Disconnected Client with ID " + toRemove.getID(), LogLevel.WARNING);
-            clientListView.getItems().remove(toRemove);
+            Platform.runLater(() -> clientListView.getItems().remove(toRemove));
         } else if (toNotify instanceof MicroServiceConnectedEvent) {
             String toAddID = ((MicroServiceConnectedEvent) toNotify).getConnectedSvcID();
             Log.log("Registered Microservice with ID " + toAddID, LogLevel.WARNING);
-            microServiceListView.getItems().add(toAddID);
+            Platform.runLater(() -> microServiceListView.getItems().add(toAddID));
         } else if (toNotify instanceof MicroServiceDisconnectedEvent) {
             MicroService toRemove = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvc();
             Log.log("Unregistered Microservice with ID " + toRemove.getID(), LogLevel.WARNING);
-            microServiceListView.getItems().remove(toRemove);
+            Platform.runLater(() -> microServiceListView.getItems().remove(toRemove));
         } else if (toNotify instanceof RequestStoppedEvent) {
             String toRemoveClientID = ((RequestStoppedEvent) toNotify).getStoppedRequestClientID();
             Log.log("Removed Request with ID " + toRemoveClientID, LogLevel.WARNING);
-            clientRequestListView.getItems().remove(toRemoveClientID);
+            Platform.runLater(() -> clientRequestListView.getItems().remove(toRemoveClientID));
+        } else if (toNotify instanceof RequestAcceptedEvent) {
+            String toAddRequestString = ((RequestAcceptedEvent) toNotify).getRequestID() + " - Size : " + ((RequestAcceptedEvent) toNotify).getReqSize();
+            Platform.runLater(() -> clientRequestListView.getItems().add(toAddRequestString));
+        } else if (toNotify instanceof FinishedCollectingResultEvent){
+            IResult result = ((FinishedCollectingResultEvent) toNotify).getResult();
+            String toRemoveString = result.getClientID() + " - Size : " + result.getFileContents().size();
+            Platform.runLater(() -> clientRequestListView.getItems().remove(toRemoveString));
         }
     }
 
     @Override
     public Set<Class<? extends Event>> getEvents() {
-        return new HashSet(Arrays.asList(ClientRegisteredEvent.class, ClientDisconnectedEvent.class, MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, RequestStoppedEvent.class));
+        return new HashSet(Arrays.asList(ClientRegisteredEvent.class, ClientDisconnectedEvent.class,
+                MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class,
+                RequestStoppedEvent.class, RequestAcceptedEvent.class,
+                FinishedCollectingResultEvent.class));
     }
 
     public void removeMicroserviceButtonPressed() {
