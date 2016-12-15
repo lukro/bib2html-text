@@ -1,5 +1,6 @@
 package client.controller;
 
+import global.controller.IConsoleController;
 import global.logging.Log;
 import global.logging.LogLevel;
 import javafx.event.ActionEvent;
@@ -43,6 +44,7 @@ public class ClientController {
         }
 
     }
+
     public ClientController() {
         try {
             client = new Client();
@@ -123,7 +125,7 @@ public class ClientController {
     public void chooseTemplateButtonPressed() {
         FileChooser templateChooser = new FileChooser();
         templateChooser.setTitle("Select a Template file...");
-        templateChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("TEMPLATE File (*.latex)","*.latex"));
+        templateChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("TEMPLATE File (*.latex)", "*.latex"));
         File newTemplate = templateChooser.showOpenDialog(new Popup());
         if (client.getClientFileModel().addTemplate(newTemplate)) {
             templateDirectoryTextField.setText(newTemplate.getAbsolutePath());
@@ -216,6 +218,7 @@ public class ClientController {
         clearConsole();
     }
 
+    @Override
     public void clearConsole() {
         consoleStream.clearTextArea();
     }
