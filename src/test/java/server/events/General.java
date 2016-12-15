@@ -26,7 +26,7 @@ public class General {
     /**
      * This class has a dynamic payload
      */
-    protected class TestEvent1 implements Event{
+    protected class TestEvent1 implements IEvent {
         private final String payload;
 
         public TestEvent1(String payload) {
@@ -41,7 +41,7 @@ public class General {
     /**
      * This class has a static payload
      */
-    protected class TestEvent2 implements Event{
+    protected class TestEvent2 implements IEvent {
         public TestEvent2(){
         }
 
@@ -50,26 +50,26 @@ public class General {
         }
     }
 
-    protected class EventConsumer implements EventListener{
+    protected class EventConsumer implements IEventListener {
 
         public EventConsumer(){
         }
 
         @Override
-        public void notify(Event toNotify) {
+        public void notify(IEvent toNotify) {
             if(toNotify instanceof TestEvent1){
                 TestEvent1 recvd = (TestEvent1)toNotify;
-                System.out.println("Received an Event (TE1) with the Payload " + recvd.getPayload());
+                System.out.println("Received an IEvent (TE1) with the Payload " + recvd.getPayload());
             }
             else if(toNotify instanceof TestEvent2){
                 TestEvent2 recvd = (TestEvent2)toNotify;
-                System.out.println("Received an Event (TE2) with the Payload " + recvd.getPayload());
+                System.out.println("Received an IEvent (TE2) with the Payload " + recvd.getPayload());
             }
         }
 
         @Override
-        public Set<Class<? extends Event>> getEvents() {
-            Set<Class<? extends Event>> evts = new HashSet<>();
+        public Set<Class<? extends IEvent>> getEvents() {
+            Set<Class<? extends IEvent>> evts = new HashSet<>();
             evts.add(TestEvent1.class);
             evts.add(TestEvent2.class);
             return evts;
@@ -84,8 +84,8 @@ public class General {
 
         for(int i = 0; i < count; i++){
             log("");
-            String payload = "Event Number " + i;
-            Event evt = (Math.random() > 0.5)?new TestEvent1(payload):new TestEvent2();
+            String payload = "IEvent Number " + i;
+            IEvent evt = (Math.random() > 0.5)?new TestEvent1(payload):new TestEvent2();
             log("Published event of type " + ((evt instanceof TestEvent1)?"TestEvent1":"TestEvent2"));
             EventManager.getInstance().publishEvent(evt);
             log("");

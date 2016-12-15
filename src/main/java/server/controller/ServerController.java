@@ -28,7 +28,7 @@ import java.util.concurrent.TimeoutException;
  *         created on 08.12.2016
  */
 
-public class ServerController implements EventListener {
+public class ServerController implements IEventListener {
 
     private Server server;
     private Console consoleStream;
@@ -83,7 +83,7 @@ public class ServerController implements EventListener {
     }
 
     @Override
-    public void notify(Event toNotify) {
+    public void notify(IEvent toNotify) {
         if (toNotify instanceof ClientRegisteredEvent) {
             Client toAdd = ((ClientRegisteredEvent) toNotify).getRegisteredClient();
             Log.log("Registered Client with ID " + toAdd.getID(), LogLevel.INFO);
@@ -115,7 +115,7 @@ public class ServerController implements EventListener {
     }
 
     @Override
-    public Set<Class<? extends Event>> getEvents() {
+    public Set<Class<? extends IEvent>> getEvents() {
         return new HashSet(Arrays.asList(ClientRegisteredEvent.class, ClientDisconnectedEvent.class,
                 MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class,
                 RequestStoppedEvent.class, RequestAcceptedEvent.class,

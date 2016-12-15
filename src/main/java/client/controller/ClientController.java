@@ -34,22 +34,22 @@ public class ClientController {
     }
 
     @FXML
-    TextArea clientConsoleTextArea;
+    private TextArea clientConsoleTextArea;
 
     @FXML
-    ListView<File> bibFilesListView;
+    private ListView<File> bibFilesListView;
 
     @FXML
-    ListView<File> cslFilesListView;
+    private ListView<File> cslFilesListView;
 
     @FXML
-    TextField templateDirectoryTextField;
+    private TextField templateDirectoryTextField;
 
     @FXML
-    TextField outputDirectoryTextField;
+    private TextField outputDirectoryTextField;
 
     @FXML
-    TextField serverAdressTextField;
+    private TextField serverAdressTextField;
 
     @FXML
     public void initialize() {

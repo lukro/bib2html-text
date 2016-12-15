@@ -1,14 +1,10 @@
 package server.events;
 
-import microservice.MicroService;
-
-import java.util.Objects;
-
 /**
  * @author Maximilian Schirm
  *         created 09.12.2016
  */
-public class MicroServiceConnectedEvent implements Event {
+public class MicroServiceConnectedEvent implements IEvent {
 
     private final String connectedSvcID;
 

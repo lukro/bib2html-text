@@ -8,7 +8,7 @@ import java.util.Objects;
  * @author Maximilian Schirm
  *         created 09.12.2016
  */
-public class ClientRegisteredEvent implements Event {
+public class ClientRegisteredEvent implements IEvent {
 
     final Client registeredClient;
 

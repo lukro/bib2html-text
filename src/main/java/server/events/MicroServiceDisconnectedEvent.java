@@ -2,13 +2,11 @@ package server.events;
 
 import microservice.MicroService;
 
-import java.util.Objects;
-
 /**
  * @author Maximilian Schirm
  *         created 09.12.2016
  */
-public class MicroServiceDisconnectedEvent implements Event {
+public class MicroServiceDisconnectedEvent implements IEvent {
 
     private final MicroService disconnectedSvc;
 

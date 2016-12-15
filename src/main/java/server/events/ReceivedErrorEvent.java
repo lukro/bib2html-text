@@ -4,7 +4,7 @@ package server.events;
  * @author Maximilian Schirm
  *         created 05.12.2016
  */
-public class ReceivedErrorEvent implements Event {
+public class ReceivedErrorEvent implements IEvent {
 
     private final String requestID;
 

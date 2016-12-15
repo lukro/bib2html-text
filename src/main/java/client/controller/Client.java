@@ -9,7 +9,6 @@ import global.logging.LogLevel;
 import global.model.DefaultClientRequest;
 import global.model.IResult;
 import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +17,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Created by daan on 11/30/16.
+ * @author daan
+ *         created on 11/30/16.
  */
 public class Client implements IConnectionPoint, Runnable, Consumer {
 
@@ -69,12 +69,12 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         channel.basicConsume(callbackQueueName, true, this);
     }
 
-    long timeStart = 0;
+    private long timeStart = 0;
 
-    public void sendClientRequest() throws IOException {
+    void sendClientRequest() throws IOException {
         channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, replyProps, SerializationUtils.serialize(this.createClientRequest()));
         timeStart = System.nanoTime();
-        Log.log("Client with ID: " + this.clientID + " sent a ClientRequest. (@"+timeStart+")", LogLevel.INFO);
+        Log.log("Client with ID: " + this.clientID + " sent a ClientRequest. (@" + timeStart + ")", LogLevel.INFO);
     }
 
     @Override
@@ -105,8 +105,8 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
         long timeEnd = System.nanoTime();
-        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName + "(@"+timeEnd+")", LogLevel.LOW);
-        Log.log("TIME TAKEN : " +  (timeEnd - timeStart));
+        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName + "(@" + timeEnd + ")", LogLevel.LOW);
+        Log.log("TIME TAKEN : " + (timeEnd - timeStart));
         Object deliveredObject = SerializationUtils.deserialize(bytes);
         if (deliveredObject instanceof IResult) {
             //TODO: handle Result
@@ -129,7 +129,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
             try {
                 Files.write(new File(outDir, filename).toPath(), bldr.toString().getBytes());
             } catch (IOException e) {
-                Log.log("Failed to write output file",e);
+                Log.log("Failed to write output file", e);
             }
     }
 
@@ -158,7 +158,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         return hostIP;
     }
 
-    public boolean connectToHost(String hostIP) {
+    boolean connectToHost(String hostIP) {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(hostIP);
         try {
@@ -182,19 +182,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         return clientID;
     }
 
-    public String getCallbackQueueName() {
-        return callbackQueueName;
-    }
-
-    public String getCLIENT_REQUEST_QUEUE_NAME() {
-        return CLIENT_REQUEST_QUEUE_NAME;
-    }
-
-    public BibTeXEntryFormatter getBibTeXEntryFormatter() {
-        return bibTeXEntryFormatter;
-    }
-
-    public ClientFileModel getClientFileModel() {
+    ClientFileModel getClientFileModel() {
         return clientFileModel;
     }
 

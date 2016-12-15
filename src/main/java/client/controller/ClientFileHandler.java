@@ -16,7 +16,7 @@ public final class ClientFileHandler {
         throw new AssertionError("ClientFileHandler is a static class.");
     }
 
-    public static String readStringFromFile(File file) throws IOException {
+    private static String readStringFromFile(File file) throws IOException {
         Objects.requireNonNull(file, "(file == null) in ClientFileHandler.readStringFromFile()");
         FileInputStream fis = new FileInputStream(file);
         InputStreamReader isr = new InputStreamReader(fis);
@@ -59,10 +59,8 @@ public final class ClientFileHandler {
     }
 
     public static boolean isValidCslFile(File cslFile) {
-        //TODO: implement algorithm to validate cslFile/xmlFile
-        if (true && cslFile.equals(cslFile))
-            return true;
-        return false;
+        //TODO: implement algorithm to validate .csl-files
+        return true;
     }
 
 }

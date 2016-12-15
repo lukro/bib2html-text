@@ -4,7 +4,7 @@ package server.events;
  * @author Maximilian Schirm
  *         created 10.12.2016
  */
-public class ClientBlockRequestEvent implements Event {
+public class ClientBlockRequestEvent implements IEvent {
 
     private final String clientID;
 

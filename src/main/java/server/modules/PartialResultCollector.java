@@ -5,7 +5,7 @@ import global.logging.LogLevel;
 import global.model.DefaultResult;
 import global.model.IPartialResult;
 import server.events.*;
-import server.events.EventListener;
+import server.events.IEventListener;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentMap;
  *         <p>
  *         This is a Singleton class with immediate instantiation
  */
-public class PartialResultCollector implements EventListener {
+public class PartialResultCollector implements IEventListener {
 
     private static final PartialResultCollector INSTANCE = new PartialResultCollector();
     private final ConcurrentMap<String, Collection<IPartialResult>> mappingClientIDtoFinishedPartialResults;
@@ -45,7 +45,7 @@ public class PartialResultCollector implements EventListener {
     }
 
     @Override
-    public void notify(Event toNotify) {
+    public void notify(IEvent toNotify) {
         if (toNotify instanceof ReceivedPartialResultEvent) {
             IPartialResult partialResult = ((ReceivedPartialResultEvent) toNotify).getPartialResult();
             String id = partialResult.getIdentifier().getClientID();
@@ -87,8 +87,8 @@ public class PartialResultCollector implements EventListener {
     }
 
     @Override
-    public Set<Class<? extends Event>> getEvents() {
-        Set<Class<? extends Event>> evts = new HashSet<>();
+    public Set<Class<? extends IEvent>> getEvents() {
+        Set<Class<? extends IEvent>> evts = new HashSet<>();
         evts.add(ReceivedErrorEvent.class);
         evts.add(ReceivedPartialResultEvent.class);
         evts.add(RequestAcceptedEvent.class);

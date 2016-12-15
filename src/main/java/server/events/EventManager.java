@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 public class EventManager {
 
     private final static EventManager INSTANCE = new EventManager();
-    private ConcurrentMap<Class<? extends Event>, Set<EventListener>> eventMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<Class<? extends IEvent>, Set<IEventListener>> eventMap = new ConcurrentHashMap<>();
 
     private EventManager() {
     }
@@ -18,11 +18,11 @@ public class EventManager {
         return INSTANCE;
     }
 
-    public void registerListener(EventListener toRegister) {
+    public void registerListener(IEventListener toRegister) {
         toRegister.getEvents().forEach(event -> {
-            Set<EventListener> entryForEvent = eventMap.get(event);
+            Set<IEventListener> entryForEvent = eventMap.get(event);
             if (entryForEvent == null) {
-                Set<EventListener> newEventSet = new HashSet<>();
+                Set<IEventListener> newEventSet = new HashSet<>();
                 newEventSet.add(toRegister);
                 eventMap.put(event, newEventSet);
             } else {
@@ -32,7 +32,7 @@ public class EventManager {
         });
     }
 
-    public void publishEvent(Event toPublish) {
+    public void publishEvent(IEvent toPublish) {
         try {
             eventMap.get(toPublish.getClass()).forEach(listener -> {
                 try {
@@ -42,9 +42,8 @@ public class EventManager {
                     Log.log("Couldn't publish the event to the listener : Listener was null", e);
                 }
             });
-        }
-        catch (NullPointerException e){
-            Log.log("No classes registered for the event " + toPublish.getClass(),e);
+        } catch (NullPointerException e) {
+            Log.log("No classes registered for the event " + toPublish.getClass(), e);
         }
     }
 

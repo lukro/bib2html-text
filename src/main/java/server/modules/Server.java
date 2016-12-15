@@ -10,7 +10,7 @@ import global.model.IEntry;
 import global.model.IPartialResult;
 import org.apache.commons.lang3.SerializationUtils;
 import server.events.*;
-import server.events.EventListener;
+import server.events.IEventListener;
 
 import java.io.IOException;
 import java.util.*;
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeoutException;
  *         created 05.12.2016
  */
 
-public class Server implements IConnectionPoint, Runnable, Consumer, EventListener {
+public class Server implements IConnectionPoint, Runnable, Consumer, IEventListener {
 
     private final static String CLIENT_REQUEST_QUEUE_NAME = "clientRequestQueue";
     private final static String TASK_QUEUE_NAME = "taskQueue";
@@ -82,7 +82,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
     }
 
     @Override
-    public void notify(Event toNotify) {
+    public void notify(IEvent toNotify) {
         if (toNotify instanceof FinishedCollectingResultEvent) {
             handleFinishedCollectingResultEvent((FinishedCollectingResultEvent) toNotify);
         } else if (toNotify instanceof RequestStoppedEvent) {
@@ -134,8 +134,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
 
 
     @Override
-    public Set<Class<? extends Event>> getEvents() {
-        Set<Class<? extends Event>> evts = new HashSet<>();
+    public Set<Class<? extends IEvent>> getEvents() {
+        Set<Class<? extends IEvent>> evts = new HashSet<>();
         evts.addAll(Arrays.asList(FinishedCollectingResultEvent.class, RequestStoppedEvent.class, ClientBlockRequestEvent.class, MicroserviceDisconnectionRequestEvent.class, MicroServiceConnectedEvent.class));
         return evts;
     }
