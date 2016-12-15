@@ -139,7 +139,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void consumeIncomingQueues() throws IOException {
-        channel.basicConsume(TASK_QUEUE_NAME, false, this);
+        channel.basicConsume(TASK_QUEUE_NAME, true, this);
     }
 
 

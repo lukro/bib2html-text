@@ -10,4 +10,5 @@ import java.io.Serializable;
  */
 public interface IPartialResult extends Serializable {
     public PartialResultIdentifier getIdentifier();
+    public String getContent();
 }

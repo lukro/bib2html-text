@@ -36,7 +36,7 @@ public class PartialResultCollector implements EventListener {
             }
         };
         Timer timer = new Timer();
-        timer.schedule(updateLoop, 0, 1000);
+        timer.schedule(updateLoop, 0, 2000);
     }
 
     public static PartialResultCollector getInstance() {
@@ -49,6 +49,9 @@ public class PartialResultCollector implements EventListener {
             IPartialResult partialResult = ((ReceivedPartialResultEvent)toNotify).getPartialResult();
             String id = partialResult.getIdentifier().getClientID();
             Collection<IPartialResult> presentResults = mappingClientIDtoFinishedPartialResults.get(id);
+            if(presentResults == null){
+                presentResults = new HashSet<>();
+            }
             presentResults.add(partialResult);
             mappingClientIDtoFinishedPartialResults.put(id, presentResults);
 

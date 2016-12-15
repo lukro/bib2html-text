@@ -10,7 +10,9 @@ import global.model.DefaultClientRequest;
 import global.model.IResult;
 import org.apache.commons.lang3.SerializationUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
@@ -103,10 +105,26 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         if (deliveredObject instanceof IResult) {
             //TODO: handle Result
             Log.log("Message is instance of IResult.", LogLevel.INFO);
+            handleResult((IResult) deliveredObject);
         } else {
             Log.log("SERVER: " + new String(bytes), LogLevel.SEVERE);
         }
 
+    }
+
+    private void handleResult(IResult result) {
+        StringBuilder bldr = new StringBuilder();
+        result.getFileContents().forEach(part -> bldr.append(part));
+        File outDir = new File(outputDirectory);
+        String filename = result.getClientID(); //TODO.
+        if (outDir == null || !outDir.exists())
+            Log.log("Cannot output File to out dir : Out dir does not exist!", LogLevel.SEVERE);
+        else
+            try {
+                Files.write(new File(outDir, filename).toPath(), bldr.toString().getBytes());
+            } catch (IOException e) {
+                Log.log("Failed to write output file",e);
+            }
     }
 
     @Override

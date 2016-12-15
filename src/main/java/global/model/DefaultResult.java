@@ -42,8 +42,11 @@ public class DefaultResult implements IResult {
             PartialResultIdentifier identifier = partial.getIdentifier();
             if(collectionMap.containsKey(identifier))
                 collectionMap.get(identifier).add(partial);
-            else
-                collectionMap.put(identifier, Arrays.asList(partial));
+            else {
+                HashSet<IPartialResult> tempSet = new HashSet<>();
+                tempSet.add(partial);
+                collectionMap.put(identifier, tempSet);
+            }
         });
 
         //Build results
@@ -51,7 +54,7 @@ public class DefaultResult implements IResult {
         collectionMap.forEach((identifier, results) -> {
             StringBuilder bldr = new StringBuilder();
             //TODO Sort results
-            results.forEach(result -> bldr.append(result));
+            results.forEach(result -> bldr.append(result.getContent()));
             generatedStrings.add(bldr.toString());
         });
 

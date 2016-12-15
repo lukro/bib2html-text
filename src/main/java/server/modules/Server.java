@@ -183,6 +183,12 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
         }
     }
 
+    /**
+     * Processes the received Request.
+     *
+     * @param deliveredClientRequest A IClientRequest with at least one Entry
+     * @throws IOException
+     */
     private void processDeliveredClientRequest(IClientRequest deliveredClientRequest) throws IOException {
         IEntry firstEntry = deliveredClientRequest.getEntries().stream().findFirst().get();
 
@@ -202,7 +208,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, EventListen
 
         Log.log("Server successfully received a ClientRequest.");
 
-        //TODO : Find a way for MSM.checkUtilization() to be executed in smart intervals.
         for (IEntry currentEntry : deliveredClientRequest.getEntries())
             channel.basicPublish("", TASK_QUEUE_NAME, replyProps, SerializationUtils.serialize(currentEntry));
     }

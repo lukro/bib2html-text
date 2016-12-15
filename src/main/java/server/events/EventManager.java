@@ -1,5 +1,7 @@
 package server.events;
 
+import global.logging.Log;
+
 import java.util.*;
 
 public class EventManager{
@@ -35,9 +37,8 @@ public class EventManager{
 			try {
 				listener.notify(toPublish);
 			} catch (NullPointerException e) {
-				//TODO: Implement Log System? 
 				//TODO: Remove invalid instance?
-				e.printStackTrace();
+				Log.log("Couldn't publish the event to the listener : Listener was null",e);
 			}
 		});
 	}
