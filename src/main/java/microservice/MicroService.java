@@ -158,6 +158,10 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         md.write("--- + bibliography: test.bib nocite: \"@*\"...");
 
         pandocDoWork(templateName, cslName, mdName, channel, 1, toConvert.getEntryIdentifier());
+        Files.delete(Paths.get(identifier + ".csl"));
+        Files.delete(Paths.get(identifier + "_template.html"));
+        Files.delete(Paths.get(identifier + ".bib"));
+        Files.delete(Paths.get(identifier + ".md"));
 
         byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(identifier + "_result.html"));
         String convertedContent = new String(convertedContentEncoded);
