@@ -39,7 +39,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         this("localhost");
     }
 
-    public void main(String[] args) throws IOException, TimeoutException, InterruptedException {
+    public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
         MicroService test = new MicroService();
         Collection<String> cslFiles = new ArrayList<String>();
         Collection<String> templates = new ArrayList<String>();
@@ -156,12 +156,15 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         csl.write(toConvert.getTemplates().get(0));
         template.write(toConvert.getTemplates().get(0));
         md.write("--- + bibliography: test.bib nocite: \"@*\"...");
+
         pandocDoWork(templateName, cslName, mdName, channel, 1, toConvert.getEntryIdentifier());
+
         byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(identifier + "_result.html"));
         String convertedContent = new String(convertedContentEncoded);
         DefaultPartialResult convertedEntry = new DefaultPartialResult(convertedContent, new PartialResultIdentifier(toConvert.getEntryIdentifier(),1,1));
         return convertedEntry;
     }
+
 
     private boolean[] validateTempaltes(DefaultEntry defaultEntry, HashSet<byte[]> templateFiles) {
         boolean[] output = new boolean[templateFiles.size()];
