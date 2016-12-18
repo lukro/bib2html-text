@@ -80,7 +80,7 @@ public class MicroServiceManager {
         //TODO : Fill... Add Port to newService.getHostIP()
         try {
             Log.log("Starting microservice on server");
-            MicroService newService = new MicroService();
+            MicroService newService = new MicroService(channel);
             microServices.put(newService.getID(), newService.getHostIP());
             EventManager.getInstance().publishEvent(new MicroServiceConnectedEvent(newService.getID()));
             Log.log("Successfully started microservice");
