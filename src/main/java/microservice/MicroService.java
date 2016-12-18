@@ -43,8 +43,22 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         MicroService test = new MicroService();
         Collection<String> cslFiles = new ArrayList<String>();
         Collection<String> templates = new ArrayList<String>();
-        String csl = "<?xml version=\"1.0\" encoding=\"utf-8\"?>  <style xmlns=\"http://purl.org/net/xbiblio/csl\" version=\"1.0\" default-locale=\"en-US\">  <info> <title>AAPG Bulletin</title> <id>http://www.zotero.org/styles/aapg-bulletin</id> <link href=\"http://www.zotero.org/styles/aapg-bulletin\" rel=\"self\"/> <link href=\"http://www.zotero.org/styles/american-association-of-petroleum-geologists\" rel=\"independent-parent\"/> <link href=\"http://www.aapg.org/bulletin/reference.cfm\" rel=\"documentation\"/> <category citation-format=\"author-date\"/> <category field=\"geology\"/> <issn>0149-1423</issn> <updated>2013-03-29T23:50:45+00:00</updated> <rights license=\"http://creativecommons.org/licenses/by-sa/3.0/\">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights> </info> </style>";
-        cslFiles.add (csl);
+        String csl = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<style xmlns=\"http://purl.org/net/xbiblio/csl\" version=\"1.0\" default-locale=\"en-US\">\n" +
+                "  <info>\n" +
+                "    <title>AAPG Bulletin</title>\n" +
+                "    <id>http://www.zotero.org/styles/aapg-bulletin</id>\n" +
+                "    <link href=\"http://www.zotero.org/styles/aapg-bulletin\" rel=\"self\"/>\n" +
+                "    <link href=\"http://www.zotero.org/styles/american-association-of-petroleum-geologists\" rel=\"independent-parent\"/>\n" +
+                "    <link href=\"http://www.aapg.org/bulletin/reference.cfm\" rel=\"documentation\"/>\n" +
+                "    <category citation-format=\"author-date\"/>\n" +
+                "    <category field=\"geology\"/>\n" +
+                "    <issn>0149-1423</issn>\n" +
+                "    <updated>2013-03-29T23:50:45+00:00</updated>\n" +
+                "    <rights license=\"http://creativecommons.org/licenses/by-sa/3.0/\">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights>\n" +
+                "  </info>\n" +
+                "</style>";
+                cslFiles.add (csl);
         String template = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
                 "<html xmlns=\"http://www.w3.org/1999/xhtml\"$if(lang)$ lang=\"$lang$\" xml:lang=\"$lang$\"$endif$$if(dir)$ dir=\"$dir$\"$endif$>\n" +
                 "<head>\n" +
@@ -140,35 +154,37 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         initConnectionPoint();
     }
 
-    private DefaultPartialResult convertEntry(DefaultEntry toConvert) throws IOException, InterruptedException {
+    private DefaultPartialResult convertEntry(DefaultEntry toConvert) throws InterruptedException {
         //TODO : Replace Dummy code
-        String identifier = toConvert.getEntryIdentifier().toString();
+        int identifier = toConvert.getEntryIdentifier().getBibFileIndex();
         String cslName = identifier + ".csl";
         String templateName = identifier + "_template.html";
         String bibName = identifier + ".bib";
         String mdName = identifier + ".md";
         // directoryName = "temp";
-        PrintWriter csl = new PrintWriter(cslName,"UTF-8");
-        PrintWriter template = new PrintWriter(templateName,"UTF-8");
-        PrintWriter bib = new PrintWriter(bibName,"UTF-8");
-        PrintWriter md = new PrintWriter(mdName,"UTF-8");
-        bib.write(toConvert.getContent());
-        csl.write(toConvert.getTemplates().get(0));
-        template.write(toConvert.getTemplates().get(0));
-        md.write("--- + bibliography: test.bib nocite: \"@*\"...");
-
-        pandocDoWork(templateName, cslName, mdName, channel, 1, toConvert.getEntryIdentifier());
-        File test = new File(identifier + ".csl");
-        System.out.println(test.exists());
-//        Files.delete(Paths.get(identifier + ".csl"));
-//        Files.delete(Paths.get(identifier + "_template.html"));
-//        Files.delete(Paths.get(identifier + ".bib"));
-//        Files.delete(Paths.get(identifier + ".md"));
-
-        byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(identifier + "_result.html"));
-        String convertedContent = new String(convertedContentEncoded);
-        DefaultPartialResult convertedEntry = new DefaultPartialResult(convertedContent, new PartialResultIdentifier(toConvert.getEntryIdentifier(),1,1));
-        return convertedEntry;
+        try {
+            PrintWriter csl = new PrintWriter(cslName, "UTF-8");
+            PrintWriter template = new PrintWriter(templateName, "UTF-8");
+            PrintWriter bib = new PrintWriter(bibName, "UTF-8");
+            PrintWriter md = new PrintWriter(mdName);
+            bib.write(toConvert.getContent());
+            csl.write(toConvert.getCslFiles().get(0));
+            template.write(toConvert.getTemplates().get(0));
+            md.write("--- \nbibliography: " + identifier + ".bib\nnocite: \"@*\" \n...");
+            pandocDoWork(cslName, templateName, mdName, channel, 1, toConvert.getEntryIdentifier());///
+            byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(identifier + "_result.html"));
+            String convertedContent = new String(convertedContentEncoded);
+            DefaultPartialResult convertedEntry = new DefaultPartialResult(convertedContent, new PartialResultIdentifier(toConvert.getEntryIdentifier(),1,1));
+            Files.delete(Paths.get(identifier + ".csl"));
+            Files.delete(Paths.get(identifier + "_template.html"));
+            Files.delete(Paths.get(identifier + ".bib"));
+            Files.delete(Paths.get(identifier + ".md"));
+            return convertedEntry;
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
@@ -194,10 +210,17 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         if (!cslFile.exists() || !wrapperFile.exists())
             throw new IllegalArgumentException("A file with that name might not exist!");
 
-        String command = "pandoc --filter=pandoc-citeproc --template" + templateName + " --csl=" + cslName + ".csl --standalone " + wrapperName + ".md -o " + entryIdentifier + "_result.html";
+        String command = "pandoc --filter=pandoc-citeproc --template " + templateName + " --csl " + cslName + " --standalone " + wrapperName + " -o " + entryIdentifier.getBibFileIndex() + "_result.html";
+        System.out.println(command);
         channel.basicAck(currentDeliveryTag,false);
-        return Runtime.getRuntime().exec(command, null).waitFor();
-
+        Process p = Runtime.getRuntime().exec(command, null);
+        BufferedReader input = new BufferedReader(new
+                InputStreamReader(p.getInputStream()));
+        String line;
+        while ((line = input.readLine()) != null) {
+            System.out.println(line);
+        }
+        return p.waitFor();
     }
 
     @Override
