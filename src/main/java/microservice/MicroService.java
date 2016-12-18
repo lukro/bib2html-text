@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -24,31 +23,35 @@ import java.util.concurrent.TimeoutException;
  */
 public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
-    private final String microServiceID, hostIP;
+    private final String hostIP;
+    private String microServiceID;
     private final String TASK_QUEUE_NAME = "taskQueue";
     private final String REGISTER_QUEUE_NAME = "registerQueue";
 
-    private final Connection connection;
+//    private final Connection connection;
     private final Channel channel;
 
     private long currentDeliveryTag;
 
-
-    public MicroService() throws IOException, TimeoutException {
-        this("localhost");
+    public MicroService(Channel channel) throws IOException, TimeoutException {
+        this(channel,"localhost");
     }
 
+    public MicroService(Channel channel, String hostIP) throws IOException, TimeoutException {
+        this.hostIP = hostIP;
+        this.channel = channel;
+        initConnectionPoint();
+    }
+
+    /*
+     * use only for remote services!
+     * TODO: remote services mit gleichem channel starten?
+     */
     public MicroService(String hostIP) throws IOException, TimeoutException {
-        this(hostIP, UUID.randomUUID().toString());
-    }
-
-    public MicroService(String hostIP, String microServiceID) throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(hostIP);
         this.hostIP = hostIP;
-        this.microServiceID = microServiceID;
-        this.connection = factory.newConnection();
-        this.channel = connection.createChannel();
+        this.channel = factory.newConnection().createChannel();
         initConnectionPoint();
     }
 
@@ -92,12 +95,12 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleCancelOk(String s) {
-
+        Log.log("MicroService cancelled: " + microServiceID);
     }
 
     @Override
     public void handleCancel(String s) throws IOException {
-        Log.log("MicroService cancelled: " + s);
+        Log.log("MicroService cancelled: " + microServiceID);
     }
 
     @Override
@@ -112,7 +115,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        System.out.println("MicroService received message");
+        System.out.println("MicroService received message " + microServiceID);
         doHardWorkEfficiently(basicProperties, bytes);
         envelope.getDeliveryTag();
     }
@@ -139,14 +142,13 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void consumeIncomingQueues() throws IOException {
-        channel.basicConsume(TASK_QUEUE_NAME, true, this);
+        this.microServiceID = channel.basicConsume(TASK_QUEUE_NAME, true, this);
     }
 
 
     @Override
     public void closeConnection() throws IOException, TimeoutException {
         channel.close();
-        connection.close();
     }
 
     @Override
@@ -171,4 +173,5 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     public String getID() {
         return microServiceID;
     }
+
 }
