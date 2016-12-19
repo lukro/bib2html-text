@@ -19,7 +19,6 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author Maximilian Schirm, Karsten Schaefers, daan
  *         created 05.12.2016
- *         edited 9.12.2016
  */
 public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
