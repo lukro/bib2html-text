@@ -59,11 +59,11 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
                 .build();
 
         //Initialize modules
-        initConnectionPoint();
         MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
 //        MicroServiceManager.getInstance(); TODO Uncomment if issues appear
         PartialResultCollector.getInstance();
         EventManager.getInstance().registerListener(this);
+        initConnectionPoint();
     }
 
     @Override
@@ -222,8 +222,9 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 
         Log.log("Server successfully received a ClientRequest.");
 
-        for (IEntry currentEntry : deliveredClientRequest.getEntries())
+        for (IEntry currentEntry : deliveredClientRequest.getEntries()) {
             channel.basicPublish("", TASK_QUEUE_NAME, replyProps, SerializationUtils.serialize(currentEntry));
+        }
     }
 
     private Collection<String> blacklistedClients = new HashSet<>();

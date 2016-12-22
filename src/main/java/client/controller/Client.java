@@ -52,6 +52,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
                 .correlationId(clientID)
                 .replyTo(callbackQueueName)
                 .build();
+        this.outputDirectory = "";
         initConnectionPoint();
     }
 
@@ -118,7 +119,6 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         } else {
             Log.log("SERVER: " + new String(bytes), LogLevel.SEVERE);
         }
-
     }
 
     private void handleResult(IResult result) {
@@ -128,7 +128,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         File outDir = new File(outputDirectory);
         String filename = result.getClientID(); //TODO.
         if (outDir == null || !outDir.exists())
-            Log.log("Cannot output File to out dir : Out dir does not exist!", LogLevel.SEVERE);
+            Log.log("Output-directory doesn't exist!", LogLevel.SEVERE);
         else
             try {
                 Files.write(new File(outDir, filename).toPath(), builder.toString().getBytes());

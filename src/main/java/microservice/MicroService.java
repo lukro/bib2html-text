@@ -17,161 +17,45 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 
 /**
  * @author Maximilian Schirm, Karsten Schaefers, daan
  *         created 05.12.2016
- *         edited 9.12.2016
  */
 public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
-    private final String microServiceID, hostIP;
+    private final String hostIP;
+    private String microServiceID;
     private final String TASK_QUEUE_NAME = "taskQueue";
     private final String REGISTER_QUEUE_NAME = "registerQueue";
 
-    private final Connection connection;
+//    private final Connection connection;
     private final Channel channel;
 
     private long currentDeliveryTag;
 
-
-    public MicroService() throws IOException, TimeoutException {
-        this("localhost");
+    public MicroService(Channel channel) throws IOException, TimeoutException {
+        this(channel,"localhost");
     }
 
-//    public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
-//        MicroService test = new MicroService();
-//        Collection<String> cslFiles = new ArrayList<String>();
-//        Collection<String> templates = new ArrayList<String>();
-//        String csl = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-//                "<style xmlns=\"http://purl.org/net/xbiblio/csl\" version=\"1.0\" default-locale=\"en-US\">\n" +
-//                "  <info>\n" +
-//                "    <title>AAPG Bulletin</title>\n" +
-//                "    <id>http://www.zotero.org/styles/aapg-bulletin</id>\n" +
-//                "    <link href=\"http://www.zotero.org/styles/aapg-bulletin\" rel=\"self\"/>\n" +
-//                "    <link href=\"http://www.zotero.org/styles/american-association-of-petroleum-geologists\" rel=\"independent-parent\"/>\n" +
-//                "    <link href=\"http://www.aapg.org/bulletin/reference.cfm\" rel=\"documentation\"/>\n" +
-//                "    <category citation-format=\"author-date\"/>\n" +
-//                "    <category field=\"geology\"/>\n" +
-//                "    <issn>0149-1423</issn>\n" +
-//                "    <updated>2013-03-29T23:50:45+00:00</updated>\n" +
-//                "    <rights license=\"http://creativecommons.org/licenses/by-sa/3.0/\">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights>\n" +
-//                "  </info>\n" +
-//                "</style>";
-//        String csl2 = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-//                "<style xmlns=\"http://purl.org/net/xbiblio/csl\" version=\"1.0\" default-locale=\"en-US\">\n" +
-//                "  <!-- Generated with https://github.com/citation-style-language/utilities/tree/master/generate_dependent_styles/data/springer -->\n" +
-//                "  <info>\n" +
-//                "    <title>AAPS Open</title>\n" +
-//                "    <id>http://www.zotero.org/styles/aaps-open</id>\n" +
-//                "    <link href=\"http://www.zotero.org/styles/aaps-open\" rel=\"self\"/>\n" +
-//                "    <link href=\"http://www.zotero.org/styles/springer-basic-author-date\" rel=\"independent-parent\"/>\n" +
-//                "    <link href=\"http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf\" rel=\"documentation\"/>\n" +
-//                "    <link href=\"http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf\" rel=\"documentation\"/>\n" +
-//                "    <category citation-format=\"author-date\"/>\n" +
-//                "    <eissn>2364-9534</eissn>\n" +
-//                "    <updated>2014-05-15T12:00:00+00:00</updated>\n" +
-//                "    <rights license=\"http://creativecommons.org/licenses/by-sa/3.0/\">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights>\n" +
-//                "  </info>\n" +
-//                "</style>";
-//        cslFiles.add (csl);
-//        cslFiles.add(csl2);
-//        String template = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
-//                "<html xmlns=\"http://www.w3.org/1999/xhtml\"$if(lang)$ lang=\"$lang$\" xml:lang=\"$lang$\"$endif$$if(dir)$ dir=\"$dir$\"$endif$>\n" +
-//                "<head>\n" +
-//                "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n" +
-//                "  <meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n" +
-//                "  <meta name=\"generator\" content=\"pandoc\" />\n" +
-//                "$for(author-meta)$\n" +
-//                "  <meta name=\"author\" content=\"$author-meta$\" />\n" +
-//                "$endfor$\n" +
-//                "$if(date-meta)$\n" +
-//                "  <meta name=\"date\" content=\"$date-meta$\" />\n" +
-//                "$endif$\n" +
-//                "$if(keywords)$\n" +
-//                "  <meta name=\"keywords\" content=\"$for(keywords)$$keywords$$sep$, $endfor$\" />\n" +
-//                "$endif$\n" +
-//                "  <title>$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$</title>\n" +
-//                "  <style type=\"text/css\">code{white-space: pre;}</style>\n" +
-//                "$if(quotes)$\n" +
-//                "  <style type=\"text/css\">q { quotes: \"“\" \"”\" \"‘\" \"’\"; }</style>\n" +
-//                "$endif$\n" +
-//                "$if(highlighting-css)$\n" +
-//                "  <style type=\"text/css\">\n" +
-//                "$highlighting-css$\n" +
-//                "  </style>\n" +
-//                "$endif$\n" +
-//                "$for(css)$\n" +
-//                "  <link rel=\"stylesheet\" href=\"$css$\" type=\"text/css\" />\n" +
-//                "$endfor$\n" +
-//                "$if(math)$\n" +
-//                "  $math$\n" +
-//                "$endif$\n" +
-//                "$for(header-includes)$\n" +
-//                "  $header-includes$\n" +
-//                "$endfor$\n" +
-//                "</head>\n" +
-//                "<body>\n" +
-//                "$for(include-before)$\n" +
-//                "$include-before$\n" +
-//                "$endfor$\n" +
-//                "$if(title)$\n" +
-//                "<div id=\"$idprefix$header\">\n" +
-//                "<h1 class=\"title\">$title$</h1>\n" +
-//                "$if(subtitle)$\n" +
-//                "<h1 class=\"subtitle\">$subtitle$</h1>\n" +
-//                "$endif$\n" +
-//                "$for(author)$\n" +
-//                "<h2 class=\"author\">$author$</h2>\n" +
-//                "$endfor$\n" +
-//                "$if(date)$\n" +
-//                "<h3 class=\"date\">$date$</h3>\n" +
-//                "$endif$\n" +
-//                "</div>\n" +
-//                "$endif$\n" +
-//                "$if(toc)$\n" +
-//                "<div id=\"$idprefix$TOC\">\n" +
-//                "$toc$\n" +
-//                "</div>\n" +
-//                "$endif$\n" +
-//                "$body$\n" +
-//                "$for(include-after)$\n" +
-//                "$include-after$\n" +
-//                "$endfor$\n" +
-//                "</body>\n" +
-//                "</html>";
-//        templates.add(template);
-//        String bibEntry = "@article{bkns-blol-10,\n" +
-//            "  author =\t {Michael A. Bekos and Michael Kaufmann and Martin\n" +
-//                    "                  N{\\\"o}llenburg and Antonios Symvonis},\n" +
-//                    "  title =\t {Boundary Labeling with Octilinear Leaders},\n" +
-//                    "  journal =\t {Algorithmica},\n" +
-//                    "  volume =\t 57,\n" +
-//                    "  number =\t 3,\n" +
-//                    "  year =\t 2010,\n" +
-//                    "  pages =\t {436-461},\n" +
-//                    "  ee =\t\t {http://dx.doi.org/10.1007/s00453-009-9283-6},\n" +
-//                    "}";
-//
-//        DefaultEntry toConvert = new DefaultEntry("1",bibEntry,1,1, cslFiles, templates);
-//        List<DefaultPartialResult> list = test.convertEntry(toConvert);
-//        for(DefaultPartialResult res : list) {
-//            System.out.println(res.getContent());
-//        }
-//    }
+    public MicroService(Channel channel, String hostIP) throws IOException, TimeoutException {
+        this.hostIP = hostIP;
+        this.channel = channel;
+        initConnectionPoint();
+    }
 
+    /*
+     * use only for remote services!
+     * TODO: remote services mit gleichem channel starten?
+     */
     public MicroService(String hostIP) throws IOException, TimeoutException {
-        this(hostIP, UUID.randomUUID().toString());
-    }
-
-    public MicroService(String hostIP, String microServiceID) throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(hostIP);
         this.hostIP = hostIP;
-        this.microServiceID = microServiceID;
-        this.connection = factory.newConnection();
-        this.channel = connection.createChannel();
+        this.channel = factory.newConnection().createChannel();
         initConnectionPoint();
     }
 
@@ -253,12 +137,12 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleCancelOk(String s) {
-
+        Log.log("MicroService cancelled: " + microServiceID);
     }
 
     @Override
     public void handleCancel(String s) throws IOException {
-
+        Log.log("MicroService cancelled: " + microServiceID);
     }
 
     @Override
@@ -273,7 +157,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        System.out.println("MicroService received message");
+        System.out.println("MicroService received message " + microServiceID);
         doHardWorkEfficiently(basicProperties, bytes);
         envelope.getDeliveryTag();
     }
@@ -294,20 +178,19 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         try {
             consumeIncomingQueues();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.log("failed to consume incoming queues in microservice.run()", e);
         }
     }
 
     @Override
     public void consumeIncomingQueues() throws IOException {
-        channel.basicConsume(TASK_QUEUE_NAME, false, this);
+        this.microServiceID = channel.basicConsume(TASK_QUEUE_NAME, true, this);
     }
 
 
     @Override
     public void closeConnection() throws IOException, TimeoutException {
         channel.close();
-        connection.close();
     }
 
     @Override

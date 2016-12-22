@@ -80,9 +80,8 @@ public class MicroServiceManager {
         //TODO : Fill... Add Port to newService.getHostIP()
         try {
             Log.log("Starting microservice on server");
-            MicroService newService = new MicroService();
+            MicroService newService = new MicroService(channel);
             microServices.put(newService.getID(), newService.getHostIP());
-            newService.run();
             EventManager.getInstance().publishEvent(new MicroServiceConnectedEvent(newService.getID()));
             Log.log("Successfully started microservice");
             return newService.getID();
@@ -137,8 +136,8 @@ public class MicroServiceManager {
      * @return number of added services. 0, if no new services where added.
      */
     private int checkUtilization() throws IOException {
-
         int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
+//        Log.log("currentAmountOfTasks: " + currTasks);
         int returnValue = 0;
 
         //To avoid dividing by 0
@@ -149,7 +148,7 @@ public class MicroServiceManager {
             startMicroService();
             returnValue++;
         }
-
+//        Log.log("started MSs: " + returnValue);
         return returnValue;
     }
 }
