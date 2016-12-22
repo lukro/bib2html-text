@@ -17,8 +17,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 
@@ -184,6 +185,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void consumeIncomingQueues() throws IOException {
+        //TODO: autoAck raus, manuelles Ack rein
         this.microServiceID = channel.basicConsume(TASK_QUEUE_NAME, true, this);
     }
 
