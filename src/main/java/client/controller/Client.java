@@ -67,7 +67,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void consumeIncomingQueues() throws IOException {
-        channel.basicConsume(callbackQueueName, false, this);
+        channel.basicConsume(callbackQueueName, true, this);
     }
 
     private long timeStart = 0;
