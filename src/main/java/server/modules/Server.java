@@ -77,8 +77,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 
     @Override
     public void consumeIncomingQueues() throws IOException {
-        channel.basicConsume(CLIENT_REQUEST_QUEUE_NAME, false, this);
-        channel.basicConsume(callbackQueueName, false, this);
+        channel.basicConsume(CLIENT_REQUEST_QUEUE_NAME, true, this);
+        channel.basicConsume(callbackQueueName, true, this);
     }
 
     @Override

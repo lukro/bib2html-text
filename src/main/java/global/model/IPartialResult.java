@@ -9,6 +9,8 @@ import java.io.Serializable;
  *         created on 12/7/16.
  */
 public interface IPartialResult extends Serializable {
-    public PartialResultIdentifier getIdentifier();
-    public String getContent();
+
+    PartialResultIdentifier getIdentifier();
+
+    String getContent();
 }

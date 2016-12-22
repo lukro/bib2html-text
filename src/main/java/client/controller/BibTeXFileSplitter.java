@@ -30,7 +30,7 @@ public enum BibTeXFileSplitter {
             try {
                 format(bibTeXEntry, stringWriter);
             } catch (IOException e) {
-                Log.log("couldn't format bibTeXEntry as String in BibTeXFileSplitter.", LogLevel.ERROR);
+                Log.log("couldn't format bibTeXEntry as String.", e);
                 return null;
             }
             return stringWriter.toString();
@@ -46,25 +46,33 @@ public enum BibTeXFileSplitter {
             cslFilesAsStrings = ClientFileHandler.createStringListFromFileList(clientFileModel.getCslFiles());
             templatesAsStrings = ClientFileHandler.createStringListFromFileList(clientFileModel.getTemplates());
         } catch (IOException e) {
-            Log.log("couldn't create fileLists as Strings from clientFileModel.", LogLevel.ERROR);
+            Log.log("couldn't create stringLists from fileLists.", e);
             return null;
         }
         //create DefaultEntry-Objects
+        DefaultEntry currentEntryObject;
         for (int bibFileIndex = 0; bibFileIndex < clientFileModel.getBibFiles().size(); bibFileIndex++) {
-            ArrayList<String> entryContentList = this.createBibTeXEntryContentList(clientFileModel.getBibFiles().get(bibFileIndex));
-            for (int positionInBibFile = 0; positionInBibFile < entryContentList.size(); positionInBibFile++) {
-                DefaultEntry currentEntryObject = new DefaultEntry(clientFileModel.getClientID(),
-                        entryContentList.get(positionInBibFile), bibFileIndex, positionInBibFile, cslFilesAsStrings,
-                        templatesAsStrings);
-                entryObjectList.add(currentEntryObject);
+            ArrayList<String> entryContentList = this.createEntryContentList(clientFileModel.getBibFiles().get(bibFileIndex));
+            if (entryContentList != null) {
+                for (int positionInBibFile = 0; positionInBibFile < entryContentList.size(); positionInBibFile++) {
+                    currentEntryObject =
+                            new DefaultEntry.Builder(clientFileModel.getClientID())
+                                    .content(entryContentList.get(positionInBibFile))
+                                    .cslFiles(cslFilesAsStrings)
+                                    .templateFiles(templatesAsStrings)
+                                    .bibFileIndex(bibFileIndex)
+                                    .positionInBibFile(positionInBibFile)
+                                    .build();
+                    entryObjectList.add(currentEntryObject);
+                }
             }
         }
         return entryObjectList;
     }
 
-    ArrayList<String> createBibTeXEntryContentList(File bibFile) {
-        Objects.requireNonNull(bibFile, "(bibFile == null) in BibTexEntryFormatter.createBibTeXEntryContentList()");
-        BibTeXDatabase bibTeXDatabase = BibTeXFileSplitter.getBibTeXDatabaseObjectFromFile(bibFile);
+    ArrayList<String> createEntryContentList(File bibFile) {
+        Objects.requireNonNull(bibFile, "(bibFile == null) in BibTexEntryFormatter.createEntryContentList()");
+        BibTeXDatabase bibTeXDatabase = BibTeXFileSplitter.getBibTeXDatabaseFromFile(bibFile);
         if (bibTeXDatabase != null) {
             ArrayList<String> entryContentList = new ArrayList<>();
             StringWriter stringWriter;
@@ -74,7 +82,7 @@ public enum BibTeXFileSplitter {
                 try {
                     stringWriter.close();
                 } catch (IOException e) {
-                    Log.log("couldn't close StringWritrer in BibTeXFileSpliter.", LogLevel.ERROR);
+                    Log.log("couldn't close StringWriter in BibTeXFileSplitter.", e);
                 }
 
             }
@@ -83,12 +91,12 @@ public enum BibTeXFileSplitter {
         return null;
     }
 
-    static BibTeXDatabase getBibTeXDatabaseObjectFromFile(File bibFile) {
+    static BibTeXDatabase getBibTeXDatabaseFromFile(File bibFile) {
         FileReader fileReader;
         try {
             fileReader = new FileReader(bibFile);
         } catch (FileNotFoundException e) {
-            Log.log("couldn't find .bib-file in BibTeXFileSplitter.", LogLevel.ERROR);
+            Log.log("couldn't find .bib-file in BibTeXFileSplitter.", e);
             return null;
         }
         BibTeXDatabase result = null;
@@ -98,7 +106,7 @@ public enum BibTeXFileSplitter {
             try {
                 fileReader.close();
             } catch (IOException e) {
-                Log.log("couldn't close FileReader in BibTeXFileSplitter.", LogLevel.ERROR);
+                Log.log("couldn't close FileReader in BibTeXFileSplitter.", e);
             }
         } catch (ParseException e) {
             Log.log("invalid .bib-file.", LogLevel.WARNING);

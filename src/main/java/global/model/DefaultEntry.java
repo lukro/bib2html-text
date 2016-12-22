@@ -16,12 +16,60 @@ public class DefaultEntry implements IEntry {
     private final String content;
     private final ArrayList<String> cslFiles, templateFiles;
 
-    public DefaultEntry(String clientID, String content, int bibFileIndex, int positionInBibFile, Collection<String> cslFiles, Collection<String> templateFiles) {
-        this.entryIdentifier = new EntryIdentifier(clientID, bibFileIndex, positionInBibFile);
-        this.content = content;
-        this.cslFiles = new ArrayList<>(cslFiles);
-        this.templateFiles = new ArrayList<>(templateFiles);
+    public static final class Builder {
+
+        private String clientID, content;
+        private ArrayList<String> cslFiles, templatesFiles;
+        private int bibFileIndex, positionInBibFile;
+
+        public Builder(String clientID) {
+            this.clientID = clientID;
+        }
+
+        public Builder content(String content) {
+            this.content = content;
+            return this;
+        }
+
+        public Builder cslFiles(ArrayList<String> cslFiles) {
+            this.cslFiles = cslFiles;
+            return this;
+        }
+
+        public Builder templateFiles(ArrayList<String> templatesFiles) {
+            this.templatesFiles = templatesFiles;
+            return this;
+        }
+
+        public Builder bibFileIndex(int bibFileIndex) {
+            this.bibFileIndex = bibFileIndex;
+            return this;
+        }
+
+        public Builder positionInBibFile(int positionInBibFile) {
+            this.positionInBibFile = positionInBibFile;
+            return this;
+        }
+
+        public DefaultEntry build() {
+            return new DefaultEntry(this);
+        }
     }
+
+    private DefaultEntry(Builder builder) {
+        this.entryIdentifier = new EntryIdentifier(
+                builder.clientID, builder.bibFileIndex, builder.positionInBibFile);
+        this.content = builder.content;
+        this.cslFiles = builder.cslFiles;
+        this.templateFiles = builder.templatesFiles;
+    }
+
+//    public DefaultEntry(String clientID, String content, int bibFileIndex, int positionInBibFile, Collection<String> cslFiles, Collection<String> templateFiles) {
+//        this.entryIdentifier = new EntryIdentifier(clientID, bibFileIndex, positionInBibFile);
+//        this.content = content;
+//        this.cslFiles = new ArrayList<>(cslFiles);
+//        this.templateFiles = new ArrayList<>(templateFiles);
+//    }
 
     @Override
     public EntryIdentifier getEntryIdentifier() {

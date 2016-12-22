@@ -67,7 +67,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void consumeIncomingQueues() throws IOException {
-        channel.basicConsume(callbackQueueName, false, this);
+        channel.basicConsume(callbackQueueName, true, this);
     }
 
     private long timeStart = 0;
@@ -78,7 +78,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, replyProps, SerializationUtils.serialize(this.createClientRequest()));
         //time measuring starts after request creation
         timeStart = System.currentTimeMillis();
-        Log.log("Client with ID: " + this.clientID + " sent a ClientRequest. (@" + timeStart + ")", LogLevel.INFO);
+        Log.log("Client with ID: " + this.clientID + " sent a ClientRequest.", LogLevel.INFO);
     }
 
     @Override
@@ -123,10 +123,14 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     private void handleResult(IResult result) {
         StringBuilder builder = new StringBuilder();
-        result.getFileContents().forEach(part -> builder.append(part));
-        outputDirectory = "";
+
+        for (String currentFileContent : result.getFileContents()) {
+            builder.append(currentFileContent);
+        }
+//        result.getFileContents().forEach(part -> builder.append(part));
+
         File outDir = new File(outputDirectory);
-        String filename = result.getClientID(); //TODO.
+        String filename = result.getClientID();
         if (outDir == null || !outDir.exists())
             Log.log("Output-directory doesn't exist!", LogLevel.SEVERE);
         else

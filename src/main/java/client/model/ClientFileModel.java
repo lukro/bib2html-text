@@ -134,66 +134,66 @@ public class ClientFileModel {
     }
 
 
-    /**
-     * adds n .bib-files to model
-     *
-     * @param bibFiles .bib-files you want to add
-     * @return true if n .bib-files added successfully, false if at least one file wasn't added successfully
-     */
-    public boolean addBibFiles(Collection<File> bibFiles) {
-        try {
-            Objects.requireNonNull(bibFiles);
-        } catch (NullPointerException e) {
-            Log.log("(bibFiles == null) in clientFileModel.addBibFiles()", LogLevel.WARNING);
-            return false;
-        }
-        boolean result = true;
-        for (File currentBibFile : bibFiles)
-            if (!addBibFile(currentBibFile))
-                result = false;
-        return result;
-    }
+//    /**
+//     * adds n .bib-files to model
+//     *
+//     * @param bibFiles .bib-files you want to add
+//     * @return true if n .bib-files added successfully, false if at least one file wasn't added successfully
+//     */
+//    public boolean addBibFiles(Collection<File> bibFiles) {
+//        try {
+//            Objects.requireNonNull(bibFiles);
+//        } catch (NullPointerException e) {
+//            Log.log("(bibFiles == null) in clientFileModel.addBibFiles()", LogLevel.WARNING);
+//            return false;
+//        }
+//        boolean result = true;
+//        for (File currentBibFile : bibFiles)
+//            if (!addBibFile(currentBibFile))
+//                result = false;
+//        return result;
+//    }
 
 
-    /**
-     * adds n .csl-files to model
-     *
-     * @param cslFiles .csl-files you want to add
-     * @return true if n .csl-files added successfully, false if at least one file wasn't added successfully
-     */
-    public boolean addCslFiles(Collection<File> cslFiles) {
-        try {
-            Objects.requireNonNull(cslFiles);
-        } catch (NullPointerException e) {
-            Log.log("(cslFiles == null) in clientFileModel.addCslFilesAsString()", LogLevel.WARNING);
-            return false;
-        }
-        boolean result = true;
-        for (File currentCslFile : cslFiles)
-            if (!addCslFile(currentCslFile))
-                result = false;
-        return result;
-    }
+//    /**
+//     * adds n .csl-files to model
+//     *
+//     * @param cslFiles .csl-files you want to add
+//     * @return true if n .csl-files added successfully, false if at least one file wasn't added successfully
+//     */
+//    public boolean addCslFiles(Collection<File> cslFiles) {
+//        try {
+//            Objects.requireNonNull(cslFiles);
+//        } catch (NullPointerException e) {
+//            Log.log("(cslFiles == null) in clientFileModel.addCslFilesAsString()", LogLevel.WARNING);
+//            return false;
+//        }
+//        boolean result = true;
+//        for (File currentCslFile : cslFiles)
+//            if (!addCslFile(currentCslFile))
+//                result = false;
+//        return result;
+//    }
 
-    /**
-     * adds n templates to model
-     *
-     * @param templates templates you want to add
-     * @return true if n templates added successfully, false if at least one template wasn't added successfully
-     */
-    public boolean addTemplates(Collection<File> templates) {
-        try {
-            Objects.requireNonNull(templates);
-        } catch (NullPointerException e) {
-            Log.log("(templates == null) in clientFileModel.addTemplates()", LogLevel.WARNING);
-            return false;
-        }
-        boolean result = true;
-        for (File currentTemplate : templates)
-            if (!addTemplate(currentTemplate))
-                result = false;
-        return result;
-    }
+//    /**
+//     * adds n templates to model
+//     *
+//     * @param templates templates you want to add
+//     * @return true if n templates added successfully, false if at least one template wasn't added successfully
+//     */
+//    public boolean addTemplates(Collection<File> templates) {
+//        try {
+//            Objects.requireNonNull(templates);
+//        } catch (NullPointerException e) {
+//            Log.log("(templates == null) in clientFileModel.addTemplates()", LogLevel.WARNING);
+//            return false;
+//        }
+//        boolean result = true;
+//        for (File currentTemplate : templates)
+//            if (!addTemplate(currentTemplate))
+//                result = false;
+//        return result;
+//    }
 
     //'REMOVE'-methods:
 
@@ -222,25 +222,25 @@ public class ClientFileModel {
         }
     }
 
-    /**
-     * removes n .bib-files from model
-     *
-     * @param bibFiles .bib-files you want to remove
-     * @return true if n .bib-files removed successfully, false if at least one .bib-file wasn't removed successfully
-     */
-    public boolean removeBibFiles(Collection<File> bibFiles) {
-        try {
-            Objects.requireNonNull(bibFiles);
-        } catch (NullPointerException e) {
-            Log.log("(bibFiles== null) in clientFileModel.removeBibFiles()", LogLevel.WARNING);
-            return false;
-        }
-        boolean result = true;
-        for (File currentBibFile : bibFiles)
-            if (!removeBibFile(currentBibFile))
-                result = false;
-        return result;
-    }
+//    /**
+//     * removes n .bib-files from model
+//     *
+//     * @param bibFiles .bib-files you want to remove
+//     * @return true if n .bib-files removed successfully, false if at least one .bib-file wasn't removed successfully
+//     */
+//    public boolean removeBibFiles(Collection<File> bibFiles) {
+//        try {
+//            Objects.requireNonNull(bibFiles);
+//        } catch (NullPointerException e) {
+//            Log.log("(bibFiles== null) in clientFileModel.removeBibFiles()", LogLevel.WARNING);
+//            return false;
+//        }
+//        boolean result = true;
+//        for (File currentBibFile : bibFiles)
+//            if (!removeBibFile(currentBibFile))
+//                result = false;
+//        return result;
+//    }
 
     /**
      * removes ALL .bib-files from model
@@ -284,25 +284,25 @@ public class ClientFileModel {
 
     }
 
-    /**
-     * removes n .csl-files from model
-     *
-     * @param cslFiles .csl-files you want to remove
-     * @return true if n .csl-files removed successfully, false if at least one .csl-file wasn't removed successfully
-     */
-    public boolean removeCslFiles(Collection<File> cslFiles) {
-        try {
-            Objects.requireNonNull(cslFiles);
-        } catch (NullPointerException e) {
-            Log.log("(cslFileToRemove == null) in clientFileModel.removeCslFile()", LogLevel.WARNING);
-            return false;
-        }
-        boolean result = true;
-        for (File currentCslFile : cslFiles)
-            if (!removeCslFile(currentCslFile))
-                result = false;
-        return result;
-    }
+//    /**
+//     * removes n .csl-files from model
+//     *
+//     * @param cslFiles .csl-files you want to remove
+//     * @return true if n .csl-files removed successfully, false if at least one .csl-file wasn't removed successfully
+//     */
+//    public boolean removeCslFiles(Collection<File> cslFiles) {
+//        try {
+//            Objects.requireNonNull(cslFiles);
+//        } catch (NullPointerException e) {
+//            Log.log("(cslFileToRemove == null) in clientFileModel.removeCslFile()", LogLevel.WARNING);
+//            return false;
+//        }
+//        boolean result = true;
+//        for (File currentCslFile : cslFiles)
+//            if (!removeCslFile(currentCslFile))
+//                result = false;
+//        return result;
+//    }
 
     /**
      * removes ALL .csl-files from model
@@ -345,25 +345,25 @@ public class ClientFileModel {
         }
     }
 
-    /**
-     * removes n templates from model
-     *
-     * @param templates templates you want to remove
-     * @return true if n templates removed successfully, false if at least one template wasn't removed successfully
-     */
-    public boolean removeTemplates(Collection<File> templates) {
-        try {
-            Objects.requireNonNull(templates);
-        } catch (NullPointerException e) {
-            Log.log("(templates == null) in clientFileModel.removeTemplates()", LogLevel.WARNING);
-            return false;
-        }
-        boolean result = true;
-        for (File currentTemplate : templates)
-            if (!removeTemplate(currentTemplate))
-                result = false;
-        return result;
-    }
+//    /**
+//     * removes n templates from model
+//     *
+//     * @param templates templates you want to remove
+//     * @return true if n templates removed successfully, false if at least one template wasn't removed successfully
+//     */
+//    public boolean removeTemplates(Collection<File> templates) {
+//        try {
+//            Objects.requireNonNull(templates);
+//        } catch (NullPointerException e) {
+//            Log.log("(templates == null) in clientFileModel.removeTemplates()", LogLevel.WARNING);
+//            return false;
+//        }
+//        boolean result = true;
+//        for (File currentTemplate : templates)
+//            if (!removeTemplate(currentTemplate))
+//                result = false;
+//        return result;
+//    }
 
     /**
      * removes ALL templates from model

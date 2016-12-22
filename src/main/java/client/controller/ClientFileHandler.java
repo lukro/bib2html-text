@@ -1,7 +1,5 @@
 package client.controller;
 
-import org.jbibtex.*;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -33,19 +31,6 @@ public final class ClientFileHandler {
         return sb.toString();
     }
 
-//    static BibTeXDatabase getBibTeXDatabaseObjectFromFile(File bibFile) throws FileNotFoundException {
-//        FileReader fileReader = new FileReader(bibFile);
-//        BibTeXDatabase result = null;
-//        try {
-//            BibTeXParser parser = new BibTeXParser();
-//            result = parser.parse(fileReader);
-//            fileReader.close();
-//        } catch (Exception e) {
-////            Log.log("invalid .bib-file.", LogLevel.WARNING);
-//        }
-//        return result;
-//    }
-
     static ArrayList<String> createStringListFromFileList(ArrayList<File> fileList) throws IOException {
         ArrayList<String> stringList = new ArrayList<>();
         for (File currentFile : fileList)
@@ -54,7 +39,7 @@ public final class ClientFileHandler {
     }
 
     public static boolean isValidBibFile(File bibFile) throws FileNotFoundException {
-        return (BibTeXFileSplitter.getBibTeXDatabaseObjectFromFile(bibFile) != null);
+        return (BibTeXFileSplitter.getBibTeXDatabaseFromFile(bibFile) != null);
 
     }
 

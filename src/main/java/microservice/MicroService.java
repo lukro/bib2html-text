@@ -4,6 +4,7 @@ import com.rabbitmq.client.*;
 import global.controller.IConnectionPoint;
 import global.identifiers.EntryIdentifier;
 import global.identifiers.PartialResultIdentifier;
+import global.logging.Log;
 import global.model.DefaultEntry;
 import global.model.DefaultPartialResult;
 import global.model.IEntry;
@@ -32,13 +33,13 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final String TASK_QUEUE_NAME = "taskQueue";
     private final String REGISTER_QUEUE_NAME = "registerQueue";
 
-//    private final Connection connection;
+    //    private final Connection connection;
     private final Channel channel;
 
     private long currentDeliveryTag;
 
     public MicroService(Channel channel) throws IOException, TimeoutException {
-        this(channel,"localhost");
+        this(channel, "localhost");
     }
 
     public MicroService(Channel channel, String hostIP) throws IOException, TimeoutException {
@@ -73,7 +74,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
                 for (String templateFile : toConvert.getTemplates()) {
                     Files.write(Paths.get(cslName), cslFile.getBytes());
                     Files.write(Paths.get(templateName), templateFile.getBytes());
-                    String mdString =  "--- \nbibliography: " + identifier + ".bib\nnocite: \"@*\" \n...";
+                    String mdString = "--- \nbibliography: " + identifier + ".bib\nnocite: \"@*\" \n...";
                     Files.write(Paths.get(mdName), mdString.getBytes());
 
                     pandocDoWork(cslName, templateName, mdName, channel, 1, toConvert.getEntryIdentifier());///
@@ -87,16 +88,15 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             Files.delete(Paths.get(templateName));
             Files.delete(Paths.get(bibName));
             Files.delete(Paths.get(mdName));
-        }
-        catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        channel.basicAck(currentDeliveryTag,false);
+        channel.basicAck(currentDeliveryTag, false);
         return convertedEntries;
     }
 
 
-    private boolean[] validateTempaltes(DefaultEntry defaultEntry, HashSet<byte[]> templateFiles) {
+    private boolean[] validateTemplates(DefaultEntry defaultEntry, HashSet<byte[]> templateFiles) {
         boolean[] output = new boolean[templateFiles.size()];
         for (int i = 0; i < templateFiles.size(); i++) {
             //TODO : Use pandocDoWork(..) to retrieve execution success.
@@ -169,7 +169,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
                 .Builder()
                 .correlationId(basicProperties.getCorrelationId())
                 .build();
-        IPartialResult dummyResult = new DefaultPartialResult(dummyContent, new PartialResultIdentifier(entryReceived.getEntryIdentifier(), 1,1,false));
+        IPartialResult dummyResult = new DefaultPartialResult(dummyContent, new PartialResultIdentifier(entryReceived.getEntryIdentifier(), 1, 1, false));
         channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(dummyResult));
     }
 
