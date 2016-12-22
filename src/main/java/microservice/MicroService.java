@@ -44,7 +44,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         Collection<String> cslFiles = new ArrayList<String>();
         Collection<String> templates = new ArrayList<String>();
         String csl = "<?xml version=\"1.0\" encoding=\"utf-8\"?>  <style xmlns=\"http://purl.org/net/xbiblio/csl\" version=\"1.0\" default-locale=\"en-US\">  <info> <title>AAPG Bulletin</title> <id>http://www.zotero.org/styles/aapg-bulletin</id> <link href=\"http://www.zotero.org/styles/aapg-bulletin\" rel=\"self\"/> <link href=\"http://www.zotero.org/styles/american-association-of-petroleum-geologists\" rel=\"independent-parent\"/> <link href=\"http://www.aapg.org/bulletin/reference.cfm\" rel=\"documentation\"/> <category citation-format=\"author-date\"/> <category field=\"geology\"/> <issn>0149-1423</issn> <updated>2013-03-29T23:50:45+00:00</updated> <rights license=\"http://creativecommons.org/licenses/by-sa/3.0/\">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights> </info> </style>";
-        cslFiles.add (csl);
+        cslFiles.add(csl);
         String template = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
                 "<html xmlns=\"http://www.w3.org/1999/xhtml\"$if(lang)$ lang=\"$lang$\" xml:lang=\"$lang$\"$endif$$if(dir)$ dir=\"$dir$\"$endif$>\n" +
                 "<head>\n" +
@@ -111,18 +111,18 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
                 "</html>";
         templates.add(template);
         String bibEntry = "@article{bkns-blol-10,\n" +
-            "  author =\t {Michael A. Bekos and Michael Kaufmann and Martin\n" +
-                    "                  N{\\\"o}llenburg and Antonios Symvonis},\n" +
-                    "  title =\t {Boundary Labeling with Octilinear Leaders},\n" +
-                    "  journal =\t {Algorithmica},\n" +
-                    "  volume =\t 57,\n" +
-                    "  number =\t 3,\n" +
-                    "  year =\t 2010,\n" +
-                    "  pages =\t {436-461},\n" +
-                    "  ee =\t\t {http://dx.doi.org/10.1007/s00453-009-9283-6},\n" +
-                    "}";
+                "  author =\t {Michael A. Bekos and Michael Kaufmann and Martin\n" +
+                "                  N{\\\"o}llenburg and Antonios Symvonis},\n" +
+                "  title =\t {Boundary Labeling with Octilinear Leaders},\n" +
+                "  journal =\t {Algorithmica},\n" +
+                "  volume =\t 57,\n" +
+                "  number =\t 3,\n" +
+                "  year =\t 2010,\n" +
+                "  pages =\t {436-461},\n" +
+                "  ee =\t\t {http://dx.doi.org/10.1007/s00453-009-9283-6},\n" +
+                "}";
 
-        DefaultEntry toConvert = new DefaultEntry("1",bibEntry,1,1, cslFiles, templates);
+        DefaultEntry toConvert = new DefaultEntry("1", bibEntry, 1, 1, cslFiles, templates);
         test.convertEntry(toConvert);
     }
 
@@ -148,10 +148,10 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         String bibName = identifier + ".bib";
         String mdName = identifier + ".md";
         // directoryName = "temp";
-        PrintWriter csl = new PrintWriter(cslName,"UTF-8");
-        PrintWriter template = new PrintWriter(templateName,"UTF-8");
-        PrintWriter bib = new PrintWriter(bibName,"UTF-8");
-        PrintWriter md = new PrintWriter(mdName,"UTF-8");
+        PrintWriter csl = new PrintWriter(cslName, "UTF-8");
+        PrintWriter template = new PrintWriter(templateName, "UTF-8");
+        PrintWriter bib = new PrintWriter(bibName, "UTF-8");
+        PrintWriter md = new PrintWriter(mdName, "UTF-8");
         bib.write(toConvert.getContent());
         csl.write(toConvert.getTemplates().get(0));
         template.write(toConvert.getTemplates().get(0));
@@ -167,7 +167,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
         byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(identifier + "_result.html"));
         String convertedContent = new String(convertedContentEncoded);
-        DefaultPartialResult convertedEntry = new DefaultPartialResult(convertedContent, new PartialResultIdentifier(toConvert.getEntryIdentifier(),1,1));
+        DefaultPartialResult convertedEntry = new DefaultPartialResult(convertedContent, new PartialResultIdentifier(toConvert.getEntryIdentifier(), 1, 1));
         return convertedEntry;
     }
 
@@ -195,7 +195,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             throw new IllegalArgumentException("A file with that name might not exist!");
 
         String command = "pandoc --filter=pandoc-citeproc --template" + templateName + " --csl=" + cslName + ".csl --standalone " + wrapperName + ".md -o " + entryIdentifier + "_result.html";
-        channel.basicAck(currentDeliveryTag,false);
+        channel.basicAck(currentDeliveryTag, false);
         return Runtime.getRuntime().exec(command, null).waitFor();
 
     }
@@ -239,7 +239,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
                 .Builder()
                 .correlationId(basicProperties.getCorrelationId())
                 .build();
-        IPartialResult dummyResult = new DefaultPartialResult(dummyContent, new PartialResultIdentifier(entryReceived.getEntryIdentifier(), 1,1,false));
+        IPartialResult dummyResult = new DefaultPartialResult(dummyContent, new PartialResultIdentifier(entryReceived.getEntryIdentifier(), 1, 1, false));
         channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(dummyResult));
     }
 

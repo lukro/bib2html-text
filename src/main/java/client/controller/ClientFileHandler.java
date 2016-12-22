@@ -33,18 +33,18 @@ public final class ClientFileHandler {
         return sb.toString();
     }
 
-    static BibTeXDatabase getBibTeXDatabaseObjectFromFile(File bibFile) throws FileNotFoundException {
-        FileReader fileReader = new FileReader(bibFile);
-        BibTeXDatabase result = null;
-        try {
-            BibTeXParser parser = new BibTeXParser();
-            result = parser.parse(fileReader);
-            fileReader.close();
-        } catch (Exception e) {
-//            Log.log("invalid .bib-file.", LogLevel.WARNING);
-        }
-        return result;
-    }
+//    static BibTeXDatabase getBibTeXDatabaseObjectFromFile(File bibFile) throws FileNotFoundException {
+//        FileReader fileReader = new FileReader(bibFile);
+//        BibTeXDatabase result = null;
+//        try {
+//            BibTeXParser parser = new BibTeXParser();
+//            result = parser.parse(fileReader);
+//            fileReader.close();
+//        } catch (Exception e) {
+////            Log.log("invalid .bib-file.", LogLevel.WARNING);
+//        }
+//        return result;
+//    }
 
     static ArrayList<String> createStringListFromFileList(ArrayList<File> fileList) throws IOException {
         ArrayList<String> stringList = new ArrayList<>();
@@ -54,7 +54,7 @@ public final class ClientFileHandler {
     }
 
     public static boolean isValidBibFile(File bibFile) throws FileNotFoundException {
-        return (getBibTeXDatabaseObjectFromFile(bibFile) != null);
+        return (BibTeXFileSplitter.getBibTeXDatabaseObjectFromFile(bibFile) != null);
 
     }
 

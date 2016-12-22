@@ -7,6 +7,7 @@ import global.controller.IConnectionPoint;
 import global.logging.Log;
 import global.logging.LogLevel;
 import global.model.DefaultClientRequest;
+import global.model.IClientRequest;
 import global.model.IResult;
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -30,7 +31,6 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     private Channel channel;
     private final BasicProperties replyProps;
 
-    private final BibTeXEntryFormatter bibTeXEntryFormatter = BibTeXEntryFormatter.getINSTANCE();
     private ClientFileModel clientFileModel;
 
 
@@ -66,7 +66,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void consumeIncomingQueues() throws IOException {
-        channel.basicConsume(callbackQueueName, true, this);
+        channel.basicConsume(callbackQueueName, false, this);
     }
 
     private long timeStart = 0;
@@ -122,15 +122,16 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     }
 
     private void handleResult(IResult result) {
-        StringBuilder bldr = new StringBuilder();
-        result.getFileContents().forEach(part -> bldr.append(part));
+        StringBuilder builder = new StringBuilder();
+        result.getFileContents().forEach(part -> builder.append(part));
+        outputDirectory = "";
         File outDir = new File(outputDirectory);
         String filename = result.getClientID(); //TODO.
         if (outDir == null || !outDir.exists())
             Log.log("Cannot output File to out dir : Out dir does not exist!", LogLevel.SEVERE);
         else
             try {
-                Files.write(new File(outDir, filename).toPath(), bldr.toString().getBytes());
+                Files.write(new File(outDir, filename).toPath(), builder.toString().getBytes());
             } catch (IOException e) {
                 Log.log("Failed to write output file", e);
             }
@@ -193,11 +194,11 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         return outputDirectory;
     }
 
-    public void setOutputDirectory(String outputDirectory) {
+    void setOutputDirectory(String outputDirectory) {
         this.outputDirectory = outputDirectory;
     }
 
-    private DefaultClientRequest createClientRequest() throws IOException {
-        return new DefaultClientRequest(this.clientID, bibTeXEntryFormatter.createBibTeXEntryObjectListFromClientFileModel(this.clientFileModel));
+    private IClientRequest createClientRequest() throws IOException {
+        return new DefaultClientRequest(clientID, BibTeXFileSplitter.INSTANCE.createIEntryListFromClientFileModel(clientFileModel));
     }
 }

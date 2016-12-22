@@ -11,7 +11,7 @@ public interface IClientRequest extends Serializable {
 
     String getClientID();
 
-    ArrayList<DefaultEntry> getEntries();
+    ArrayList<IEntry> getEntries();
 
     String toString();
 

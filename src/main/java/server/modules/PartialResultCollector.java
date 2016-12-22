@@ -33,7 +33,7 @@ public class PartialResultCollector implements IEventListener {
             @Override
             public void run() {
                 update();
-                Log.log("Partial Result Collector - Update task did another run.", LogLevel.LOW);
+//                Log.log("Partial Result Collector - Update task did another run.", LogLevel.LOW);
             }
         };
         Timer timer = new Timer();
@@ -72,7 +72,7 @@ public class PartialResultCollector implements IEventListener {
     /**
      * Checks whether any of the results is finished creating yet and - if that is the case - sends out a FinishedCollectingResultEvent.
      */
-    private synchronized void update() {
+    private void update() {
         synchronized (mappingClientIDtoExpectedResultsSize) {
             mappingClientIDtoExpectedResultsSize.forEach((key, size) -> {
                 Collection<IPartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);

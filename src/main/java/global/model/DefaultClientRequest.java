@@ -10,9 +10,9 @@ import java.util.Collection;
 public class DefaultClientRequest implements IClientRequest {
 
     private final String clientID;
-    private final ArrayList<DefaultEntry> entries;
+    private final ArrayList<IEntry> entries;
 
-    public DefaultClientRequest(String clientID, Collection<DefaultEntry> entries) {
+    public DefaultClientRequest(String clientID, Collection<IEntry> entries) {
         this.clientID = clientID;
         this.entries = new ArrayList<>(entries);
     }
@@ -23,7 +23,7 @@ public class DefaultClientRequest implements IClientRequest {
     }
 
     @Override
-    public ArrayList<DefaultEntry> getEntries() {
+    public ArrayList<IEntry> getEntries() {
         return entries;
     }
 
