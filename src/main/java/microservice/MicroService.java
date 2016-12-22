@@ -12,9 +12,11 @@ import org.apache.commons.lang3.SerializationUtils;
 import server.modules.Server;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 
@@ -39,92 +41,126 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         this("localhost");
     }
 
-    public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
-        MicroService test = new MicroService();
-        Collection<String> cslFiles = new ArrayList<String>();
-        Collection<String> templates = new ArrayList<String>();
-        String csl = "<?xml version=\"1.0\" encoding=\"utf-8\"?>  <style xmlns=\"http://purl.org/net/xbiblio/csl\" version=\"1.0\" default-locale=\"en-US\">  <info> <title>AAPG Bulletin</title> <id>http://www.zotero.org/styles/aapg-bulletin</id> <link href=\"http://www.zotero.org/styles/aapg-bulletin\" rel=\"self\"/> <link href=\"http://www.zotero.org/styles/american-association-of-petroleum-geologists\" rel=\"independent-parent\"/> <link href=\"http://www.aapg.org/bulletin/reference.cfm\" rel=\"documentation\"/> <category citation-format=\"author-date\"/> <category field=\"geology\"/> <issn>0149-1423</issn> <updated>2013-03-29T23:50:45+00:00</updated> <rights license=\"http://creativecommons.org/licenses/by-sa/3.0/\">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights> </info> </style>";
-        cslFiles.add(csl);
-        String template = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
-                "<html xmlns=\"http://www.w3.org/1999/xhtml\"$if(lang)$ lang=\"$lang$\" xml:lang=\"$lang$\"$endif$$if(dir)$ dir=\"$dir$\"$endif$>\n" +
-                "<head>\n" +
-                "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n" +
-                "  <meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n" +
-                "  <meta name=\"generator\" content=\"pandoc\" />\n" +
-                "$for(author-meta)$\n" +
-                "  <meta name=\"author\" content=\"$author-meta$\" />\n" +
-                "$endfor$\n" +
-                "$if(date-meta)$\n" +
-                "  <meta name=\"date\" content=\"$date-meta$\" />\n" +
-                "$endif$\n" +
-                "$if(keywords)$\n" +
-                "  <meta name=\"keywords\" content=\"$for(keywords)$$keywords$$sep$, $endfor$\" />\n" +
-                "$endif$\n" +
-                "  <title>$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$</title>\n" +
-                "  <style type=\"text/css\">code{white-space: pre;}</style>\n" +
-                "$if(quotes)$\n" +
-                "  <style type=\"text/css\">q { quotes: \"“\" \"”\" \"‘\" \"’\"; }</style>\n" +
-                "$endif$\n" +
-                "$if(highlighting-css)$\n" +
-                "  <style type=\"text/css\">\n" +
-                "$highlighting-css$\n" +
-                "  </style>\n" +
-                "$endif$\n" +
-                "$for(css)$\n" +
-                "  <link rel=\"stylesheet\" href=\"$css$\" type=\"text/css\" />\n" +
-                "$endfor$\n" +
-                "$if(math)$\n" +
-                "  $math$\n" +
-                "$endif$\n" +
-                "$for(header-includes)$\n" +
-                "  $header-includes$\n" +
-                "$endfor$\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "$for(include-before)$\n" +
-                "$include-before$\n" +
-                "$endfor$\n" +
-                "$if(title)$\n" +
-                "<div id=\"$idprefix$header\">\n" +
-                "<h1 class=\"title\">$title$</h1>\n" +
-                "$if(subtitle)$\n" +
-                "<h1 class=\"subtitle\">$subtitle$</h1>\n" +
-                "$endif$\n" +
-                "$for(author)$\n" +
-                "<h2 class=\"author\">$author$</h2>\n" +
-                "$endfor$\n" +
-                "$if(date)$\n" +
-                "<h3 class=\"date\">$date$</h3>\n" +
-                "$endif$\n" +
-                "</div>\n" +
-                "$endif$\n" +
-                "$if(toc)$\n" +
-                "<div id=\"$idprefix$TOC\">\n" +
-                "$toc$\n" +
-                "</div>\n" +
-                "$endif$\n" +
-                "$body$\n" +
-                "$for(include-after)$\n" +
-                "$include-after$\n" +
-                "$endfor$\n" +
-                "</body>\n" +
-                "</html>";
-        templates.add(template);
-        String bibEntry = "@article{bkns-blol-10,\n" +
-                "  author =\t {Michael A. Bekos and Michael Kaufmann and Martin\n" +
-                "                  N{\\\"o}llenburg and Antonios Symvonis},\n" +
-                "  title =\t {Boundary Labeling with Octilinear Leaders},\n" +
-                "  journal =\t {Algorithmica},\n" +
-                "  volume =\t 57,\n" +
-                "  number =\t 3,\n" +
-                "  year =\t 2010,\n" +
-                "  pages =\t {436-461},\n" +
-                "  ee =\t\t {http://dx.doi.org/10.1007/s00453-009-9283-6},\n" +
-                "}";
-
-        DefaultEntry toConvert = new DefaultEntry("1", bibEntry, 1, 1, cslFiles, templates);
-        test.convertEntry(toConvert);
-    }
+//    public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
+//        MicroService test = new MicroService();
+//        Collection<String> cslFiles = new ArrayList<String>();
+//        Collection<String> templates = new ArrayList<String>();
+//        String csl = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+//                "<style xmlns=\"http://purl.org/net/xbiblio/csl\" version=\"1.0\" default-locale=\"en-US\">\n" +
+//                "  <info>\n" +
+//                "    <title>AAPG Bulletin</title>\n" +
+//                "    <id>http://www.zotero.org/styles/aapg-bulletin</id>\n" +
+//                "    <link href=\"http://www.zotero.org/styles/aapg-bulletin\" rel=\"self\"/>\n" +
+//                "    <link href=\"http://www.zotero.org/styles/american-association-of-petroleum-geologists\" rel=\"independent-parent\"/>\n" +
+//                "    <link href=\"http://www.aapg.org/bulletin/reference.cfm\" rel=\"documentation\"/>\n" +
+//                "    <category citation-format=\"author-date\"/>\n" +
+//                "    <category field=\"geology\"/>\n" +
+//                "    <issn>0149-1423</issn>\n" +
+//                "    <updated>2013-03-29T23:50:45+00:00</updated>\n" +
+//                "    <rights license=\"http://creativecommons.org/licenses/by-sa/3.0/\">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights>\n" +
+//                "  </info>\n" +
+//                "</style>";
+//        String csl2 = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+//                "<style xmlns=\"http://purl.org/net/xbiblio/csl\" version=\"1.0\" default-locale=\"en-US\">\n" +
+//                "  <!-- Generated with https://github.com/citation-style-language/utilities/tree/master/generate_dependent_styles/data/springer -->\n" +
+//                "  <info>\n" +
+//                "    <title>AAPS Open</title>\n" +
+//                "    <id>http://www.zotero.org/styles/aaps-open</id>\n" +
+//                "    <link href=\"http://www.zotero.org/styles/aaps-open\" rel=\"self\"/>\n" +
+//                "    <link href=\"http://www.zotero.org/styles/springer-basic-author-date\" rel=\"independent-parent\"/>\n" +
+//                "    <link href=\"http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf\" rel=\"documentation\"/>\n" +
+//                "    <link href=\"http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf\" rel=\"documentation\"/>\n" +
+//                "    <category citation-format=\"author-date\"/>\n" +
+//                "    <eissn>2364-9534</eissn>\n" +
+//                "    <updated>2014-05-15T12:00:00+00:00</updated>\n" +
+//                "    <rights license=\"http://creativecommons.org/licenses/by-sa/3.0/\">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights>\n" +
+//                "  </info>\n" +
+//                "</style>";
+//        cslFiles.add (csl);
+//        cslFiles.add(csl2);
+//        String template = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+//                "<html xmlns=\"http://www.w3.org/1999/xhtml\"$if(lang)$ lang=\"$lang$\" xml:lang=\"$lang$\"$endif$$if(dir)$ dir=\"$dir$\"$endif$>\n" +
+//                "<head>\n" +
+//                "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n" +
+//                "  <meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n" +
+//                "  <meta name=\"generator\" content=\"pandoc\" />\n" +
+//                "$for(author-meta)$\n" +
+//                "  <meta name=\"author\" content=\"$author-meta$\" />\n" +
+//                "$endfor$\n" +
+//                "$if(date-meta)$\n" +
+//                "  <meta name=\"date\" content=\"$date-meta$\" />\n" +
+//                "$endif$\n" +
+//                "$if(keywords)$\n" +
+//                "  <meta name=\"keywords\" content=\"$for(keywords)$$keywords$$sep$, $endfor$\" />\n" +
+//                "$endif$\n" +
+//                "  <title>$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$</title>\n" +
+//                "  <style type=\"text/css\">code{white-space: pre;}</style>\n" +
+//                "$if(quotes)$\n" +
+//                "  <style type=\"text/css\">q { quotes: \"“\" \"”\" \"‘\" \"’\"; }</style>\n" +
+//                "$endif$\n" +
+//                "$if(highlighting-css)$\n" +
+//                "  <style type=\"text/css\">\n" +
+//                "$highlighting-css$\n" +
+//                "  </style>\n" +
+//                "$endif$\n" +
+//                "$for(css)$\n" +
+//                "  <link rel=\"stylesheet\" href=\"$css$\" type=\"text/css\" />\n" +
+//                "$endfor$\n" +
+//                "$if(math)$\n" +
+//                "  $math$\n" +
+//                "$endif$\n" +
+//                "$for(header-includes)$\n" +
+//                "  $header-includes$\n" +
+//                "$endfor$\n" +
+//                "</head>\n" +
+//                "<body>\n" +
+//                "$for(include-before)$\n" +
+//                "$include-before$\n" +
+//                "$endfor$\n" +
+//                "$if(title)$\n" +
+//                "<div id=\"$idprefix$header\">\n" +
+//                "<h1 class=\"title\">$title$</h1>\n" +
+//                "$if(subtitle)$\n" +
+//                "<h1 class=\"subtitle\">$subtitle$</h1>\n" +
+//                "$endif$\n" +
+//                "$for(author)$\n" +
+//                "<h2 class=\"author\">$author$</h2>\n" +
+//                "$endfor$\n" +
+//                "$if(date)$\n" +
+//                "<h3 class=\"date\">$date$</h3>\n" +
+//                "$endif$\n" +
+//                "</div>\n" +
+//                "$endif$\n" +
+//                "$if(toc)$\n" +
+//                "<div id=\"$idprefix$TOC\">\n" +
+//                "$toc$\n" +
+//                "</div>\n" +
+//                "$endif$\n" +
+//                "$body$\n" +
+//                "$for(include-after)$\n" +
+//                "$include-after$\n" +
+//                "$endfor$\n" +
+//                "</body>\n" +
+//                "</html>";
+//        templates.add(template);
+//        String bibEntry = "@article{bkns-blol-10,\n" +
+//            "  author =\t {Michael A. Bekos and Michael Kaufmann and Martin\n" +
+//                    "                  N{\\\"o}llenburg and Antonios Symvonis},\n" +
+//                    "  title =\t {Boundary Labeling with Octilinear Leaders},\n" +
+//                    "  journal =\t {Algorithmica},\n" +
+//                    "  volume =\t 57,\n" +
+//                    "  number =\t 3,\n" +
+//                    "  year =\t 2010,\n" +
+//                    "  pages =\t {436-461},\n" +
+//                    "  ee =\t\t {http://dx.doi.org/10.1007/s00453-009-9283-6},\n" +
+//                    "}";
+//
+//        DefaultEntry toConvert = new DefaultEntry("1",bibEntry,1,1, cslFiles, templates);
+//        List<DefaultPartialResult> list = test.convertEntry(toConvert);
+//        for(DefaultPartialResult res : list) {
+//            System.out.println(res.getContent());
+//        }
+//    }
 
     public MicroService(String hostIP) throws IOException, TimeoutException {
         this(hostIP, UUID.randomUUID().toString());
@@ -140,35 +176,40 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         initConnectionPoint();
     }
 
-    private DefaultPartialResult convertEntry(DefaultEntry toConvert) throws IOException, InterruptedException {
+    private List<DefaultPartialResult> convertEntry(DefaultEntry toConvert) throws InterruptedException, IOException {
         //TODO : Replace Dummy code
-        String identifier = toConvert.getEntryIdentifier().toString();
+        List<DefaultPartialResult> convertedEntries = new ArrayList<DefaultPartialResult>();
+        int identifier = toConvert.getEntryIdentifier().getBibFileIndex();
         String cslName = identifier + ".csl";
         String templateName = identifier + "_template.html";
         String bibName = identifier + ".bib";
         String mdName = identifier + ".md";
-        // directoryName = "temp";
-        PrintWriter csl = new PrintWriter(cslName, "UTF-8");
-        PrintWriter template = new PrintWriter(templateName, "UTF-8");
-        PrintWriter bib = new PrintWriter(bibName, "UTF-8");
-        PrintWriter md = new PrintWriter(mdName, "UTF-8");
-        bib.write(toConvert.getContent());
-        csl.write(toConvert.getTemplates().get(0));
-        template.write(toConvert.getTemplates().get(0));
-        md.write("--- + bibliography: test.bib nocite: \"@*\"...");
+        try {
+            Files.write(Paths.get(bibName), toConvert.getContent().getBytes());
+            for (String cslFile : toConvert.getCslFiles()) {
+                for (String templateFile : toConvert.getTemplates()) {
+                    Files.write(Paths.get(cslName), cslFile.getBytes());
+                    Files.write(Paths.get(templateName), templateFile.getBytes());
+                    String mdString =  "--- \nbibliography: " + identifier + ".bib\nnocite: \"@*\" \n...";
+                    Files.write(Paths.get(mdName), mdString.getBytes());
 
-        pandocDoWork(templateName, cslName, mdName, channel, 1, toConvert.getEntryIdentifier());
-        File test = new File(identifier + ".csl");
-        System.out.println(test.exists());
-//        Files.delete(Paths.get(identifier + ".csl"));
-//        Files.delete(Paths.get(identifier + "_template.html"));
-//        Files.delete(Paths.get(identifier + ".bib"));
-//        Files.delete(Paths.get(identifier + ".md"));
-
-        byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(identifier + "_result.html"));
-        String convertedContent = new String(convertedContentEncoded);
-        DefaultPartialResult convertedEntry = new DefaultPartialResult(convertedContent, new PartialResultIdentifier(toConvert.getEntryIdentifier(), 1, 1));
-        return convertedEntry;
+                    pandocDoWork(cslName, templateName, mdName, channel, 1, toConvert.getEntryIdentifier());///
+                    byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(identifier + "_result.html"));
+                    String convertedContent = new String(convertedContentEncoded);
+                    DefaultPartialResult convertedEntry = new DefaultPartialResult(convertedContent, new PartialResultIdentifier(toConvert.getEntryIdentifier(), 1, 1));
+                    convertedEntries.add(convertedEntry);
+                }
+            }
+            Files.delete(Paths.get(cslName));
+            Files.delete(Paths.get(templateName));
+            Files.delete(Paths.get(bibName));
+            Files.delete(Paths.get(mdName));
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+        channel.basicAck(currentDeliveryTag,false);
+        return convertedEntries;
     }
 
 
@@ -194,10 +235,16 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         if (!cslFile.exists() || !wrapperFile.exists())
             throw new IllegalArgumentException("A file with that name might not exist!");
 
-        String command = "pandoc --filter=pandoc-citeproc --template" + templateName + " --csl=" + cslName + ".csl --standalone " + wrapperName + ".md -o " + entryIdentifier + "_result.html";
-        channel.basicAck(currentDeliveryTag, false);
-        return Runtime.getRuntime().exec(command, null).waitFor();
-
+        String command = "pandoc --filter=pandoc-citeproc --template " + templateName + " --csl " + cslName + " --standalone " + wrapperName + " -o " + entryIdentifier.getBibFileIndex() + "_result.html";
+        System.out.println(command);
+        Process p = Runtime.getRuntime().exec(command, null);
+        BufferedReader input = new BufferedReader(new
+                InputStreamReader(p.getInputStream()));
+        String line;
+        while ((line = input.readLine()) != null) {
+            System.out.println(line);
+        }
+        return p.waitFor();
     }
 
     @Override
@@ -239,7 +286,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
                 .Builder()
                 .correlationId(basicProperties.getCorrelationId())
                 .build();
-        IPartialResult dummyResult = new DefaultPartialResult(dummyContent, new PartialResultIdentifier(entryReceived.getEntryIdentifier(), 1, 1, false));
+        IPartialResult dummyResult = new DefaultPartialResult(dummyContent, new PartialResultIdentifier(entryReceived.getEntryIdentifier(), 1,1,false));
         channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(dummyResult));
     }
 
