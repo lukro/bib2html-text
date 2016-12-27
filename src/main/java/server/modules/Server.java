@@ -224,6 +224,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         Log.log("Server successfully received a ClientRequest.");
 
         for (IEntry currentEntry : deliveredClientRequest.getEntries()) {
+            System.out.printf("hash: " + currentEntry.hashCode());
             channel.basicPublish("", TASK_QUEUE_NAME, replyProps, SerializationUtils.serialize(currentEntry));
         }
     }
