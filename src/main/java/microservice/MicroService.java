@@ -10,7 +10,6 @@ import global.model.DefaultPartialResult;
 import global.model.IEntry;
 import global.model.IPartialResult;
 import org.apache.commons.lang3.SerializationUtils;
-import server.modules.PartialResultCollector;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -59,25 +58,30 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private List<IPartialResult> convertEntry(IEntry toConvert) throws InterruptedException {
         List<IPartialResult> result = new ArrayList<IPartialResult>();
         final HashMap<FileType, String> fileIdentifiers = createFileIdentifiersFromIEntry(toConvert);
+
         int expectedAmountOfPartials, finishedPartialsCounter;
         expectedAmountOfPartials = finishedPartialsCounter = 0;
+
+        //TODO: check defaultCsl and defaultTemplate and INIT correct pls!
+        final String defaultCsl, defaultTemplate;
+        defaultCsl = "";
+        defaultTemplate = "";
+
         try {
             //create .bib-file with entry-content
             Files.write(Paths.get(fileIdentifiers.get(FileType.BIB)), toConvert.getContent().getBytes());
+
             //declare csl/template-lists we want to use
             final ArrayList<String> cslFilesToUse, templatesToUse;
+
             //BEGIN: check if entry contains at least 1 .csl-file AND/OR at least 1 template
             if (toConvert.getCslFiles().size() == 0) {
                 //use defaultCslFile
-                //TODO: check defaultCslValue
-                final String defaultCslValue = "";
-                cslFilesToUse = new ArrayList<>(Arrays.asList(defaultCslValue));
+                cslFilesToUse = new ArrayList<>(Arrays.asList(defaultCsl));
             } else
                 cslFilesToUse = new ArrayList<>(toConvert.getCslFiles());
             if (toConvert.getTemplates().size() == 0) {
                 //use defaultTemplate
-                //TODO: check defaultTemplateValue
-                final String defaultTemplate = "";
                 templatesToUse = new ArrayList<>(Arrays.asList(defaultTemplate));
             } else
                 templatesToUse = new ArrayList<>(toConvert.getTemplates());
@@ -86,11 +90,28 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             final String mdString = "--- \nbibliography: " + toConvert.hashCode() + ".bib\nnocite: \"@*\" \n...";
             expectedAmountOfPartials = cslFilesToUse.size() * templatesToUse.size();
 
+            final boolean[] templateValidator = validateTemplates(toConvert, fileIdentifiers);
+            boolean firstInvalidTemplateReplacedByDefaultTemplate = false;
+
             //BEGIN: iterate over all .csl-files and templates and do pandoc work
             for (int cslFileIndex = 0; cslFileIndex < cslFilesToUse.size(); cslFileIndex++) {
                 Files.write(Paths.get(fileIdentifiers.get(FileType.CSL)), cslFilesToUse.get(cslFileIndex).getBytes());
+
                 for (int templateFileIndex = 0; templateFileIndex < templatesToUse.size(); templateFileIndex++) {
-                    Files.write(Paths.get(fileIdentifiers.get(FileType.TEMPLATE)), templatesToUse.get(templateFileIndex).getBytes());
+                    if (!templateValidator[templateFileIndex]) {
+                        //currentTemplate is invalid
+                        if (!firstInvalidTemplateReplacedByDefaultTemplate) {
+                            Files.write(Paths.get(fileIdentifiers.get(FileType.TEMPLATE)), defaultTemplate.getBytes());
+                            firstInvalidTemplateReplacedByDefaultTemplate = true;
+                        } else {
+                            //don't use invalid template and don't replace it, defaultTemplate is already in use
+                            expectedAmountOfPartials--;
+                            break;
+                        }
+                    } else {
+                        //currentTemplate is valid
+                        Files.write(Paths.get(fileIdentifiers.get(FileType.TEMPLATE)), templatesToUse.get(templateFileIndex).getBytes());
+                    }
                     Files.write(Paths.get(fileIdentifiers.get(FileType.MD)), mdString.getBytes());
                     pandocDoWork(
                             fileIdentifiers.get(FileType.CSL),
@@ -100,7 +121,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
                     );
                     final byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(fileIdentifiers.get(FileType.RESULT)));
                     final String convertedContent = new String(convertedContentEncoded);
-                    IPartialResult currentPartialResult = new DefaultPartialResult(
+                    final IPartialResult currentPartialResult = new DefaultPartialResult(
                             convertedContent,
                             new PartialResultIdentifier(toConvert.getEntryIdentifier(), cslFileIndex, templateFileIndex)
                     );
@@ -117,7 +138,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         } catch (IOException e) {
             final int amountOfPartialsWithErrors = expectedAmountOfPartials - finishedPartialsCounter;
             //TODO: reduce expected result-size in partialresult-collector by 'amountOfPartialsWithErrors'
-            Log.log("Error in microservice.convertEntry(). " + finishedPartialsCounter + " Partials succesfully created.", e);
+            Log.log("Error in microservice.convertEntry(). " + finishedPartialsCounter + "/ " + expectedAmountOfPartials + " Partials succesfully created.", e);
         }
         //TODO: check Acknowledgement
 //        channel.basicAck(currentDeliveryTag, false);
@@ -127,18 +148,18 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private HashMap<FileType, String> createFileIdentifiersFromIEntry(IEntry iEntry) {
         HashMap<FileType, String> result = new HashMap<>();
         String hashCodeAsString = Integer.toString(iEntry.getEntryIdentifier().hashCode());
-        result.put(FileType.BIB, new String(hashCodeAsString + ".bib"));
-        result.put(FileType.CSL, new String(hashCodeAsString + ".csl"));
-        result.put(FileType.TEMPLATE, new String(hashCodeAsString + "_template.html"));
-        result.put(FileType.MD, new String(hashCodeAsString + ".md"));
-        result.put(FileType.RESULT, new String(hashCodeAsString + "_result.html"));
+        result.put(FileType.BIB, hashCodeAsString + ".bib");
+        result.put(FileType.CSL, hashCodeAsString + ".csl");
+        result.put(FileType.TEMPLATE, hashCodeAsString + "_template.html");
+        result.put(FileType.MD, hashCodeAsString + ".md");
+        result.put(FileType.RESULT, hashCodeAsString + "_result.html");
         return result;
     }
 
 
-    private boolean[] validateTemplates(IEntry defaultEntry, HashSet<byte[]> templateFiles) {
-        boolean[] output = new boolean[templateFiles.size()];
-        for (int i = 0; i < templateFiles.size(); i++) {
+    private boolean[] validateTemplates(IEntry iEntry, HashMap<FileType, String> fileIdentifiers) {
+        boolean[] output = new boolean[iEntry.getTemplates().size()];
+        for (int i = 0; i < iEntry.getTemplates().size(); i++) {
             //TODO : Use pandocDoWork(..) to retrieve execution success.
             //Simulating 30% error rate
             int conversionResultState = (Math.random() > 0.7) ? 1 : 0;
