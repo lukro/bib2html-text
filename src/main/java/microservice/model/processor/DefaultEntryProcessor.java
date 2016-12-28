@@ -65,7 +65,8 @@ public class DefaultEntryProcessor implements EntryProcessor {
                 templatesToUse = new ArrayList<>(toConvert.getTemplates());
             //END: check if entry contains at least 1 .csl-file AND/OR at least 1 template
 
-            final String mdString = "--- \nbibliography: " + toConvert.hashCode() + ".bib\nnocite: \"@*\" \n...";
+            final String mdString = "--- \nbibliography: " + fileIdentifiers.get(FileType.BIB) + ".bib\nnocite: \"@*\" \n...";
+
             expectedAmountOfPartials = cslFilesToUse.size() * templatesToUse.size();
             //TODO : dis is buggy. why do we even save it into a map mapping type -> String in the first place?
             final boolean[] validatedTemplates = {TEMPLATE_VALIDATOR.validate(fileIdentifiers.get(FileType.TEMPLATE))};
@@ -76,20 +77,20 @@ public class DefaultEntryProcessor implements EntryProcessor {
                 Files.write(Paths.get(fileIdentifiers.get(FileType.CSL)), cslFilesToUse.get(cslFileIndex).getBytes());
 
                 for (int templateFileIndex = 0; templateFileIndex < templatesToUse.size(); templateFileIndex++) {
-                    if (!validatedTemplates[templateFileIndex]) {
-                        //currentTemplate is invalid
-                        if (!firstInvalidTemplateReplacedByDefaultTemplate) {
-                            Files.write(Paths.get(fileIdentifiers.get(FileType.TEMPLATE)), defaultTemplate.getBytes());
-                            firstInvalidTemplateReplacedByDefaultTemplate = true;
-                        } else {
-                            //don't use invalid template and don't replace it, defaultTemplate is already in use
-                            expectedAmountOfPartials--;
-                            break;
-                        }
-                    } else {
-                        //currentTemplate is valid
-                        Files.write(Paths.get(fileIdentifiers.get(FileType.TEMPLATE)), templatesToUse.get(templateFileIndex).getBytes());
-                    }
+//                    if (!validatedTemplates[templateFileIndex]) {
+//                        //currentTemplate is invalid
+//                        if (!firstInvalidTemplateReplacedByDefaultTemplate) {
+//                            Files.write(Paths.get(fileIdentifiers.get(FileType.TEMPLATE)), defaultTemplate.getBytes());
+//                            firstInvalidTemplateReplacedByDefaultTemplate = true;
+//                        } else {
+//                            //don't use invalid template and don't replace it, defaultTemplate is already in use
+//                            expectedAmountOfPartials--;
+//                            break;
+//                        }
+//                    } else {
+                    //currentTemplate is valid
+                    Files.write(Paths.get(fileIdentifiers.get(FileType.TEMPLATE)), templatesToUse.get(templateFileIndex).getBytes());
+
                     Files.write(Paths.get(fileIdentifiers.get(FileType.MD)), mdString.getBytes());
                     pandocDoWork(
                             fileIdentifiers.get(FileType.CSL),
@@ -97,7 +98,7 @@ public class DefaultEntryProcessor implements EntryProcessor {
                             fileIdentifiers.get(FileType.MD),
                             toConvert.getEntryIdentifier()
                     );
-                    final byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(fileIdentifiers.get(FileType.RESULT)));
+                    final byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(toConvert.hashCode() + fileIdentifiers.get(FileType.RESULT)));
                     final String convertedContent = new String(convertedContentEncoded);
                     final IPartialResult currentPartialResult = new DefaultPartialResult(
                             convertedContent,
