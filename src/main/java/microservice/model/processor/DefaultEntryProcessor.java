@@ -21,15 +21,16 @@ import java.util.*;
 
 /**
  * @author Maximilian Schirm
- * created 27.12.2016
+ *         created 27.12.2016
  */
 
-public class DefaultEntryProcessor implements EntryProcessor{
+public class DefaultEntryProcessor implements EntryProcessor {
 
     private static final Validator<String> CSL_VALIDATOR = new CSLDummyValidator();
     private static final Validator<String> TEMPLATE_VALIDATOR = new TemplateValidator();
 
-    public DefaultEntryProcessor(){}
+    public DefaultEntryProcessor() {
+    }
 
     private List<IPartialResult> convertEntry(IEntry toConvert) throws InterruptedException {
         List<IPartialResult> result = new ArrayList<>();
@@ -110,7 +111,7 @@ public class DefaultEntryProcessor implements EntryProcessor{
             //delete all temporary files except resultFile
             for (Map.Entry currentEntryInHashMap : fileIdentifiers.entrySet()) {
                 if (currentEntryInHashMap.getKey() != FileType.RESULT)
-                    Files.delete(Paths.get((String) currentEntryInHashMap.getValue()));
+                    Files.delete(Paths.get(Integer.toString(toConvert.hashCode()) + currentEntryInHashMap.getValue()));
             }
         } catch (IOException e) {
             final int amountOfPartialsWithErrors = expectedAmountOfPartials - finishedPartialsCounter;
@@ -164,7 +165,7 @@ public class DefaultEntryProcessor implements EntryProcessor{
             return convertEntry(toConvert);
         } catch (InterruptedException e) {
             //TODO : Handle Properly.
-            Log.log("MicroService got interrupted, returned null",e);
+            Log.log("MicroService got interrupted, returned null", e);
             return null;
         }
     }
