@@ -64,9 +64,8 @@ public class Log {
      * @param level
      */
     private void printOut(String message, LogLevel level) {
-        Runnable printer = new Runnable() {
-            @Override
-            public void run() {
+        Platform.runLater(() -> {
+
             int ordLev = level.ordinal();
             int minLev = minimumRequiredLevel.ordinal();
 
@@ -79,10 +78,7 @@ public class Log {
                     e.printStackTrace();
                 }
             }
-            }
-        };
-        Thread printThread = new Thread(printer);
-        printThread.run();
+        });
     }
 
     public static LogLevel getMinimumRequiredLevel() {
