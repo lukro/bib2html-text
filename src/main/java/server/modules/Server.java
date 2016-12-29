@@ -61,7 +61,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 
         //Initialize modules
         MicroServiceManager.initialize(channel, TASK_QUEUE_NAME);
-//        MicroServiceManager.getInstance(); TODO Uncomment if issues appear
         PartialResultCollector.getInstance();
         EventManager.getInstance().registerListener(this);
         initConnectionPoint();

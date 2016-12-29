@@ -77,7 +77,6 @@ public class MicroServiceManager {
      * @return Key of a new Service.
      */
     private String startMicroService() {
-        //TODO : Fill... Add Port to newService.getHostIP()
         try {
             Log.log("Starting microservice on server");
             MicroService newService = new MicroService(channel);

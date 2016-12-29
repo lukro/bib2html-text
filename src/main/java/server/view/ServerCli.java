@@ -5,14 +5,12 @@ import global.logging.LogLevel;
 import server.modules.Server;
 
 /**
- * @author Maximilian Schirm (denkbares GmbH)
- * @created 05.12.2016
+ * @author Maximilian Schirm
+ * created 05.12.2016
  *
- * A dummy for debugging. Will be replaced by a proper UI later on.
- * TODO deleteme
+ * A dumb CLI instance of the server. TODO Should be expanded by Console I/O to relay commands to Controller.
  */
-
-public class ServerViewDummy {
+public class ServerCli {
 
     public static void main(String[] args){
         try{
@@ -25,7 +23,4 @@ public class ServerViewDummy {
         }
     }
 
-    public static void log(String msg){
-        System.out.println(msg);
-    }
 }

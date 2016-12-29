@@ -38,7 +38,6 @@ public class EventManager {
                 try {
                     listener.notify(toPublish);
                 } catch (NullPointerException e) {
-                    //TODO: Remove invalid instance?
                     Log.log("Couldn't publish the event to the listener : Listener was null", e);
                 }
             });
