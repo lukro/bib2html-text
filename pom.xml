@@ -67,6 +67,13 @@
                     <include>**/*.fxml</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>src/resources</directory>
+                <includes>
+                    <include>*.csl</include>
+                    <include>*.html</include>
+                </includes>
+            </resource>
         </resources>
     </build>
 </project>

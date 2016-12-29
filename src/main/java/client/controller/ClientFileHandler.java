@@ -43,9 +43,4 @@ public final class ClientFileHandler {
 
     }
 
-    public static boolean isValidCslFile(File cslFile) {
-        //TODO: implement algorithm to validate .csl-files
-        return true;
-    }
-
 }

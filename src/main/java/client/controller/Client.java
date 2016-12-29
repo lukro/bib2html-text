@@ -128,8 +128,6 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         for (String currentFileContent : result.getFileContents()) {
             builder.append(currentFileContent);
         }
-//        result.getFileContents().forEach(part -> builder.append(part));
-
         File outDir = new File(outputDirectory);
         String filename = result.getClientID();
         if (outDir == null || !outDir.exists())

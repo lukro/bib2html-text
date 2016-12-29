@@ -64,13 +64,6 @@ public class DefaultEntry implements IEntry {
         this.templateFiles = builder.templatesFiles;
     }
 
-//    public DefaultEntry(String clientID, String content, int bibFileIndex, int positionInBibFile, Collection<String> cslFiles, Collection<String> templateFiles) {
-//        this.entryIdentifier = new EntryIdentifier(clientID, bibFileIndex, positionInBibFile);
-//        this.content = content;
-//        this.cslFiles = new ArrayList<>(cslFiles);
-//        this.templateFiles = new ArrayList<>(templateFiles);
-//    }
-
     @Override
     public EntryIdentifier getEntryIdentifier() {
         return entryIdentifier;
