@@ -5,7 +5,7 @@ import global.controller.IConnectionPoint;
 import global.logging.Log;
 import global.model.IEntry;
 import microservice.model.processor.DefaultEntryProcessor;
-import microservice.model.processor.EntryProcessor;
+import microservice.model.processor.IEntryProcessor;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     //microServiceID is technically FINAL
     private String microServiceID;
     private final String TASK_QUEUE_NAME = "taskQueue";
-    private final EntryProcessor DEFAULT_PROCESSOR = new DefaultEntryProcessor();
+    private final IEntryProcessor DEFAULT_PROCESSOR = new DefaultEntryProcessor();
     private final Channel channel;
 
     public MicroService(Channel channel) throws IOException, TimeoutException {

@@ -9,7 +9,7 @@ import java.util.List;
  * @author Maximilian
  * on 27.12.2016
  */
-public interface EntryProcessor {
+public interface IEntryProcessor {
 
     public List<IPartialResult> processEntry(IEntry toConvert);
 
