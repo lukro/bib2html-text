@@ -64,6 +64,7 @@ public class Log {
      * @param level
      */
     private void printOut(String message, LogLevel level) {
+        //TODO : MAKE THREAD SAFE
         Platform.runLater(() -> {
 
             int ordLev = level.ordinal();

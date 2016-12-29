@@ -5,6 +5,7 @@ import global.controller.IConnectionPoint;
 import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.model.IEntry;
+import global.model.IPartialResult;
 import microservice.model.processor.DefaultEntryProcessor;
 import microservice.model.processor.IEntryProcessor;
 import org.apache.commons.lang3.SerializationUtils;
@@ -15,16 +16,16 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author Maximilian Schirm, Karsten Schaefers, daan
  *         created 05.12.2016
- *
+ *         <p>
  *         TODO Implement Remote Functionality
  */
 public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
-    private final String hostIP;
-    //microServiceID is technically FINAL
+    //microServiceID is technically final
     private String microServiceID;
+    private final String hostIP;
     private final String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
-    private final IEntryProcessor DEFAULT_PROCESSOR = new DefaultEntryProcessor();
+    private final IEntryProcessor ENTRY_PROCESSOR = new DefaultEntryProcessor();
     private final Channel channel;
 
     public MicroService(Channel channel) throws IOException, TimeoutException {
@@ -76,18 +77,10 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        System.out.println("MicroService (ID: " + microServiceID + " received a message");
-
         IEntry received = SerializationUtils.deserialize(bytes);
-        DEFAULT_PROCESSOR.processEntry(received).forEach(partialResult -> {
-            try {
-                channel.basicPublish("", basicProperties.getReplyTo(), basicProperties, SerializationUtils.serialize(partialResult));
-            } catch (IOException e) {
-                Log.log("Failed to send a partialresult to client",e);
-            }
-        });
-
-        envelope.getDeliveryTag();
+        for (IPartialResult partialResult : ENTRY_PROCESSOR.processEntry(received))
+            channel.basicPublish("", basicProperties.getReplyTo(), basicProperties, SerializationUtils.serialize(partialResult));
+//        envelope.getDeliveryTag(); TODO Deleteme?
     }
 
     @Override
