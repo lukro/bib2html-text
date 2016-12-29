@@ -9,7 +9,7 @@ public enum  QueueNames {
     TASK_QUEUE_NAME("taskQueue");
 
     private final String nameOfQueue;
-    private QueueNames(String nameOfQueue) {
+    QueueNames(String nameOfQueue) {
         this.nameOfQueue = nameOfQueue;
     }
 

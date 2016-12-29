@@ -80,7 +80,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         IEntry received = SerializationUtils.deserialize(bytes);
         for (IPartialResult partialResult : ENTRY_PROCESSOR.processEntry(received))
             channel.basicPublish("", basicProperties.getReplyTo(), basicProperties, SerializationUtils.serialize(partialResult));
-//        envelope.getDeliveryTag(); TODO Deleteme?
+       //envelope.getDeliveryTag(); //TODO Deleteme?
     }
 
     @Override
