@@ -8,11 +8,9 @@ import server.events.EventManager;
 import server.events.MicroServiceConnectedEvent;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 /**
  * @author Maximilian Schirm
@@ -149,5 +147,9 @@ public class MicroServiceManager {
         }
 //        Log.log("started MSs: " + returnValue);
         return returnValue;
+    }
+
+    public Collection<String> getMicroservices() {
+        return microServices.keySet().stream().map(serviceID -> serviceID + " : " + microServices.get(serviceID)).collect(Collectors.toList());
     }
 }

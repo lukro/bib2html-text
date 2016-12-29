@@ -326,4 +326,13 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 
     }
 
+    //TODO : Replace with safer approach?
+    public PartialResultCollector getPartialResultCollector(){
+        return PartialResultCollector.getInstance();
+    }
+
+    //TODO : Replace with safer approach?
+    public MicroServiceManager getMicroServiceManager(){
+        return MicroServiceManager.getInstance();
+    }
 }
