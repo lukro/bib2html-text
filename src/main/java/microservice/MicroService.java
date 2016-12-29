@@ -2,6 +2,7 @@ package microservice;
 
 import com.rabbitmq.client.*;
 import global.controller.IConnectionPoint;
+import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.model.IEntry;
 import microservice.model.processor.DefaultEntryProcessor;
@@ -20,7 +21,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final String hostIP;
     //microServiceID is technically FINAL
     private String microServiceID;
-    private final String TASK_QUEUE_NAME = "taskQueue";
+    private final String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
     private final IEntryProcessor DEFAULT_PROCESSOR = new DefaultEntryProcessor();
     private final Channel channel;
 

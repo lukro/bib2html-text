@@ -4,6 +4,7 @@ import client.model.ClientFileModel;
 import com.rabbitmq.client.*;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import global.controller.IConnectionPoint;
+import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.logging.LogLevel;
 import global.model.DefaultClientRequest;
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeoutException;
 public class Client implements IConnectionPoint, Runnable, Consumer {
 
     private final String clientID, callbackQueueName;
-    private final String CLIENT_REQUEST_QUEUE_NAME = "clientRequestQueue";
+    private final String CLIENT_REQUEST_QUEUE_NAME = QueueNames.CLIENT_REQUEST_QUEUE_NAME.toString();
     private String outputDirectory, hostIP;
 
     private Connection connection;
