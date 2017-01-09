@@ -39,28 +39,34 @@ public class PandocRequestBuilder {
             this.defaultOutputFile = defaultOutputFile.toAbsolutePath().toString();
     }
 
-    void setCSL(Path cslFile){
+    PandocRequestBuilder csl(Path cslFile){
         this.cslFile = cslFile;
+        return this;
     }
 
-    void setTemplate(Path templateFile){
+    PandocRequestBuilder template(Path templateFile){
         this.templateFile = templateFile;
+        return this;
     }
 
-    void setWrapper(Path wrapperFile){
+    PandocRequestBuilder wrapper(Path wrapperFile) {
         this.wrapperFile = wrapperFile;
+        return this;
     }
 
-    void setUseDefaultCSL(boolean use){
-        useDefaultCSL = use;
-    }
-
-    void setUseDefaultTemplate(boolean use){
-        useDefaultTemplate = use;
-    }
-
-    void setOutputFile(Path outputFile){
+    PandocRequestBuilder outputFile(Path outputFile){
         this.outputFile = outputFile;
+        return this;
+    }
+
+    PandocRequestBuilder setUseDefaultCSL(boolean use){
+        useDefaultCSL = use;
+        return this;
+    }
+
+    PandocRequestBuilder setUseDefaultTemplate(boolean use){
+        useDefaultTemplate = use;
+        return this;
     }
 
     private String[] createStrings() throws IllegalArgumentException {
