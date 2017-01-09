@@ -64,16 +64,15 @@ public class DefaultEntryProcessor implements IEntryProcessor {
         cslFilesToUse = new ArrayList<>(correctUserFileLists(toConvert.getCslFiles(), FileType.CSL));
         templatesToUse = new ArrayList<>(correctUserFileLists(toConvert.getTemplates(), FileType.TEMPLATE));
 
-        writeUserFiles(cslFilesToUse, FileType.CSL);
-        writeUserFiles(templatesToUse, FileType.TEMPLATE);
+//        writeUserFiles(cslFilesToUse, FileType.CSL);
+//        writeUserFiles(templatesToUse, FileType.TEMPLATE);
 
         try {
-            Files.write(Paths.get(fileIdentifiers.get(FileType.BIB)), toConvert.getContent().getBytes());
-            Files.write(Paths.get(fileIdentifiers.get(FileType.MD)), mdString.getBytes());
+//            Files.write(Paths.get(fileIdentifiers.get(FileType.BIB)), toConvert.getContent().getBytes());
+//            Files.write(Paths.get(fileIdentifiers.get(FileType.MD)), mdString.getBytes());
 
 
-
-        } catch (IOException e) {
+        } catch (Exception e) {
 
 
         } finally {

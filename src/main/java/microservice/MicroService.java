@@ -6,6 +6,7 @@ import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.model.IEntry;
 import microservice.model.processor.DefaultEntryProcessor;
+import microservice.model.processor.DummyEntryProcessor;
 import microservice.model.processor.IEntryProcessor;
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -15,7 +16,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author Maximilian Schirm, Karsten Schaefers, daan
  *         created 05.12.2016
- *
+ *         <p>
  *         TODO Implement Remote Functionality
  */
 public class MicroService implements IConnectionPoint, Runnable, Consumer {
@@ -24,7 +25,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     //microServiceID is technically FINAL
     private String microServiceID;
     private final String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
-    private final IEntryProcessor DEFAULT_PROCESSOR = new DefaultEntryProcessor();
+    private final IEntryProcessor DEFAULT_PROCESSOR = new DummyEntryProcessor();
     private final Channel channel;
 
     public MicroService(Channel channel) throws IOException, TimeoutException {
@@ -79,15 +80,17 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         System.out.println("MicroService (ID: " + microServiceID + " received a message");
 
         IEntry received = SerializationUtils.deserialize(bytes);
+
+        AMQP.BasicProperties replyProps = getReplyProps(basicProperties);
+
         DEFAULT_PROCESSOR.processEntry(received).forEach(partialResult -> {
             try {
-                channel.basicPublish("", basicProperties.getReplyTo(), basicProperties, SerializationUtils.serialize(partialResult));
+                channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(partialResult));
             } catch (IOException e) {
-                Log.log("Failed to send a partialresult to client",e);
+                Log.log("Failed to send a partialresult to client", e);
             }
         });
-
-        envelope.getDeliveryTag();
+        channel.basicAck(envelope.getDeliveryTag(), false);
     }
 
     @Override
@@ -102,7 +105,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void consumeIncomingQueues() throws IOException {
         //TODO: autoAck raus, manuelles Ack rein
-        this.microServiceID = channel.basicConsume(TASK_QUEUE_NAME, true, this);
+        this.microServiceID = channel.basicConsume(TASK_QUEUE_NAME, false, this);
     }
 
 
@@ -132,5 +135,12 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public String getID() {
         return microServiceID;
+    }
+
+    private AMQP.BasicProperties getReplyProps(AMQP.BasicProperties basicProperties) {
+        return new AMQP.BasicProperties
+                .Builder()
+                .correlationId(basicProperties.getCorrelationId())
+                .build();
     }
 }
