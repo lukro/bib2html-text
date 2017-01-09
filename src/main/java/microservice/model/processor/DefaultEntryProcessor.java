@@ -2,8 +2,10 @@ package microservice.model.processor;
 
 import global.identifiers.EntryIdentifier;
 import global.identifiers.FileType;
+import global.identifiers.PartialResultIdentifier;
 import global.logging.Log;
 import global.logging.LogLevel;
+import global.model.DefaultPartialResult;
 import global.model.IEntry;
 import global.model.IPartialResult;
 import microservice.model.validator.CslValidator;
@@ -29,10 +31,15 @@ public class DefaultEntryProcessor implements IEntryProcessor {
     private static final String DEFAULT_CSL_RESOURCE_NAME = "default.csl";
     private static final String DEFAULT_TEMPLATE_RESOURCE_NAME = "default_template.html";
 
+    private static final Path PATH_TO_DEFAULT_CSL = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(DEFAULT_CSL_RESOURCE_NAME).getFile());
+    private static final Path PATH_TO_DEFAULT_TEMPLATE = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(DEFAULT_CSL_RESOURCE_NAME).getFile());
+
     private static String DEFAULT_CSL_CONTENT = "";
     private static String DEFAULT_TEMPLATE_CONTENT = "";
 
     private HashMap<FileType, String> fileIdentifiers;
+
+    private PandocRequestBuilder pandocCommandBuilder;
 
     static {
         initDefaults();
@@ -74,7 +81,7 @@ public class DefaultEntryProcessor implements IEntryProcessor {
         List<IPartialResult> result = new ArrayList<>();
         this.fileIdentifiers = createFileIdentifiersFromIEntry(toConvert);
 
-
+        final EntryIdentifier currentEntryIdentifier = toConvert.getEntryIdentifier();
 
         final String mdString = "--- \nbibliography: " + fileIdentifiers.get(FileType.BIB) + "\nnocite: \"@*\" \n...";
 
@@ -83,39 +90,60 @@ public class DefaultEntryProcessor implements IEntryProcessor {
         templatesToUse = new ArrayList<>(correctUserFileLists(toConvert.getTemplates(), FileType.TEMPLATE));
 
         writeFile(FileType.BIB, fileIdentifiers.get(FileType.BIB), toConvert.getContent().getBytes());
-        writeFile(FileType.MD, fileIdentifiers.get(FileType.MD), mdString.getBytes());
+        Path pathToWrapperFile = writeFile(FileType.MD, fileIdentifiers.get(FileType.MD), mdString.getBytes());
 
-        for (int i = 0; i < cslFilesToUse.size(); i++) {
-            File currentCslFile = new File(writeFile(FileType.CSL, fileIdentifiers.get(FileType.CSL), cslFilesToUse.get(i).getBytes()).toString());
+        for (int cslFileIndex = 0; cslFileIndex < cslFilesToUse.size(); cslFileIndex++) {
+            Path pathToCurrentCslFile = writeFile(FileType.CSL, fileIdentifiers.get(FileType.CSL), cslFilesToUse.get(cslFileIndex).getBytes());
+            File currentCslFile = new File(pathToCurrentCslFile.toString());
 
             if (!CSL_VALIDATOR.validate(currentCslFile)) {
                 //invalid csl-file
             }
-            for (int j = 0; j < templatesToUse.size(); j++) {
-                File currentTemplate = new File(writeFile(FileType.TEMPLATE, fileIdentifiers.get(FileType.TEMPLATE), templatesToUse.get(j).getBytes()).toString());
+            for (int templateIndex = 0; templateIndex < templatesToUse.size(); templateIndex++) {
+                Path pathToCurrentTemplate = writeFile(FileType.TEMPLATE, fileIdentifiers.get(FileType.TEMPLATE), templatesToUse.get(templateIndex).getBytes());
+                File currentTemplate = new File(pathToCurrentTemplate.toString());
 
                 if (!TEMPLATE_VALIDATOR.validate(currentTemplate)) {
                     //invalid template
                 }
 
+                pandocCommandBuilder = new PandocRequestBuilder(
+                        PATH_TO_DEFAULT_CSL,
+                        PATH_TO_DEFAULT_TEMPLATE,
+                        Paths.get(fileIdentifiers.get(FileType.RESULT)))
+                        .csl(null)
+                        .template(pathToCurrentTemplate)
+                        .wrapper(pathToWrapperFile)
+                        .outputFile(Paths.get(fileIdentifiers.get(FileType.RESULT)))
+                        .setUseDefaultCSL(false)
+                        .setUseDefaultTemplate(false);
 
+                final String pandocCommandString = pandocCommandBuilder.buildCommandString();
 
+                IPartialResult currentPartialResult;
+
+                try {
+                    Process p = Runtime.getRuntime().exec(pandocCommandString, null);
+
+                    PartialResultIdentifier currentPartialIdentifier =
+                            new PartialResultIdentifier(currentEntryIdentifier, cslFileIndex, templateIndex);
+
+                    final byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(fileIdentifiers.get(FileType.RESULT)));
+                    final String convertedContent = new String(convertedContentEncoded);
+
+                    currentPartialResult = new DefaultPartialResult(convertedContent, currentPartialIdentifier);
+
+                    result.add(currentPartialResult);
+
+                } catch (IOException e) {
+                    //TODO: build error flagged partial & continue
+                    continue;
+                } finally {
+
+                }
             }
 
         }
-
-        try {
-
-
-        } catch (Exception e) {
-
-
-        }
-        finally {
-
-        }
-
-
         return result;
     }
 
@@ -167,4 +195,5 @@ public class DefaultEntryProcessor implements IEntryProcessor {
         return result;
     }
 
+//    private static IPartialResult createPartialResultFrom
 }

@@ -2,7 +2,6 @@ package microservice.model.processor;
 
 import global.identifiers.EntryIdentifier;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 /**
@@ -17,34 +16,34 @@ public class PandocRequestBuilder {
     private Path templateFile;
     private Path outputFile;
     private Path wrapperFile;
-    private final String defaultCslFile;
-    private final String defaultOutputFile;
-    private final String defaultTemplateFile;
+    private final String absolutePathToDefaultCsl;
+    private final String absolutePathToOutputFile;
+    private final String absolutePathtoDefaultTemplate;
     private boolean useDefaultCSL = true, useDefaultTemplate = true;
 
-    public PandocRequestBuilder(Path defaultCslFile, Path defaultTemplateFile, Path defaultOutputFile){
-        if(defaultCslFile == null)
-            this.defaultCslFile = "";
+    public PandocRequestBuilder(Path AbsolutePathToDefaultCsl, Path absolutePathtoDefaultTemplate, Path absolutePathToOutputFile) {
+        if (AbsolutePathToDefaultCsl == null)
+            this.absolutePathToDefaultCsl = "";
         else
-            this.defaultCslFile = defaultCslFile.toAbsolutePath().toString();
+            this.absolutePathToDefaultCsl = AbsolutePathToDefaultCsl.toAbsolutePath().toString();
 
-        if(defaultTemplateFile == null)
-            this.defaultTemplateFile = "";
+        if (absolutePathtoDefaultTemplate == null)
+            this.absolutePathtoDefaultTemplate = "";
         else
-            this.defaultTemplateFile = defaultTemplateFile.toAbsolutePath().toString();
+            this.absolutePathtoDefaultTemplate = absolutePathtoDefaultTemplate.toAbsolutePath().toString();
 
-        if(defaultOutputFile == null)
-            this.defaultOutputFile = "defaultOutputFile.html";
+        if (absolutePathToOutputFile == null)
+            this.absolutePathToOutputFile = "absolutePathToOutputFile.html";
         else
-            this.defaultOutputFile = defaultOutputFile.toAbsolutePath().toString();
+            this.absolutePathToOutputFile = absolutePathToOutputFile.toAbsolutePath().toString();
     }
 
-    PandocRequestBuilder csl(Path cslFile){
+    PandocRequestBuilder csl(Path cslFile) {
         this.cslFile = cslFile;
         return this;
     }
 
-    PandocRequestBuilder template(Path templateFile){
+    PandocRequestBuilder template(Path templateFile) {
         this.templateFile = templateFile;
         return this;
     }
@@ -54,17 +53,17 @@ public class PandocRequestBuilder {
         return this;
     }
 
-    PandocRequestBuilder outputFile(Path outputFile){
+    PandocRequestBuilder outputFile(Path outputFile) {
         this.outputFile = outputFile;
         return this;
     }
 
-    PandocRequestBuilder setUseDefaultCSL(boolean use){
+    PandocRequestBuilder setUseDefaultCSL(boolean use) {
         useDefaultCSL = use;
         return this;
     }
 
-    PandocRequestBuilder setUseDefaultTemplate(boolean use){
+    PandocRequestBuilder setUseDefaultTemplate(boolean use) {
         useDefaultTemplate = use;
         return this;
     }
@@ -73,14 +72,15 @@ public class PandocRequestBuilder {
         String[] placeHolders = new String[4];
 
         //Template
-        placeHolders[0] = (templateFile==null)?((useDefaultTemplate)?defaultTemplateFile:""):templateFile.toAbsolutePath().toString();
+        placeHolders[0] = (templateFile == null) ? ((useDefaultTemplate) ? absolutePathtoDefaultTemplate : "") : templateFile.toAbsolutePath().toString();
         //CSL
-        placeHolders[1] = (cslFile==null)?((useDefaultCSL)?defaultCslFile:""):cslFile.toAbsolutePath().toString();
+        placeHolders[1] = (cslFile == null) ? ((useDefaultCSL) ? absolutePathToDefaultCsl : "") : cslFile.toAbsolutePath().toString();
         //Wrapper
-        if(wrapperFile == null) throw new IllegalArgumentException("Cannot create a pandoc request without a valid wrapper. Aborted.");
+        if (wrapperFile == null)
+            throw new IllegalArgumentException("Cannot create a pandoc request without a valid wrapper. Aborted.");
         placeHolders[2] = wrapperFile.toAbsolutePath().toString();
         //Output
-        placeHolders[3] = (outputFile == null)?defaultOutputFile:outputFile.toAbsolutePath().toString();
+        placeHolders[3] = (outputFile == null) ? absolutePathToOutputFile : outputFile.toAbsolutePath().toString();
 
         return placeHolders;
     }
@@ -92,7 +92,7 @@ public class PandocRequestBuilder {
      * @return The command String.
      * @throws IllegalArgumentException Thrown if no valid wrapper file was passed.
      */
-    String buildCommandString() throws IllegalArgumentException{
+    String buildCommandString() throws IllegalArgumentException {
         String[] placeHolders = createStrings();
         return String.format(defaultCommandString, placeHolders);
     }
