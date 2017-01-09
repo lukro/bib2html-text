@@ -104,7 +104,6 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void consumeIncomingQueues() throws IOException {
-        //TODO: autoAck raus, manuelles Ack rein
         this.microServiceID = channel.basicConsume(TASK_QUEUE_NAME, false, this);
     }
 
