@@ -25,7 +25,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     //microServiceID is technically FINAL
     private String microServiceID;
     private final String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
-    private final IEntryProcessor DEFAULT_PROCESSOR = new DummyEntryProcessor();
+    private final IEntryProcessor DEFAULT_PROCESSOR = new DefaultEntryProcessor();
     private final Channel channel;
 
     public MicroService(Channel channel) throws IOException, TimeoutException {
@@ -123,7 +123,6 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     public void declareQueues() throws IOException {
         //incoming queues
         channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
-        //Registration Queue?
     }
 
     @Override

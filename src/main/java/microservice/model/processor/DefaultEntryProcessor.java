@@ -3,6 +3,7 @@ package microservice.model.processor;
 import global.identifiers.EntryIdentifier;
 import global.identifiers.FileType;
 import global.logging.Log;
+import global.logging.LogLevel;
 import global.model.IEntry;
 import global.model.IPartialResult;
 import microservice.model.validator.CSLDummyValidator;
@@ -24,7 +25,22 @@ public class DefaultEntryProcessor implements IEntryProcessor {
     private static final IValidator<String> CSL_VALIDATOR = new CSLDummyValidator();
     private static final IValidator<String> TEMPLATE_VALIDATOR = new TemplateValidator();
 
+    private static final String DEFAULT_CSL_RESOURCE_NAME = "default.csl";
+    private static final String DEFAULT_TEMPLATE_RESOURCE_NAME = "default_template.html";
+
+    private static String DEFAULT_CSL_CONTENT = "";
+    private static String DEFAULT_TEMPLATE_CONTENT = "";
+
     private HashMap<FileType, String> fileIdentifiers;
+
+    static {
+        initDefaults();
+    }
+
+    private static void initDefaults() {
+        DEFAULT_CSL_CONTENT = getResourceContent(DEFAULT_CSL_RESOURCE_NAME);
+        DEFAULT_TEMPLATE_CONTENT = getResourceContent(DEFAULT_TEMPLATE_RESOURCE_NAME);
+    }
 
     public DefaultEntryProcessor() {
     }
@@ -98,19 +114,37 @@ public class DefaultEntryProcessor implements IEntryProcessor {
         if (fileList.size() != 0)
             return fileList;
         if (fileType == FileType.CSL)
-            return new ArrayList<>(Arrays.asList("DEFAULT CSL"));
-        return new ArrayList<>(Arrays.asList("DEFAULT TEMPLATE"));
+            return new ArrayList<>(Arrays.asList(DEFAULT_CSL_CONTENT));
+        else if (fileType == FileType.TEMPLATE)
+            return new ArrayList<>(Arrays.asList(DEFAULT_TEMPLATE_CONTENT));
+        return new ArrayList<String>();
     }
 
-    private void writeUserFiles(ArrayList<String> fileList, FileType fileType) {
-        String fileName = "";
-        for (int i = 0; i < fileList.size(); i++) {
+//    private void writeUserFiles(ArrayList<String> fileList, FileType fileType) {
+//        String fileName = "";
+//        for (int i = 0; i < fileList.size(); i++) {
+//            try {
+//                fileName = i + "_" + fileIdentifiers.get(fileType);
+//                Files.write(Paths.get(fileName), fileList.get(i).getBytes());
+//            } catch (IOException e) {
+//                Log.log("failed to write file '" + fileName + "' to filesystem.");
+//            }
+//        }
+//    }
+
+    private static String getResourceContent(String resourceFileName) {
+        try {
+            String pathToResource = DefaultEntryProcessor.class.getClassLoader().getResource(resourceFileName).getFile();
             try {
-                fileName = i + "_" + fileIdentifiers.get(fileType);
-                Files.write(Paths.get(fileName), fileList.get(i).getBytes());
+                return new String
+                        (Files.readAllBytes(Paths.get(pathToResource)));
             } catch (IOException e) {
-                Log.log("failed to write file '" + fileName + "' to filesystem.");
+                Log.log("couldn't read resource file '" + pathToResource + "'", LogLevel.ERROR);
+                return null;
             }
+        } catch (NullPointerException e) {
+            Log.log("resource doesn't exist.", LogLevel.ERROR);
+            return null;
         }
     }
 
