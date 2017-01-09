@@ -48,13 +48,13 @@ public class DefaultResult implements IResult {
                 collectionMap.put(identifier, tempSet);
             }
         });
-
         //Build results
         Collection<String> generatedStrings = new ArrayList<>();
         collectionMap.forEach((identifier, results) -> {
             StringBuilder bldr = new StringBuilder();
-            //TODO Sort results
-            results.forEach(result -> bldr.append(result.getContent()));
+            ArrayList<IPartialResult> tempResults = new ArrayList(results);
+            Collections.sort(tempResults);
+            tempResults.forEach(result -> bldr.append(result.getContent()));
             generatedStrings.add(bldr.toString());
         });
 
