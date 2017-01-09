@@ -30,4 +30,15 @@ public class DefaultPartialResult implements IPartialResult {
         return content;
     }
 
+    @Override
+    public int compareTo(IPartialResult o) {
+        if(o.getIdentifier().getPositionInBibFile() > this.getIdentifier().getPositionInBibFile()) {
+            return -1;
+        } else if(o.getIdentifier().getPositionInBibFile() == this.getIdentifier().getPositionInBibFile()) {
+            return 0;
+        } else {
+            return 1;
+        }
+
+    }
 }
