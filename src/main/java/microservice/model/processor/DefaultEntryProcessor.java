@@ -1,5 +1,6 @@
 package microservice.model.processor;
 
+import com.sun.org.apache.bcel.internal.util.ClassLoader;
 import global.identifiers.EntryIdentifier;
 import global.identifiers.FileType;
 import global.identifiers.PartialResultIdentifier;
@@ -76,6 +77,16 @@ public class DefaultEntryProcessor implements IEntryProcessor {
     }
 
     public DefaultEntryProcessor() {
+
+        System.out.println(this.getClass().getClassLoader() == null);
+        System.out.println(this.getClass().getClassLoader().getResource(DEFAULT_CSL_RESOURCE_NAME) == null);
+        try {
+           Files.readAllBytes(Paths.get(ClassLoader.getSystemClassLoader().getResource(DEFAULT_CSL_RESOURCE_NAME).getFile()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(DEFAULT_CSL_CONTENT);
     }
 
     private static int pandocDoWork(String cslName, String templateName, String wrapperName, EntryIdentifier entryIdentifier) throws IOException, InterruptedException {
