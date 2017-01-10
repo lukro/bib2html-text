@@ -14,6 +14,8 @@ import server.events.*;
 import server.events.IEventListener;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 
@@ -64,6 +66,11 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         PartialResultCollector.getInstance();
         EventManager.getInstance().registerListener(this);
         initConnectionPoint();
+
+        //create blacklistfile, if it does not exist
+        if(!Files.exists(Paths.get("blacklist.txt"))) {
+            Files.createFile(Paths.get("blacklist.txt"));
+        }
     }
 
     @Override
@@ -240,7 +247,17 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      * @return A boolean.
      */
     private boolean isBlacklisted(String clientID) {
-        return blacklistedClients.contains(clientID);
+        List<String> lines = null;
+        try {
+            lines = Files.readAllLines(Paths.get("blacklist.txt"));
+            for(String line: lines) {
+                if(clientID.equals(line))
+                    return true;
+            }
+        } catch (IOException e) {
+            Log.log("Could not read blacklist file", e);
+        }
+        return false;
     }
 
     /**
@@ -250,7 +267,12 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      *
      * @param clientIDToBlock The id to block.
      */
-    private void blacklistClient(String clientIDToBlock) {
+    private void blacklistClient(String clientIDToBlock)  {
+        try {
+            Files.write(Paths.get("blacklist.txt"), (clientIDToBlock + "\n").getBytes());
+        } catch (IOException e) {
+            Log.log("Failed to write to blacklist file", e);
+        }
         blacklistedClients.add(clientIDToBlock);
         Log.log("Blacklisted Client " + clientIDToBlock, LogLevel.WARNING);
     }
