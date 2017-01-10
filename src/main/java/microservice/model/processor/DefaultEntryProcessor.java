@@ -25,29 +25,54 @@ import java.util.*;
  */
 public class DefaultEntryProcessor implements IEntryProcessor {
 
-    private static final IValidator<File> CSL_VALIDATOR = new CslValidator();
-    private static final IValidator<File> TEMPLATE_VALIDATOR = new TemplateValidator();
+    private static final Path WORKING_DIRECTORY_ROOT = Paths.get(System.getProperty("user.dir"));
+    private static final String WORKING_SUB_DIRECTORY_NAME = "working_dir";
+    private static Path WORKING_DIRECTORY = Paths.get(
+            WORKING_DIRECTORY_ROOT.toAbsolutePath().toString(), WORKING_SUB_DIRECTORY_NAME + "/");
 
     private static final String DEFAULT_CSL_RESOURCE_NAME = "default.csl";
     private static final String DEFAULT_TEMPLATE_RESOURCE_NAME = "default_template.html";
+    private static final String DEFAULT_OUTPUT_FILE_NAME = "result.html";
 
     private static final Path PATH_TO_DEFAULT_CSL = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(DEFAULT_CSL_RESOURCE_NAME).getFile());
-    private static final Path PATH_TO_DEFAULT_TEMPLATE = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(DEFAULT_CSL_RESOURCE_NAME).getFile());
+    private static final Path PATH_TO_DEFAULT_TEMPLATE = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(DEFAULT_TEMPLATE_RESOURCE_NAME).getFile());
+    private static final Path PATH_TO_DEFAULT_OUTPUT_FILE = Paths.get(
+            WORKING_DIRECTORY.toAbsolutePath().toString(), DEFAULT_OUTPUT_FILE_NAME);
+
+    private static final IValidator<File> CSL_VALIDATOR = new CslValidator();
+    private static final IValidator<File> TEMPLATE_VALIDATOR = new TemplateValidator();
 
     private static String DEFAULT_CSL_CONTENT = "";
     private static String DEFAULT_TEMPLATE_CONTENT = "";
-
-    private HashMap<FileType, String> fileIdentifiers;
-
-    private PandocRequestBuilder pandocCommandBuilder;
 
     static {
         initDefaults();
     }
 
     private static void initDefaults() {
-        DEFAULT_CSL_CONTENT = getResourceContent(DEFAULT_CSL_RESOURCE_NAME);
-        DEFAULT_TEMPLATE_CONTENT = getResourceContent(DEFAULT_TEMPLATE_RESOURCE_NAME);
+        if (Files.exists(WORKING_DIRECTORY) && Files.isDirectory(WORKING_DIRECTORY))
+            Log.log("working directory already exists.", LogLevel.INFO);
+        else {
+            new File(WORKING_DIRECTORY.toAbsolutePath().toString()).mkdir();
+        }
+
+        final Path defaultCslTarget =
+                Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), DEFAULT_CSL_RESOURCE_NAME);
+        final Path defaultTemplateTarget =
+                Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), DEFAULT_TEMPLATE_RESOURCE_NAME);
+
+        try {
+            Files.copy(PATH_TO_DEFAULT_CSL, defaultCslTarget);
+        } catch (IOException e) {
+            Log.log("couldn't init default csl.", LogLevel.ERROR);
+        }
+        try {
+            Files.copy(PATH_TO_DEFAULT_TEMPLATE, defaultTemplateTarget);
+        } catch (IOException e) {
+            Log.log("couldn't init default template.", LogLevel.ERROR);
+        }
+//        DEFAULT_CSL_CONTENT = getResourceContent(DEFAULT_CSL_RESOURCE_NAME);
+//        DEFAULT_TEMPLATE_CONTENT = getResourceContent(DEFAULT_TEMPLATE_RESOURCE_NAME);
     }
 
     public DefaultEntryProcessor() {
@@ -79,11 +104,13 @@ public class DefaultEntryProcessor implements IEntryProcessor {
     @Override
     public List<IPartialResult> processEntry(IEntry toConvert) {
         List<IPartialResult> result = new ArrayList<>();
-        this.fileIdentifiers = createFileIdentifiersFromIEntry(toConvert);
+        final HashMap<FileType, String> fileIdentifiers = createFileIdentifiersFromIEntry(toConvert);
 
         final EntryIdentifier currentEntryIdentifier = toConvert.getEntryIdentifier();
 
-        final String mdString = "--- \nbibliography: " + fileIdentifiers.get(FileType.BIB) + "\nnocite: \"@*\" \n...";
+//        final String mdString = "--- \nbibliography: " + fileIdentifiers.get(FileType.BIB) + "\nnocite: \"@*\" \n...";
+        final String mdString = "--- \nbibliography: " + toConvert.getContent() + "\nnocite: \"@*\" \n...";
+
 
         final ArrayList<String> cslFilesToUse, templatesToUse;
         cslFilesToUse = new ArrayList<>(correctUserFileLists(toConvert.getCslFiles(), FileType.CSL));
@@ -107,7 +134,7 @@ public class DefaultEntryProcessor implements IEntryProcessor {
                     //invalid template
                 }
 
-                pandocCommandBuilder = new PandocRequestBuilder(
+                final PandocRequestBuilder pandocCommandBuilder = new PandocRequestBuilder(
                         PATH_TO_DEFAULT_CSL,
                         PATH_TO_DEFAULT_TEMPLATE,
                         Paths.get(fileIdentifiers.get(FileType.RESULT)))
