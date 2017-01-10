@@ -1,6 +1,6 @@
 package microservice.model.processor;
 
-import com.sun.org.apache.bcel.internal.util.ClassLoader;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import global.identifiers.EntryIdentifier;
 import global.identifiers.FileType;
 import global.identifiers.PartialResultIdentifier;
@@ -74,8 +74,14 @@ public class DefaultEntryProcessor implements IEntryProcessor {
         } catch (IOException e) {
             Log.log("couldn't init default template.", LogLevel.ERROR);
         }
-//        DEFAULT_CSL_CONTENT = getResourceContent(DEFAULT_CSL_RESOURCE_NAME);
-//        DEFAULT_TEMPLATE_CONTENT = getResourceContent(DEFAULT_TEMPLATE_RESOURCE_NAME);
+        try {
+            DEFAULT_CSL_CONTENT = new String(Files.readAllBytes(defaultCslTarget));
+            DEFAULT_TEMPLATE_CONTENT = new String(Files.readAllBytes(defaultTemplateTarget));
+        } catch (IOException e) {
+            Log.log("couldn't read defaults content.", e);
+        }
+
+
     }
 
     public DefaultEntryProcessor() {
@@ -104,79 +110,6 @@ public class DefaultEntryProcessor implements IEntryProcessor {
 //        return p.waitFor();
 //    }
 
-//    @Override
-//    public List<IPartialResult> processEntry2(IEntry toConvert) {
-//        List<IPartialResult> result = new ArrayList<>();
-//        final HashMap<FileType, String> fileIdentifiers = createFileIdentifiersFromIEntry(toConvert);
-//
-//        final EntryIdentifier currentEntryIdentifier = toConvert.getEntryIdentifier();
-//
-//        final String mdString = "--- \nbibliography: " + fileIdentifiers.get(FileType.BIB) + "\nnocite: \"@*\" \n...";
-////        final String mdString = "--- \nbibliography: " + toConvert.getContent() + "\nnocite: \"@*\" \n...";
-//
-//
-//        final ArrayList<String> cslFilesToUse, templatesToUse;
-//        cslFilesToUse = new ArrayList<>(correctUserFileLists(toConvert.getCslFiles(), FileType.CSL));
-//        templatesToUse = new ArrayList<>(correctUserFileLists(toConvert.getTemplates(), FileType.TEMPLATE));
-//
-//        writeFile(FileType.BIB, fileIdentifiers.get(FileType.BIB), toConvert.getContent().getBytes());
-//        Path pathToWrapperFile = writeFile(FileType.MD, fileIdentifiers.get(FileType.MD), mdString.getBytes());
-//
-//        for (int cslFileIndex = 0; cslFileIndex < cslFilesToUse.size(); cslFileIndex++) {
-//            Path pathToCurrentCslFile = writeFile(FileType.CSL, fileIdentifiers.get(FileType.CSL), cslFilesToUse.get(cslFileIndex).getBytes());
-//            File currentCslFile = new File(pathToCurrentCslFile.toString());
-//
-//            if (!CSL_VALIDATOR.validate(currentCslFile)) {
-//                //invalid csl-file
-//            }
-//            for (int templateIndex = 0; templateIndex < templatesToUse.size(); templateIndex++) {
-//                Path pathToCurrentTemplate = writeFile(FileType.TEMPLATE, fileIdentifiers.get(FileType.TEMPLATE), templatesToUse.get(templateIndex).getBytes());
-//                File currentTemplate = new File(pathToCurrentTemplate.toString());
-//
-//                if (!TEMPLATE_VALIDATOR.validate(currentTemplate)) {
-//                    //invalid template
-//                }
-//
-//                final PandocRequestBuilder pandocCommandBuilder = new PandocRequestBuilder(
-//                        PATH_TO_DEFAULT_CSL,
-//                        PATH_TO_DEFAULT_TEMPLATE,
-//                        Paths.get(fileIdentifiers.get(FileType.RESULT)))
-//                        .csl(null)
-//                        .template(pathToCurrentTemplate)
-//                        .wrapper(pathToWrapperFile)
-//                        .outputFile(Paths.get(fileIdentifiers.get(FileType.RESULT)))
-//                        .setUseDefaultCSL(false)
-//                        .setUseDefaultTemplate(false);
-//
-//                final String pandocCommandString = pandocCommandBuilder.buildCommandString();
-//
-//                IPartialResult currentPartialResult;
-//
-//                try {
-//                    Process p = Runtime.getRuntime().exec(pandocCommandString, null);
-//
-//                    PartialResultIdentifier currentPartialIdentifier =
-//                            new PartialResultIdentifier(currentEntryIdentifier, cslFileIndex, templateIndex);
-//
-//                    final byte[] convertedContentEncoded = Files.readAllBytes(Paths.get(fileIdentifiers.get(FileType.RESULT)));
-//                    final String convertedContent = new String(convertedContentEncoded);
-//
-//                    currentPartialResult = new DefaultPartialResult(convertedContent, currentPartialIdentifier);
-//
-//                    result.add(currentPartialResult);
-//
-//                } catch (IOException e) {
-//                    //TODO: build error flagged partial & continue
-//                    continue;
-//                } finally {
-//
-//                }
-//            }
-//
-//        }
-//        return result;
-//    }
-
     private static HashMap<FileType, String> createFileIdentifiersFromIEntry(IEntry iEntry) {
         HashMap<FileType, String> result = new HashMap<>();
         String hashCode = Integer.toString(Math.abs(iEntry.hashCode()));
@@ -187,43 +120,6 @@ public class DefaultEntryProcessor implements IEntryProcessor {
         result.put(FileType.RESULT, hashCode + "_result.html");
         return result;
     }
-
-//    private static ArrayList<String> correctUserFileLists(ArrayList<String> fileList, FileType fileType) {
-//        if (fileList.size() != 0)
-//            return fileList;
-//        if (fileType == FileType.CSL)
-//            return new ArrayList<>(Arrays.asList(DEFAULT_CSL_CONTENT));
-//        else if (fileType == FileType.TEMPLATE)
-//            return new ArrayList<>(Arrays.asList(DEFAULT_TEMPLATE_CONTENT));
-//        return new ArrayList<String>();
-//    }
-
-//    private static String getResourceContent(String resourceFileName) {
-//        try {
-//            String pathToResource = DefaultEntryProcessor.class.getClassLoader().getResource(resourceFileName).getFile();
-////            System.out.println(pathToResource);
-//            try {
-//                return new String
-//                        (Files.readAllBytes(Paths.get(pathToResource)));
-//            } catch (IOException e) {
-//                Log.log("couldn't read resource file '" + pathToResource + "'", LogLevel.ERROR);
-//                return null;
-//            }
-//        } catch (NullPointerException e) {
-//            Log.log("resource doesn't exist.", LogLevel.ERROR);
-//            return null;
-//        }
-//    }
-
-//    private static Path writeFile(FileType fileType, String fileName, byte[] content) {
-//        Path result = null;
-//        try {
-//            result = Files.write(Paths.get(fileName), content);
-//        } catch (IOException e) {
-//            Log.log("couldn't write file '" + fileName + "' to working directory.", LogLevel.ERROR);
-//        }
-//        return result;
-//    }
 
     @Override
     public List<IPartialResult> processEntry(IEntry toConvert) {
@@ -244,18 +140,56 @@ public class DefaultEntryProcessor implements IEntryProcessor {
 
         final HashMap<String, PartialResultIdentifier> commands = buildPandocCommands(toConvert, pathToWrapper);
 
+        IPartialResult currentPartialResult = null;
+
         for (Map.Entry currentEntry : commands.entrySet()) {
+
+            final int currentCslIndex = commands.get(currentEntry).getCslFileIndex();
+            final int currentTemplateIndex = commands.get(currentEntry).getTemplateFileIndex();
+
+            String cslContentToWrite, templateContentToWrite;
+            if (currentCslIndex == -1) {
+                cslContentToWrite = DEFAULT_CSL_CONTENT;
+            } else {
+                cslContentToWrite = toConvert.getCslFiles().get(currentCslIndex);
+            }
+            if (currentTemplateIndex == -1) {
+                templateContentToWrite = DEFAULT_TEMPLATE_CONTENT;
+            } else {
+                templateContentToWrite = toConvert.getTemplates().get(currentTemplateIndex);
+            }
+
+            Path cslWritePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), fileIdentifiers.get(FileType.CSL));
+            Path templateWritePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), fileIdentifiers.get(FileType.TEMPLATE));
+
+            try {
+                Files.write(cslWritePath, cslContentToWrite.getBytes());
+                Files.write(templateWritePath, templateContentToWrite.getBytes());
+            } catch (IOException e) {
+                Log.log("Failed to do some shit (write csl/template)", e);
+            }
+
             String currentCommand = (String) currentEntry.getKey();
             try {
                 Runtime.getRuntime().exec(currentCommand);
+
+                byte[] currentResultBytes = Files.readAllBytes(new File(DEFAULT_OUTPUT_FILE_NAME).toPath());
+                String currentResultContent = new String(currentResultBytes);
+                currentPartialResult = new DefaultPartialResult(currentResultContent, commands.get(currentCommand));
+
             } catch (IOException e) {
                 Log.log("error while executing pandoc command: '" + currentCommand + "'.", e);
+
+                String errorContent = System.lineSeparator() + "ERROR" + System.lineSeparator();
+                currentPartialResult = new DefaultPartialResult(errorContent, commands.get(currentCommand));
+
                 continue;
+
+            } finally {
+                result.add(currentPartialResult);
+
             }
-
-
         }
-
         return result;
     }
 
@@ -266,7 +200,8 @@ public class DefaultEntryProcessor implements IEntryProcessor {
 
         PandocRequestBuilder pandocCommandBuilder =
                 new PandocRequestBuilder(
-                        PATH_TO_DEFAULT_CSL, PATH_TO_DEFAULT_TEMPLATE, PATH_TO_DEFAULT_OUTPUT_FILE);
+                        PATH_TO_DEFAULT_CSL, PATH_TO_DEFAULT_TEMPLATE, PATH_TO_DEFAULT_OUTPUT_FILE)
+                        .wrapper(pathToWrapper);
 
         int startIndexCsl, startIndexTemplate;
         if (toConvert.getCslFiles().size() == 0)
@@ -279,37 +214,34 @@ public class DefaultEntryProcessor implements IEntryProcessor {
             startIndexTemplate = 0;
 
         for (int cslFileIndex = startIndexCsl; cslFileIndex < toConvert.getCslFiles().size(); cslFileIndex++) {
-            final Path pathToCslFile = Paths.get(
-                    WORKING_DIRECTORY.toAbsolutePath().toString(), fileIdentifiers.get(FileType.CSL));
+            final Path pathToCslFile;
+
+            if (cslFileIndex == -1)
+                pathToCslFile = null;
+            else
+                pathToCslFile = Paths.get(
+                        WORKING_DIRECTORY.toAbsolutePath().toString(), fileIdentifiers.get(FileType.CSL));
 
             for (int templateFileIndex = startIndexTemplate; templateFileIndex < toConvert.getTemplates().size(); templateFileIndex++) {
+                final Path pathToTemplate;
 
-                final Path pathToTemplate = Paths.get(
-                        WORKING_DIRECTORY.toAbsolutePath().toString(), fileIdentifiers.get(FileType.TEMPLATE));
+                if (templateFileIndex == -1)
+                    pathToTemplate = null;
+                else
+                    pathToTemplate = Paths.get(
+                            WORKING_DIRECTORY.toAbsolutePath().toString(), fileIdentifiers.get(FileType.TEMPLATE));
 
                 pandocCommandBuilder
                         .csl(pathToCslFile)
-                        .template(pathToTemplate)
-                        .wrapper(pathToWrapper);
+                        .template(pathToTemplate);
 
+                PartialResultIdentifier currentPartialResultIdentifier =
+                        new PartialResultIdentifier(entryIdentifier, cslFileIndex, templateFileIndex);
 
+                result.put(pandocCommandBuilder.buildCommandString(), currentPartialResultIdentifier);
             }
-
         }
-
-        toConvert.getCslFiles().forEach(cslFile -> {
-
-
-            toConvert.getTemplates().forEach(templateFile -> {
-
-
-                //TODO: create paths.
-                //TODO: check if we have to use the defaults (ie. has no CSL / templates)
-                returner.add(pandocCommandBuilder.csl(cslFile).template(templateFile).buildCommandString());
-            });
-        });
-
-        return returner;
+        return result;
     }
 
 

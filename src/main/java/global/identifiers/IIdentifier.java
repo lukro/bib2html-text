@@ -15,6 +15,10 @@ public interface IIdentifier extends Serializable {
 
     int getPositionInBibFile();
 
+    int getCslFileIndex();
+
+    int getTemplateFileIndex();
+
     String toString();
 
 }

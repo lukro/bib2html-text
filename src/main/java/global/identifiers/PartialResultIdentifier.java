@@ -42,6 +42,16 @@ public class PartialResultIdentifier implements IIdentifier {
     }
 
     @Override
+    public int getCslFileIndex() {
+        return cslFileIndex;
+    }
+
+    @Override
+    public int getTemplateFileIndex() {
+        return templateFileIndex;
+    }
+
+    @Override
     public String toString() {
         return ("PartialResult for client " + entryIdentifier.getClientID() +
                 " belongs to .bib-file " + entryIdentifier.getBibFileIndex() +
@@ -53,6 +63,7 @@ public class PartialResultIdentifier implements IIdentifier {
 
     /**
      * Ignores EntryIdentifier aside from the bib file index
+     *
      * @param o The object to compare.
      * @return A boolean for equality.
      */
