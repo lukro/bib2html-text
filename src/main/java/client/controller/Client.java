@@ -130,6 +130,9 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         }
         File outDir = new File(outputDirectory);
         String filename = result.getClientID();
+
+        System.out.println(builder.toString());
+
         if (outDir == null || !outDir.exists())
             Log.log("Output-directory doesn't exist!", LogLevel.SEVERE);
         else

@@ -1,6 +1,5 @@
 package microservice.model.processor;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import global.identifiers.EntryIdentifier;
 import global.identifiers.FileType;
 import global.identifiers.PartialResultIdentifier;
@@ -26,89 +25,244 @@ import java.util.*;
  */
 public class DefaultEntryProcessor implements IEntryProcessor {
 
-    private static final Path WORKING_DIRECTORY_ROOT = Paths.get(System.getProperty("user.dir"));
-    private static final String WORKING_SUB_DIRECTORY_NAME = "working_dir";
-    private static Path WORKING_DIRECTORY = Paths.get(
-            WORKING_DIRECTORY_ROOT.toAbsolutePath().toString(), WORKING_SUB_DIRECTORY_NAME);
+    private static final Path WORKING_DIRECTORY = Paths.get(System.getProperty("user.dir"));
 
-    private static final String DEFAULT_CSL_RESOURCE_NAME = "default.csl";
-    private static final String DEFAULT_TEMPLATE_RESOURCE_NAME = "default_template.html";
-    private static final String DEFAULT_OUTPUT_FILE_NAME = "result.html";
-
-    private static final Path PATH_TO_DEFAULT_CSL = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(DEFAULT_CSL_RESOURCE_NAME).getFile());
-    private static final Path PATH_TO_DEFAULT_TEMPLATE = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(DEFAULT_TEMPLATE_RESOURCE_NAME).getFile());
-    private static final Path PATH_TO_DEFAULT_OUTPUT_FILE = Paths.get(
-            WORKING_DIRECTORY.toAbsolutePath().toString(), DEFAULT_OUTPUT_FILE_NAME);
+    /*
+    defaults: future work, expandability
+     */
+    private static final String CUSTOM_DEFAULT_CSL_NAME = "custom_default.csl";
+    private static final String CUSTOM_DEFAULT_TEMPLATE_NAME = "custom_default_template.html";
+    private static final Path PATH_TO_CUSTOM_DEFAULT_CSL = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_CSL_NAME).getFile());
+    private static final Path PATH_TO_CUSTOM_DEFAULT_TEMPLATE = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_TEMPLATE_NAME).getFile());
+    private static String CUSTOM_DEFAULT_CSL_CONTENT;
+    private static String CUSTOM_DEFAULT_TEMPLATE_CONTENT;
 
     private static final IValidator<File> CSL_VALIDATOR = new CslValidator();
     private static final IValidator<File> TEMPLATE_VALIDATOR = new TemplateValidator();
 
+    private static final String FAILED_PARTIAL_ERROR_CONTENT = System.lineSeparator() + "ERROR!" + System.lineSeparator();
+
     private HashMap<FileType, String> fileIdentifiers;
 
-    private static String DEFAULT_CSL_CONTENT = "";
-    private static String DEFAULT_TEMPLATE_CONTENT = "";
-
+    /*
+   init defaults: future work, expandability
+    */
     static {
-        initDefaults();
+        initCustomDefaults();
     }
 
-    private static void initDefaults() {
-        if (Files.exists(WORKING_DIRECTORY) && Files.isDirectory(WORKING_DIRECTORY))
-            Log.log("working directory already exists.", LogLevel.INFO);
-        else {
-            new File(WORKING_DIRECTORY.toAbsolutePath().toString()).mkdir();
-        }
-
+    private static void initCustomDefaults() {
         final Path defaultCslTarget =
-                Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), DEFAULT_CSL_RESOURCE_NAME);
+                Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), CUSTOM_DEFAULT_CSL_NAME);
         final Path defaultTemplateTarget =
-                Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), DEFAULT_TEMPLATE_RESOURCE_NAME);
+                Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), CUSTOM_DEFAULT_TEMPLATE_NAME);
+
+        copyCustomDefaultsToWorkingDir(defaultCslTarget, defaultTemplateTarget);
 
         try {
-            Files.copy(PATH_TO_DEFAULT_CSL, defaultCslTarget);
+            CUSTOM_DEFAULT_CSL_CONTENT = new String(Files.readAllBytes(defaultCslTarget));
+            CUSTOM_DEFAULT_TEMPLATE_CONTENT = new String(Files.readAllBytes(defaultTemplateTarget));
+        } catch (IOException e) {
+            Log.log("couldn't read defaults content.", LogLevel.ERROR);
+        }
+    }
+
+    private static void copyCustomDefaultsToWorkingDir(Path defaultCslTarget, Path defaultTemplateTarget) {
+        try {
+            Files.copy(PATH_TO_CUSTOM_DEFAULT_CSL, defaultCslTarget);
         } catch (IOException e) {
             Log.log("couldn't init default csl.", LogLevel.ERROR);
         }
         try {
-            Files.copy(PATH_TO_DEFAULT_TEMPLATE, defaultTemplateTarget);
+            Files.copy(PATH_TO_CUSTOM_DEFAULT_TEMPLATE, defaultTemplateTarget);
         } catch (IOException e) {
             Log.log("couldn't init default template.", LogLevel.ERROR);
         }
-        try {
-            DEFAULT_CSL_CONTENT = new String(Files.readAllBytes(defaultCslTarget));
-            DEFAULT_TEMPLATE_CONTENT = new String(Files.readAllBytes(defaultTemplateTarget));
-        } catch (IOException e) {
-            Log.log("couldn't read defaults content.", e);
-        }
-
-
     }
 
     public DefaultEntryProcessor() {
     }
 
-//    private static int pandocDoWork(String cslName, String templateName, String wrapperName, EntryIdentifier entryIdentifier) throws IOException, InterruptedException {
-//        Objects.requireNonNull(cslName);
-//        Objects.requireNonNull(wrapperName);
-//
-//        File cslFile = new File(cslName);
-//        File wrapperFile = new File(wrapperName);
-//        File template = new File(templateName);
-//
-//        if (!cslFile.exists() || !wrapperFile.exists())
-//            throw new IllegalArgumentException("A file with that name might not exist!");
-//
-//        String command = "pandoc --filter=pandoc-citeproc --template " + templateName + " --csl " + cslName + " --standalone " + wrapperName + " -o " + entryIdentifier.getBibFileIndex() + "_result.html";
-//        System.out.println(command);
-//        Process p = Runtime.getRuntime().exec(command, null);
-//        BufferedReader input = new BufferedReader(new
-//                InputStreamReader(p.getInputStream()));
-//        String line;
-//        while ((line = input.readLine()) != null) {
-//            System.out.println(line);
+    @Override
+    public List<IPartialResult> processEntry(IEntry toConvert) {
+        fileIdentifiers = createFileIdentifiersFromIEntry(toConvert);
+
+        ArrayList<IPartialResult> result = new ArrayList<>();
+
+        final String wrapperFileName = fileIdentifiers.get(FileType.MD);
+        final String bibFileName = fileIdentifiers.get(FileType.BIB);
+        final String resultName = fileIdentifiers.get(FileType.RESULT);
+        String cslFileName = fileIdentifiers.get(FileType.CSL);
+        String templateName = fileIdentifiers.get(FileType.TEMPLATE);
+
+        final String mdString = "--- \nbibliography: " + bibFileName + "\nnocite: \"@*\" \n...";
+        try {
+            Files.write(Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), wrapperFileName), mdString.getBytes());
+            Files.write(Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), bibFileName), toConvert.getContent().getBytes());
+        } catch (IOException e) {
+            Log.log("couldn't write required file(s) in working dir");
+            return handleAbortionCausedByMissingRequiredFiles(toConvert, toConvert.getAmountOfExpectedPartials());
+        }
+
+        final HashMap<String, PartialResultIdentifier> commands = buildPandocCommands(toConvert, wrapperFileName);
+
+//        DEBUG: check commands
+//        for (Map.Entry currentEntry : commands.entrySet()) {
+//            System.out.println(((String) currentEntry.getKey()));
 //        }
-//        return p.waitFor();
-//    }
+
+        IPartialResult currentPartialResult = null;
+
+        for (Map.Entry currentEntry : commands.entrySet()) {
+
+            PartialResultIdentifier currentPartialIdentifier = ((PartialResultIdentifier) currentEntry.getValue());
+
+            final int currentCslIndex = currentPartialIdentifier.getCslFileIndex();
+            final int currentTemplateIndex = currentPartialIdentifier.getTemplateFileIndex();
+
+            if (currentCslIndex != -1) {
+                String cslContentToWrite;
+                cslContentToWrite = toConvert.getCslFiles().get(currentCslIndex);
+                try {
+                    Files.write(Paths.get(cslFileName), cslContentToWrite.getBytes());
+                } catch (IOException e) {
+                    Log.log("failed to write csl-file.", LogLevel.ERROR);
+                }
+            }
+
+            if (currentTemplateIndex != -1) {
+                String templateContentToWrite;
+                templateContentToWrite = toConvert.getTemplates().get(currentTemplateIndex);
+                try {
+                    Files.write(Paths.get(templateName), templateContentToWrite.getBytes());
+                } catch (IOException e) {
+                    Log.log("failed to write template.", LogLevel.ERROR);
+                }
+            }
+
+            String currentCommand = (String) currentEntry.getKey();
+
+            try {
+                Log.log("execute: '" + currentCommand + "'.", LogLevel.INFO);
+                Process p = Runtime.getRuntime().exec(currentCommand);
+                Log.log("pandoc terminal command executed.", LogLevel.INFO);
+                try {
+                    p.waitFor();
+                } catch (InterruptedException e) {
+                    Log.log("error while waiting for finishing pandoc terminal command.", LogLevel.ERROR);
+                }
+            } catch (IOException e) {
+                Log.log("error while executing pandoc command: '" + currentCommand + "'.", e);
+                currentPartialResult = createErrorPartial(currentPartialIdentifier);
+                continue;
+            }
+            try {
+                byte[] currentResultBytes = Files.readAllBytes(new File(resultName).toPath());
+                String currentResultContent = new String(currentResultBytes);
+                currentPartialResult = new DefaultPartialResult(currentResultContent, commands.get(currentCommand));
+            } catch (IOException e) {
+                Log.log("couldn't read result-file '" + resultName + "' from disk. ", LogLevel.ERROR);
+                currentPartialResult = createErrorPartial(currentPartialIdentifier);
+                continue;
+            } finally {
+                result.add(currentPartialResult);
+                if (currentCslIndex != -1) {
+                    try {
+                        Files.delete(Paths.get(cslFileName));
+                    } catch (IOException e) {
+                        Log.log("couldn't delete csl-file.", LogLevel.ERROR);
+                    }
+                }
+                if (currentTemplateIndex != -1) {
+                    try {
+                        Files.delete(Paths.get(templateName));
+                    } catch (IOException e) {
+                        Log.log("couldn't delete template-file.", LogLevel.ERROR);
+                    }
+                }
+                try {
+                    Files.delete(Paths.get(resultName));
+                } catch (IOException e) {
+                    Log.log("couldn't delete result.", LogLevel.ERROR);
+                    continue;
+                }
+            }
+        }
+        try {
+            Files.delete(Paths.get(bibFileName));
+            Files.delete(Paths.get(wrapperFileName));
+        } catch (IOException e) {
+            Log.log("couldn't delete bib-file or wrapper.", LogLevel.ERROR);
+        }
+//        Log.log("finished convert method!", LogLevel.INFO);
+        return result;
+    }
+
+    /**
+     * builds all pandoc commands
+     *
+     * @param toConvert
+     * @param wrapperFileName
+     * @return a list with pandoc commands
+     */
+    private HashMap<String, PartialResultIdentifier> buildPandocCommands(IEntry toConvert, String wrapperFileName) {
+        HashMap<String, PartialResultIdentifier> result = new HashMap<>();
+
+        final EntryIdentifier entryIdentifier = toConvert.getEntryIdentifier();
+
+        final String resultFileName = fileIdentifiers.get(FileType.RESULT);
+
+        int startIndexCsl, startIndexTemplate;
+
+        if (toConvert.getCslFiles().size() == 0) {
+            startIndexCsl = -1;
+        } else {
+            startIndexCsl = 0;
+        }
+
+        if (toConvert.getTemplates().size() == 0) {
+            startIndexTemplate = -1;
+        } else {
+            startIndexTemplate = 0;
+        }
+
+        for (int cslFileIndex = startIndexCsl; cslFileIndex < toConvert.getCslFiles().size(); cslFileIndex++) {
+            final String cslFileName;
+
+            if (cslFileIndex == -1) {
+                cslFileName = PandocCommandCreator.PandocCommandCreatorBuilder.PANDOC_DEFAULT_CSL_NAME;
+            } else {
+                cslFileName = fileIdentifiers.get(FileType.CSL);
+            }
+
+            for (int templateFileIndex = startIndexTemplate; templateFileIndex < toConvert.getTemplates().size(); templateFileIndex++) {
+                final String templateFileName;
+
+                if (templateFileIndex == -1) {
+                    templateFileName = PandocCommandCreator.PandocCommandCreatorBuilder.PANDOC_DEFAULT_TEMPLATE_NAME;
+                } else {
+                    templateFileName = fileIdentifiers.get(FileType.TEMPLATE);
+                }
+
+                PandocCommandCreator commandCreator =
+                        new PandocCommandCreator.PandocCommandCreatorBuilder
+                                (wrapperFileName, resultFileName, cslFileName, templateFileName)
+                                .useCustomDefaultCsl(false)
+                                .useCustomDefaultTemplate(false)
+                                .defaultCslName(CUSTOM_DEFAULT_CSL_NAME)
+                                .defaultTemplateName(CUSTOM_DEFAULT_TEMPLATE_NAME)
+                                .usePandocDefaultCsl(false)
+                                .usePandocDefaultTemplate(false)
+                                .build();
+
+                PartialResultIdentifier currentPartialResultIdentifier =
+                        new PartialResultIdentifier(entryIdentifier, cslFileIndex, templateFileIndex);
+
+                result.put(commandCreator.buildCommandString(), currentPartialResultIdentifier);
+            }
+        }
+        return result;
+    }
 
     private static HashMap<FileType, String> createFileIdentifiersFromIEntry(IEntry iEntry) {
         HashMap<FileType, String> result = new HashMap<>();
@@ -121,128 +275,30 @@ public class DefaultEntryProcessor implements IEntryProcessor {
         return result;
     }
 
-    @Override
-    public List<IPartialResult> processEntry(IEntry toConvert) {
-        fileIdentifiers = createFileIdentifiersFromIEntry(toConvert);
-
+    private static List<IPartialResult> handleAbortionCausedByMissingRequiredFiles(IEntry failedEntry, int expectedAmountOfPartials) {
         ArrayList<IPartialResult> result = new ArrayList<>();
-        final Path pathToWrapper;
 
-        final String mdString = "--- \nbibliography: " + fileIdentifiers.get(FileType.BIB) + "\nnocite: \"@*\" \n...";
-        try {
-            pathToWrapper = Files.write(Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), fileIdentifiers.get(FileType.MD)), mdString.getBytes());
-            Files.write(Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), fileIdentifiers.get(FileType.BIB)), toConvert.getContent().getBytes());
-        } catch (IOException e) {
-            Log.log("couldn't write required file(s) in working dir");
-            //TODO: handle error, return list with correct amount of partials flagged with error
-            return null;
-        }
+        EntryIdentifier failedEntryIdentifier = failedEntry.getEntryIdentifier();
 
-        final HashMap<String, PartialResultIdentifier> commands = buildPandocCommands(toConvert, pathToWrapper);
+        IPartialResult currentErrorPartialResult;
 
-        IPartialResult currentPartialResult = null;
+        PartialResultIdentifier errorIdentifier =
+                new PartialResultIdentifier
+                        (failedEntryIdentifier, -1337, -1337);
 
-        for (Map.Entry currentEntry : commands.entrySet()) {
+        for (int i = 0; i < expectedAmountOfPartials; i++) {
 
-            final int currentCslIndex = commands.get(currentEntry).getCslFileIndex();
-            final int currentTemplateIndex = commands.get(currentEntry).getTemplateFileIndex();
+            currentErrorPartialResult =
+                    createErrorPartial(errorIdentifier);
 
-            String cslContentToWrite, templateContentToWrite;
-            if (currentCslIndex == -1) {
-                cslContentToWrite = DEFAULT_CSL_CONTENT;
-            } else {
-                cslContentToWrite = toConvert.getCslFiles().get(currentCslIndex);
-            }
-            if (currentTemplateIndex == -1) {
-                templateContentToWrite = DEFAULT_TEMPLATE_CONTENT;
-            } else {
-                templateContentToWrite = toConvert.getTemplates().get(currentTemplateIndex);
-            }
-
-            Path cslWritePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), fileIdentifiers.get(FileType.CSL));
-            Path templateWritePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), fileIdentifiers.get(FileType.TEMPLATE));
-
-            try {
-                Files.write(cslWritePath, cslContentToWrite.getBytes());
-                Files.write(templateWritePath, templateContentToWrite.getBytes());
-            } catch (IOException e) {
-                Log.log("Failed to do some shit (write csl/template)", e);
-            }
-
-            String currentCommand = (String) currentEntry.getKey();
-            try {
-                Runtime.getRuntime().exec(currentCommand);
-
-                byte[] currentResultBytes = Files.readAllBytes(new File(DEFAULT_OUTPUT_FILE_NAME).toPath());
-                String currentResultContent = new String(currentResultBytes);
-                currentPartialResult = new DefaultPartialResult(currentResultContent, commands.get(currentCommand));
-
-            } catch (IOException e) {
-                Log.log("error while executing pandoc command: '" + currentCommand + "'.", e);
-
-                String errorContent = System.lineSeparator() + "ERROR" + System.lineSeparator();
-                currentPartialResult = new DefaultPartialResult(errorContent, commands.get(currentCommand));
-
-                continue;
-
-            } finally {
-                result.add(currentPartialResult);
-
-            }
+            result.add(currentErrorPartialResult);
         }
         return result;
     }
 
-    private HashMap<String, PartialResultIdentifier> buildPandocCommands(IEntry toConvert, Path pathToWrapper) {
-        HashMap<String, PartialResultIdentifier> result = new HashMap<>();
-
-        final EntryIdentifier entryIdentifier = toConvert.getEntryIdentifier();
-
-        PandocRequestBuilder pandocCommandBuilder =
-                new PandocRequestBuilder(
-                        PATH_TO_DEFAULT_CSL, PATH_TO_DEFAULT_TEMPLATE, PATH_TO_DEFAULT_OUTPUT_FILE)
-                        .wrapper(pathToWrapper);
-
-        int startIndexCsl, startIndexTemplate;
-        if (toConvert.getCslFiles().size() == 0)
-            startIndexCsl = -1;
-        else
-            startIndexCsl = 0;
-        if (toConvert.getTemplates().size() == 0)
-            startIndexTemplate = -1;
-        else
-            startIndexTemplate = 0;
-
-        for (int cslFileIndex = startIndexCsl; cslFileIndex < toConvert.getCslFiles().size(); cslFileIndex++) {
-            final Path pathToCslFile;
-
-            if (cslFileIndex == -1)
-                pathToCslFile = null;
-            else
-                pathToCslFile = Paths.get(
-                        WORKING_DIRECTORY.toAbsolutePath().toString(), fileIdentifiers.get(FileType.CSL));
-
-            for (int templateFileIndex = startIndexTemplate; templateFileIndex < toConvert.getTemplates().size(); templateFileIndex++) {
-                final Path pathToTemplate;
-
-                if (templateFileIndex == -1)
-                    pathToTemplate = null;
-                else
-                    pathToTemplate = Paths.get(
-                            WORKING_DIRECTORY.toAbsolutePath().toString(), fileIdentifiers.get(FileType.TEMPLATE));
-
-                pandocCommandBuilder
-                        .csl(pathToCslFile)
-                        .template(pathToTemplate);
-
-                PartialResultIdentifier currentPartialResultIdentifier =
-                        new PartialResultIdentifier(entryIdentifier, cslFileIndex, templateFileIndex);
-
-                result.put(pandocCommandBuilder.buildCommandString(), currentPartialResultIdentifier);
-            }
-        }
-        return result;
+    private static IPartialResult createErrorPartial(PartialResultIdentifier errorIdentifier) {
+        errorIdentifier.setHasErrors(true);
+        return new DefaultPartialResult(FAILED_PARTIAL_ERROR_CONTENT, errorIdentifier);
     }
-
 
 }

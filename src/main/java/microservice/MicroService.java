@@ -77,7 +77,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        System.out.println("MicroService (ID: " + microServiceID + " received a message");
+//        System.out.println("MicroService (ID: " + microServiceID + " received a message");
 
         IEntry received = SerializationUtils.deserialize(bytes);
 
@@ -87,10 +87,11 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             try {
                 channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(partialResult));
             } catch (IOException e) {
-                Log.log("Failed to send a partialresult to client", e);
+                Log.log("Failed to send a partialresult to server", e);
             }
         });
-        channel.basicAck(envelope.getDeliveryTag(), false);
+        //TODO: IN THE END!!: uncomment & change boolean in consumeIncomingQueues()
+//        channel.basicAck(envelope.getDeliveryTag(), false);
     }
 
     @Override
@@ -104,7 +105,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void consumeIncomingQueues() throws IOException {
-        this.microServiceID = channel.basicConsume(TASK_QUEUE_NAME, false, this);
+        this.microServiceID = channel.basicConsume(TASK_QUEUE_NAME, true, this);
     }
 
 

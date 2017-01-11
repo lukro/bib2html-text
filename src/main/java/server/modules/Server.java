@@ -68,7 +68,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         initConnectionPoint();
 
         //create blacklistfile, if it does not exist
-        if(!Files.exists(Paths.get("blacklist.txt"))) {
+        if (!Files.exists(Paths.get("blacklist.txt"))) {
             Files.createFile(Paths.get("blacklist.txt"));
         }
     }
@@ -84,7 +84,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 
     @Override
     public void consumeIncomingQueues() throws IOException {
-        //TODO: AutoAck in Request_Queue raus, manuelles Ack rein (?)
         channel.basicConsume(CLIENT_REQUEST_QUEUE_NAME, true, this);
         channel.basicConsume(callbackQueueName, true, this);
     }
@@ -213,17 +212,21 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      */
     private void processDeliveredClientRequest(IClientRequest deliveredClientRequest) throws IOException {
         IEntry firstEntry = deliveredClientRequest.getEntries().get(0);
-
         int countOfEntries = deliveredClientRequest.getEntries().size();
-        int countOfCSL = firstEntry.getCslFiles().size();
-        int countOfTempl = firstEntry.getTemplates().size();
 
-        if (countOfCSL == 0)
-            countOfCSL = 1;
-        if (countOfTempl == 0)
-            countOfTempl = 1;
+//        int countOfCSL = firstEntry.getCslFiles().size();
+//        int countOfTempl = firstEntry.getTemplates().size();
+//
+//        if (countOfCSL == 0)
+//            countOfCSL = 1;
+//        if (countOfTempl == 0)
+//            countOfTempl = 1;
 
-        int requestSize = countOfEntries * countOfCSL * countOfTempl;
+//        int requestSize = countOfEntries * countOfCSL * countOfTempl;
+
+        int countOfPartialPerEntry = firstEntry.getAmountOfExpectedPartials();
+
+        int requestSize = countOfEntries * countOfPartialPerEntry;
 
         RequestAcceptedEvent requestAcceptedEvent = new RequestAcceptedEvent(deliveredClientRequest.getClientID(), requestSize);
         EventManager.getInstance().publishEvent(requestAcceptedEvent);
@@ -231,7 +234,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         Log.log("Server successfully received a ClientRequest.");
 
         for (IEntry currentEntry : deliveredClientRequest.getEntries()) {
-            System.out.printf("hash: " + currentEntry.hashCode());
             channel.basicPublish("", TASK_QUEUE_NAME, replyProps, SerializationUtils.serialize(currentEntry));
         }
     }
@@ -247,17 +249,18 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      * @return A boolean.
      */
     private boolean isBlacklisted(String clientID) {
-        List<String> lines = null;
-        try {
-            lines = Files.readAllLines(Paths.get("blacklist.txt"));
-            for(String line: lines) {
-                if(clientID.equals(line))
-                    return true;
-            }
-        } catch (IOException e) {
-            Log.log("Could not read blacklist file", e);
-        }
-        return false;
+        return blacklistedClients.contains(clientID);
+//        List<String> lines = null;
+//        try {
+//            lines = Files.readAllLines(Paths.get("blacklist.txt"));
+//            for(String line: lines) {
+//                if(clientID.equals(line))
+//                    return true;
+//            }
+//        } catch (IOException e) {
+//            Log.log("Could not read blacklist file", e);
+//        }
+//        return false;
     }
 
     /**
@@ -267,14 +270,18 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      *
      * @param clientIDToBlock The id to block.
      */
-    private void blacklistClient(String clientIDToBlock)  {
-        try {
-            Files.write(Paths.get("blacklist.txt"), (clientIDToBlock + "\n").getBytes());
-        } catch (IOException e) {
-            Log.log("Failed to write to blacklist file", e);
-        }
+    private void blacklistClient(String clientIDToBlock) {
+
         blacklistedClients.add(clientIDToBlock);
         Log.log("Blacklisted Client " + clientIDToBlock, LogLevel.WARNING);
+
+//        try {
+//            Files.write(Paths.get("blacklist.txt"), (clientIDToBlock + "\n").getBytes());
+//        } catch (IOException e) {
+//            Log.log("Failed to write to blacklist file", e);
+//        }
+//        blacklistedClients.add(clientIDToBlock);
+//        Log.log("Blacklisted Client " + clientIDToBlock, LogLevel.WARNING);
     }
 
     @Override

@@ -41,12 +41,10 @@ public class PartialResultIdentifier implements IIdentifier {
         return entryIdentifier.getPositionInBibFile();
     }
 
-    @Override
     public int getCslFileIndex() {
         return cslFileIndex;
     }
 
-    @Override
     public int getTemplateFileIndex() {
         return templateFileIndex;
     }
