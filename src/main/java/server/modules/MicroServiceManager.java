@@ -8,14 +8,10 @@ import global.model.DefaultStopOrder;
 import global.model.IStopOrder;
 import microservice.MicroService;
 import org.apache.commons.lang3.SerializationUtils;
-import server.events.EventManager;
-import server.events.MicroServiceConnectedEvent;
+import server.events.*;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
@@ -30,7 +26,7 @@ public class MicroServiceManager {
 
     private static MicroServiceManager INSTANCE;
     //The max. # of tasks per service.
-    public final static int MAXIMUM_UTILIZATION = 50;
+    public final static int MAXIMUM_UTILIZATION = 25;
     //Key : ID | Value : IP
     private HashMap<String, String> microServices = new HashMap<>();
 
@@ -54,7 +50,7 @@ public class MicroServiceManager {
             }
         };
         Timer timer = new Timer();
-        timer.schedule(utilizationCheckerTask, 1500, 1000);
+        timer.schedule(utilizationCheckerTask, 1500, 500);
     }
 
 

@@ -6,9 +6,7 @@ import global.controller.IConnectionPoint;
 import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.logging.LogLevel;
-import global.model.IClientRequest;
-import global.model.IEntry;
-import global.model.IPartialResult;
+import global.model.*;
 import org.apache.commons.lang3.SerializationUtils;
 import server.events.*;
 import server.events.IEventListener;
@@ -90,6 +88,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     public void consumeIncomingQueues() throws IOException {
         channel.basicConsume(CLIENT_REQUEST_QUEUE_NAME, true, this);
         channel.basicConsume(callbackQueueName, true, this);
+        channel.basicConsume(REGISTRATION_QUEUE_NAME, true, this);
     }
 
     @Override
@@ -159,7 +158,27 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         } else if (deliveredObject instanceof IPartialResult) {
             ReceivedPartialResultEvent event = new ReceivedPartialResultEvent((IPartialResult) deliveredObject);
             EventManager.getInstance().publishEvent(event);
+        } else if (deliveredObject instanceof IRegistrationRequest) {
+            ReceivedRegistrationRequestEvent event = new ReceivedRegistrationRequestEvent((IRegistrationRequest) deliveredObject);
+//            EventManager.getInstance().publishEvent(event);
+            Log.log("Received Registration Request!", LogLevel.SEVERE);
+            handleReceivedRegistrationRequest((IRegistrationRequest)deliveredObject, basicProperties);
         }
+    }
+
+    private void handleReceivedRegistrationRequest(IRegistrationRequest deliveredObject, BasicProperties basicProperties) {
+        BasicProperties replyProps = new BasicProperties
+                .Builder()
+                .correlationId(basicProperties.getCorrelationId())
+                .build();
+        CallbackInformation callbackInformation = new CallbackInformation(basicProperties, replyProps);
+        IRegistrationAck ack = new DefaultRegistrationAck(TASK_QUEUE_NAME);
+        try {
+            channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(ack));
+        } catch (IOException e) {
+            Log.log("failed to send acknowledgement to microservice", e);
+        }
+
     }
 
     /**

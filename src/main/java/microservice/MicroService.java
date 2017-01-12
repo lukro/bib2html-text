@@ -1,12 +1,12 @@
 package microservice;
 
 import com.rabbitmq.client.*;
+import com.rabbitmq.client.AMQP.BasicProperties;
 import global.controller.IConnectionPoint;
 import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.logging.LogLevel;
-import global.model.IEntry;
-import global.model.IStopOrder;
+import global.model.*;
 import microservice.model.processor.DefaultEntryProcessor;
 import microservice.model.processor.IEntryProcessor;
 import org.apache.commons.lang3.SerializationUtils;
@@ -28,6 +28,8 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final String microServiceID;
     private final String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
     private final String STOP_QUEUE_NAME = QueueNames.MICROSERVICE_STOP_QUEUE_NAME.toString();
+    private final String REGISTRATION_QUEUE_NAME = QueueNames.MICROSERVICE_REGISTRATION_QUEUE_NAME.toString();
+    private final String REGISTRATION_CALLBACK = "regCallbackQueue";
     private final IEntryProcessor DEFAULT_PROCESSOR = new DefaultEntryProcessor();
     private final Channel channel;
     private final Connection connection;
@@ -49,6 +51,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
      */
     public MicroService(String hostIP) throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(hostIP);
         this.connection = factory.newConnection();
         this.channel = connection.createChannel();
         this.microServiceID = UUID.randomUUID().toString();
@@ -104,7 +107,12 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             if (((IStopOrder) receivedObject).getMicroServiceID().equals(microServiceID)) {
                 closeConnection();
             }
-        } else {
+        } else if (receivedObject instanceof IRegistrationAck) {
+            //TODO: set taskQueue
+            Log.log("successfully received acknowledgement");
+            consumeIncomingQueues();
+        }
+        else {
             IEntry received = SerializationUtils.deserialize(bytes);
             AMQP.BasicProperties replyProps = getReplyProps(basicProperties);
             DEFAULT_PROCESSOR.processEntry(received).forEach(partialResult -> {
@@ -150,13 +158,27 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void initConnectionPoint() throws IOException {
         declareQueues();
-        consumeIncomingQueues();
+        initRegistrationProcess();
+//        consumeIncomingQueues();
+    }
+
+    private void initRegistrationProcess() throws IOException {
+        channel.basicConsume(REGISTRATION_CALLBACK, true, this);
+        IRegistrationRequest request = new DefaultRegistrationRequest(hostIP, microServiceID);
+        BasicProperties properties = new BasicProperties
+                .Builder()
+                .correlationId(microServiceID)
+                .replyTo(REGISTRATION_CALLBACK)
+                .build();
+        channel.basicPublish("", REGISTRATION_QUEUE_NAME, properties, SerializationUtils.serialize(request));
     }
 
     @Override
     public void declareQueues() throws IOException {
         //incoming queues
         channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
+        channel.queueDeclare(REGISTRATION_QUEUE_NAME, false, false, false, null);
+        channel.queueDeclare(REGISTRATION_CALLBACK, false, false, false, null);
         channel.queueDeclare(microServiceID, false, false, false, null);
         channel.queueBind(microServiceID, STOP_QUEUE_NAME, "");
     }
