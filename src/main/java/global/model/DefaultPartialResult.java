@@ -17,7 +17,6 @@ public class DefaultPartialResult implements IPartialResult {
     public DefaultPartialResult(String content, PartialResultIdentifier identifier) {
         Objects.requireNonNull(content);
         Objects.requireNonNull(identifier);
-
         this.content = content;
         this.identifier = identifier;
     }
