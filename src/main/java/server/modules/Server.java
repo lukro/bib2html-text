@@ -30,6 +30,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     private final static String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
     private final String REGISTRATION_QUEUE_NAME = QueueNames.MICROSERVICE_REGISTRATION_QUEUE_NAME.toString();
     private final String STOP_QUEUE_NAME = QueueNames.MICROSERVICE_STOP_QUEUE_NAME.toString();
+    private static final int PER_CONSUMER_LIMIT = MicroServiceManager.MAXIMUM_UTILIZATION;
 
     private final String serverID, hostIP, callbackQueueName;
     private final Connection connection;
@@ -52,6 +53,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         factory.setHost(hostIP);
         this.connection = factory.newConnection();
         this.channel = connection.createChannel();
+        channel.basicQos(PER_CONSUMER_LIMIT);
 
         //Assign final fields
         this.hostIP = hostIP;
@@ -359,4 +361,13 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 
     }
 
+    //TODO : Replace with safer approach?
+    public PartialResultCollector getPartialResultCollector(){
+        return PartialResultCollector.getInstance();
+    }
+
+    //TODO : Replace with safer approach?
+    public MicroServiceManager getMicroServiceManager(){
+        return MicroServiceManager.getInstance();
+    }
 }

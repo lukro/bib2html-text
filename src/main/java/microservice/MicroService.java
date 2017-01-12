@@ -4,6 +4,7 @@ import com.rabbitmq.client.*;
 import global.controller.IConnectionPoint;
 import global.identifiers.QueueNames;
 import global.logging.Log;
+import global.logging.LogLevel;
 import global.model.IEntry;
 import global.model.IStopOrder;
 import microservice.model.processor.DefaultEntryProcessor;
@@ -95,7 +96,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-//        System.out.println("MicroService (ID: " + microServiceID + " received a message");
+        Log.log("MicroService (ID: " + microServiceID + " received a message", LogLevel.LOW);
 
         Object receivedObject = SerializationUtils.deserialize(bytes);
 
@@ -122,9 +123,11 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void run() {
         try {
-            consumeIncomingQueues();
+            final String originalThreadName = Thread.currentThread().getName();
+            Thread.currentThread().setName(originalThreadName + " - A MicroService Thread");
+            initConnectionPoint();
         } catch (IOException e) {
-            Log.log("failed to consume incoming queues in microservice.run()", e);
+            Log.log("Failed to init the connection point in a MicroService",e);
         }
     }
 
@@ -147,7 +150,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void initConnectionPoint() throws IOException {
         declareQueues();
-        run();
+        consumeIncomingQueues();
     }
 
     @Override
