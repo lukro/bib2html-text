@@ -1,7 +1,5 @@
 package microservice.model.processor;
 
-import org.junit.Test;
-
 /**
  * Created by Maximilian on 29.12.2016.
  */

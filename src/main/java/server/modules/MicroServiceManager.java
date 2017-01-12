@@ -76,17 +76,35 @@ public class MicroServiceManager {
      *
      * @return Key of a new Service.
      */
-    private String startMicroService() {
+    private void startMicroService() {
+        Thread microserviceStartThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Log.log("Starting microservice on server");
+
+                    MicroService newService = new MicroService(channel);
+                    Thread newServiceThread = new Thread(newService);
+                    newServiceThread.start();
+                    newServiceThread.join();
+                    microServices.put(newService.getID(), newService.getHostIP());
+                    EventManager.getInstance().publishEvent(new MicroServiceConnectedEvent(newService.getID()));
+                    Log.log("Successfully started microservice");
+//                    return newService.getID();
+                } catch (IOException | TimeoutException e) {
+                    Log.log("Failed to create a new MicroService, returned null", e);
+//                    return null;
+                } catch (InterruptedException e) {
+                    Log.log("Failed to wart for the creation of a new MicroService, issues might arise",e);
+                }
+
+            }
+        });
+        microserviceStartThread.start();
         try {
-            Log.log("Starting microservice on server");
-            MicroService newService = new MicroService(channel);
-            microServices.put(newService.getID(), newService.getHostIP());
-            EventManager.getInstance().publishEvent(new MicroServiceConnectedEvent(newService.getID()));
-            Log.log("Successfully started microservice");
-            return newService.getID();
-        } catch (IOException | TimeoutException e) {
-            Log.log("Failed to create a new MicroService, returned null", e);
-            return null;
+            microserviceStartThread.join();
+        } catch (InterruptedException e) {
+            Log.log("Failed to wait for the creation of a microservice",e);
         }
     }
 
