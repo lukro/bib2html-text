@@ -6,7 +6,6 @@ import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.model.IEntry;
 import microservice.model.processor.DefaultEntryProcessor;
-import microservice.model.processor.DummyEntryProcessor;
 import microservice.model.processor.IEntryProcessor;
 import org.apache.commons.lang3.SerializationUtils;
 

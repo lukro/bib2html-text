@@ -125,6 +125,8 @@ public class DefaultEntryProcessor implements IEntryProcessor {
             } catch (Exception e) {
                 Log.log("error while executing pandoc command or generating/reading result.", e);
                 currentPartialResult = createErrorPartial(currentPartialIdentifier);
+                deleteCslFileIfNecessary(currentCslIndex, cslFileName);
+                deleteTemplateIfNecessary(currentTemplateIndex, templateName);
                 continue;
             } finally {
                 result.add(currentPartialResult);

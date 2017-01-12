@@ -1,7 +1,5 @@
 package global.identifiers;
 
-import java.util.Objects;
-
 /**
  * @author Maximilian Schirm, daan
  *         created: 05.12.2016
