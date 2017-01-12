@@ -44,7 +44,7 @@
                                  <bottom>
                                     <ButtonBar prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: skyblue;" BorderPane.alignment="CENTER">
                                       <buttons>
-                                        <Button mnemonicParsing="false" onAction="#removeMicroserviceButtonPressed" text="Remove/Stop Microservice" />
+                                        <Button mnemonicParsing="false" onAction="#removeMicroServiceButtonPressed" text="Remove/Stop Microservice" />
                                       </buttons>
                                     </ButtonBar>
                                  </bottom>

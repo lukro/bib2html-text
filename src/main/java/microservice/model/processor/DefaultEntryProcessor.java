@@ -92,109 +92,49 @@ public class DefaultEntryProcessor implements IEntryProcessor {
         final String wrapperFileName = fileIdentifiers.get(FileType.MD);
         final String bibFileName = fileIdentifiers.get(FileType.BIB);
         final String resultName = fileIdentifiers.get(FileType.RESULT);
-        String cslFileName = fileIdentifiers.get(FileType.CSL);
-        String templateName = fileIdentifiers.get(FileType.TEMPLATE);
+        final String cslFileName = fileIdentifiers.get(FileType.CSL);
+        final String templateName = fileIdentifiers.get(FileType.TEMPLATE);
 
-        final String mdString = "--- \nbibliography: " + bibFileName + "\nnocite: \"@*\" \n...";
-        try {
-            Files.write(Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), wrapperFileName), mdString.getBytes());
-            Files.write(Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), bibFileName), toConvert.getContent().getBytes());
-        } catch (IOException e) {
-            Log.log("couldn't write required file(s) in working dir");
+        if (!writeBibFileAndWrapper(bibFileName, wrapperFileName, toConvert)) {
             return handleAbortionCausedByMissingRequiredFiles(toConvert, toConvert.getAmountOfExpectedPartials());
         }
 
         final HashMap<String, PartialResultIdentifier> commands = buildPandocCommands(toConvert, wrapperFileName);
 
-//        DEBUG: check commands
-//        for (Map.Entry currentEntry : commands.entrySet()) {
-//            System.out.println(((String) currentEntry.getKey()));
-//        }
-
         IPartialResult currentPartialResult = null;
+        PartialResultIdentifier currentPartialIdentifier;
 
         for (Map.Entry currentEntry : commands.entrySet()) {
 
-            PartialResultIdentifier currentPartialIdentifier = ((PartialResultIdentifier) currentEntry.getValue());
+            currentPartialIdentifier = ((PartialResultIdentifier) currentEntry.getValue());
 
             final int currentCslIndex = currentPartialIdentifier.getCslFileIndex();
             final int currentTemplateIndex = currentPartialIdentifier.getTemplateFileIndex();
 
-            if (currentCslIndex != -1) {
-                String cslContentToWrite;
-                cslContentToWrite = toConvert.getCslFiles().get(currentCslIndex);
-                try {
-                    Files.write(Paths.get(cslFileName), cslContentToWrite.getBytes());
-                } catch (IOException e) {
-                    Log.log("failed to write csl-file.", LogLevel.ERROR);
-                }
-            }
+            writeCslFileIfNecessary(currentCslIndex, cslFileName, toConvert);
+            writeTemplateIfNecessary(currentTemplateIndex, templateName, toConvert);
 
-            if (currentTemplateIndex != -1) {
-                String templateContentToWrite;
-                templateContentToWrite = toConvert.getTemplates().get(currentTemplateIndex);
-                try {
-                    Files.write(Paths.get(templateName), templateContentToWrite.getBytes());
-                } catch (IOException e) {
-                    Log.log("failed to write template.", LogLevel.ERROR);
-                }
-            }
-
-            String currentCommand = (String) currentEntry.getKey();
+            final String currentCommand = (String) currentEntry.getKey();
 
             try {
-                Log.log("execute: '" + currentCommand + "'.", LogLevel.INFO);
-                Process p = Runtime.getRuntime().exec(currentCommand);
-                Log.log("pandoc terminal command executed.", LogLevel.INFO);
-                try {
-                    p.waitFor();
-                } catch (InterruptedException e) {
-                    Log.log("error while waiting for finishing pandoc terminal command.", LogLevel.ERROR);
-                }
-            } catch (IOException e) {
-                Log.log("error while executing pandoc command: '" + currentCommand + "'.", e);
-                currentPartialResult = createErrorPartial(currentPartialIdentifier);
-                continue;
-            }
-            try {
+                final Process p = Runtime.getRuntime().exec(currentCommand);
+                p.waitFor();
                 byte[] currentResultBytes = Files.readAllBytes(new File(resultName).toPath());
                 String currentResultContent = new String(currentResultBytes);
                 currentPartialResult = new DefaultPartialResult(currentResultContent, commands.get(currentCommand));
-            } catch (IOException e) {
-                Log.log("couldn't read result-file '" + resultName + "' from disk. ", LogLevel.ERROR);
+            } catch (Exception e) {
+                Log.log("error while executing pandoc command or generating/reading result.", e);
                 currentPartialResult = createErrorPartial(currentPartialIdentifier);
                 continue;
             } finally {
                 result.add(currentPartialResult);
-                if (currentCslIndex != -1) {
-                    try {
-                        Files.delete(Paths.get(cslFileName));
-                    } catch (IOException e) {
-                        Log.log("couldn't delete csl-file.", LogLevel.ERROR);
-                    }
-                }
-                if (currentTemplateIndex != -1) {
-                    try {
-                        Files.delete(Paths.get(templateName));
-                    } catch (IOException e) {
-                        Log.log("couldn't delete template-file.", LogLevel.ERROR);
-                    }
-                }
-                try {
-                    Files.delete(Paths.get(resultName));
-                } catch (IOException e) {
-                    Log.log("couldn't delete result.", LogLevel.ERROR);
-                    continue;
-                }
+                deleteCslFileIfNecessary(currentCslIndex, cslFileName);
+                deleteTemplateIfNecessary(currentTemplateIndex, templateName);
+                deleteResult(resultName);
             }
         }
-        try {
-            Files.delete(Paths.get(bibFileName));
-            Files.delete(Paths.get(wrapperFileName));
-        } catch (IOException e) {
-            Log.log("couldn't delete bib-file or wrapper.", LogLevel.ERROR);
-        }
-//        Log.log("finished convert method!", LogLevel.INFO);
+        deleteBibFile(bibFileName);
+        deleteWrapper(wrapperFileName);
         return result;
     }
 
@@ -299,6 +239,89 @@ public class DefaultEntryProcessor implements IEntryProcessor {
     private static IPartialResult createErrorPartial(PartialResultIdentifier errorIdentifier) {
         errorIdentifier.setHasErrors(true);
         return new DefaultPartialResult(FAILED_PARTIAL_ERROR_CONTENT, errorIdentifier);
+    }
+
+    //write- & delete-ops
+
+    private static boolean writeBibFileAndWrapper(String bibFileName, String wrapperFileName, IEntry toConvert) {
+        boolean result = false;
+        final String mdString = "--- \nbibliography: " + bibFileName + "\nnocite: \"@*\" \n...";
+        try {
+            Files.write(Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), wrapperFileName), mdString.getBytes());
+            Files.write(Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), bibFileName), toConvert.getContent().getBytes());
+            result = true;
+        } catch (IOException e) {
+            Log.log("couldn't write required file(s) in working dir");
+        }
+        return result;
+    }
+
+    private static void writeCslFileIfNecessary(int cslIndex, String cslFileName, IEntry toConvert) {
+        if (cslIndex != -1) {
+            final String cslContentToWrite;
+            cslContentToWrite = toConvert.getCslFiles().get(cslIndex);
+            try {
+                Files.write(Paths.get(cslFileName), cslContentToWrite.getBytes());
+            } catch (IOException e) {
+                Log.log("failed to write csl-file.", LogLevel.ERROR);
+            }
+        }
+    }
+
+    private static void writeTemplateIfNecessary(int templateIndex, String templateName, IEntry toConvert) {
+        if (templateIndex != -1) {
+            final String templateContentToWrite;
+            templateContentToWrite = toConvert.getTemplates().get(templateIndex);
+            try {
+                Files.write(Paths.get(templateName), templateContentToWrite.getBytes());
+            } catch (IOException e) {
+                Log.log("failed to write template.", LogLevel.ERROR);
+            }
+        }
+    }
+
+    private static void deleteCslFileIfNecessary(int cslIndex, String cslFileName) {
+        if (cslIndex != -1) {
+            try {
+                Files.delete(Paths.get(cslFileName));
+            } catch (IOException e) {
+                Log.log("couldn't delete csl-file.", LogLevel.ERROR);
+            }
+        }
+    }
+
+    private static void deleteTemplateIfNecessary(int templateIndex, String templateName) {
+        if (templateIndex != -1) {
+            try {
+                Files.delete(Paths.get(templateName));
+            } catch (IOException e) {
+                Log.log("couldn't delete template-file.", LogLevel.ERROR);
+            }
+        }
+    }
+
+    private static void deleteResult(String resultName) {
+        try {
+            Files.delete(Paths.get(resultName));
+        } catch (IOException e) {
+            Log.log("couldn't delete result.", LogLevel.ERROR);
+        }
+    }
+
+    private static void deleteBibFile(String bibFileName) {
+        try {
+            Files.delete(Paths.get(bibFileName));
+        } catch (IOException e) {
+            Log.log("couldn't delete bib-file.", LogLevel.ERROR);
+        }
+    }
+
+    private static void deleteWrapper(String wrapperFileName) {
+        try {
+            Files.delete(Paths.get(wrapperFileName));
+        } catch (IOException e) {
+            Log.log("couldn't delete or wrapper-file.", LogLevel.ERROR);
+        }
     }
 
 }

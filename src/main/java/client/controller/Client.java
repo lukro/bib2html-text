@@ -72,13 +72,17 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     }
 
     private long timeStart = 0;
+    private long clientRequestSize = 0;
+    private final double AMOUNT_OF_SECS = 59;
 
     void sendClientRequest() throws IOException {
         //time measuring starts before request creation
         //timeStart = System.currentTimeMillis();
-        channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, replyProps, SerializationUtils.serialize(this.createClientRequest()));
+        IClientRequest clientRequestToSend = this.createClientRequest();
+        channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, replyProps, SerializationUtils.serialize(clientRequestToSend));
         //time measuring starts after request creation
         timeStart = System.currentTimeMillis();
+        clientRequestSize = clientRequestToSend.getEntries().size();
         Log.log("Client with ID: " + this.clientID + " sent a ClientRequest.", LogLevel.INFO);
     }
 
@@ -109,9 +113,8 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        long timeEnd = System.currentTimeMillis();
-        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName + "(@" + timeEnd + ")", LogLevel.LOW);
-        Log.log("TIME TAKEN : " + ((timeEnd - timeStart) / 1000.0) + " sec");
+        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName);
+        logTimeAndWorkingLoadLimit();
         Object deliveredObject = SerializationUtils.deserialize(bytes);
         if (deliveredObject instanceof IResult) {
             //TODO: handle Result
@@ -122,6 +125,22 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         }
     }
 
+    private void logTimeAndWorkingLoadLimit() {
+        long timeEnd = System.currentTimeMillis();
+        long timeTakenMillis = (timeEnd - timeStart);
+        Log.log("timeTakenInMillis: " + timeTakenMillis, LogLevel.INFO);
+        double timeTakenSecs = timeTakenMillis / 1000.0;
+//        Log.log("timeTakenInSecs: " + timeTakenSecs, LogLevel.INFO);
+        int timeTakenFullMins = ((Double) (timeTakenSecs / 60.0)).intValue();
+//        Log.log("timeTakenInFullMins: " + timeTakenFullMins, LogLevel.INFO);
+        int timeTakenFullMinsInSecs = timeTakenFullMins * 60;
+//        Log.log("timeTakenFullMinsInSec: " + timeTakenFullMinsInSecs);
+        int timeTakenSecDifference = ((Double) (timeTakenSecs - timeTakenFullMinsInSecs)).intValue();
+        Log.log("TIME TAKEN: " + timeTakenFullMins + " min " + timeTakenSecDifference + " sec");
+        int workingLoadLimitXSecs = ((Double) (clientRequestSize / (double) timeTakenFullMinsInSecs * AMOUNT_OF_SECS)).intValue();
+        Log.log("WORKING LOAD LIMIT: " + workingLoadLimitXSecs + " entries in " + AMOUNT_OF_SECS + " secs. ");
+    }
+
     private void handleResult(IResult result) {
         StringBuilder builder = new StringBuilder();
 
@@ -129,7 +148,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
             builder.append(currentFileContent);
         }
         File outDir = new File(outputDirectory);
-        String filename = result.getClientID();
+        String filename = result.getClientID() + ".html";
 
         System.out.println(builder.toString());
 

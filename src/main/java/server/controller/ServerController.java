@@ -52,11 +52,20 @@ public class ServerController implements IEventListener {
     ListView<String> clientRequestListView;
 
     public ServerController() {
-        try {
-            server = new Server();
-        } catch (IOException | TimeoutException e) {
-            Log.log("Failed to initialize Server", e);
-        }
+        Thread serverStartThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final String originalThreadName = Thread.currentThread().getName();
+                    Thread.currentThread().setName(originalThreadName + " - ServerStartThread");
+                    server = new Server();
+                } catch (IOException | TimeoutException e) {
+                    Log.log("Failed to initialize Server", e);
+                }
+
+            }
+        });
+        serverStartThread.start();
     }
 
     @FXML
@@ -105,7 +114,7 @@ public class ServerController implements IEventListener {
         } else if (toNotify instanceof RequestAcceptedEvent) {
             String toAddRequestString = ((RequestAcceptedEvent) toNotify).getRequestID() + " - Size : " + ((RequestAcceptedEvent) toNotify).getReqSize();
             Platform.runLater(() -> clientRequestListView.getItems().add(toAddRequestString));
-        } else if (toNotify instanceof FinishedCollectingResultEvent){
+        } else if (toNotify instanceof FinishedCollectingResultEvent) {
             IResult result = ((FinishedCollectingResultEvent) toNotify).getResult();
             String toRemoveString = result.getClientID() + " - Size : " + result.getFileContents().size();
             Platform.runLater(() -> clientRequestListView.getItems().remove(toRemoveString));
@@ -120,7 +129,7 @@ public class ServerController implements IEventListener {
                 FinishedCollectingResultEvent.class));
     }
 
-    public void removeMicroserviceButtonPressed() {
+    public void removeMicroServiceButtonPressed() {
         if (microServiceListView.getSelectionModel().getSelectedItem() != null) {
             String serviceIDToRemove = microServiceListView.getSelectionModel().getSelectedItem();
             Log.log("Disconnecting MicroSerivce " + serviceIDToRemove);
