@@ -21,7 +21,7 @@ import java.util.concurrent.TimeoutException;
 public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     private final String hostIP;
-    //microServiceID is technically FINAL
+    //microServiceID is technically final
     private String microServiceID;
     private final String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
     private final IEntryProcessor DEFAULT_PROCESSOR = new DefaultEntryProcessor();
