@@ -1,9 +1,12 @@
 package server.modules;
 
 import com.rabbitmq.client.Channel;
+import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.logging.LogLevel;
+import global.model.MicroServiceStopRequest;
 import microservice.MicroService;
+import org.apache.commons.lang3.SerializationUtils;
 import server.events.EventManager;
 import server.events.MicroServiceConnectedEvent;
 
@@ -31,6 +34,7 @@ public class MicroServiceManager {
 
     private final Channel channel;
     private final String TASK_QUEUE_NAME;
+    private final String STOP_QUEUE_NAME = QueueNames.MICROSERVICE_STOP_QUEUE_NAME.toString();
 
     private MicroServiceManager(Channel channel, String taskQueueName) {
         this.channel = channel;
@@ -79,7 +83,7 @@ public class MicroServiceManager {
     private String startMicroService() {
         try {
             Log.log("Starting microservice on server");
-            MicroService newService = new MicroService(channel);
+            MicroService newService = new MicroService();
             microServices.put(newService.getID(), newService.getHostIP());
             EventManager.getInstance().publishEvent(new MicroServiceConnectedEvent(newService.getID()));
             Log.log("Successfully started microservice");
@@ -116,7 +120,8 @@ public class MicroServiceManager {
         Log.log("Disconnecting MicroService " + idToRemove + "...");
 
         try {
-            channel.basicCancel(idToRemove);
+            MicroServiceStopRequest stopMe = new MicroServiceStopRequest(idToRemove);
+            channel.basicPublish(STOP_QUEUE_NAME, "", null, SerializationUtils.serialize(stopMe));
             String oldValue = microServices.get(idToRemove);
             microServices.remove(idToRemove, oldValue);
             Log.log("Successfully disconnected service " + idToRemove, LogLevel.WARNING);

@@ -28,6 +28,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 
     private final static String CLIENT_REQUEST_QUEUE_NAME = QueueNames.CLIENT_REQUEST_QUEUE_NAME.toString();
     private final static String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
+    private final String REGISTRATION_QUEUE_NAME = QueueNames.MICROSERVICE_REGISTRATION_QUEUE_NAME.toString();
+    private final String STOP_QUEUE_NAME = QueueNames.MICROSERVICE_STOP_QUEUE_NAME.toString();
 
     private final String serverID, hostIP, callbackQueueName;
     private final Connection connection;
@@ -300,9 +302,11 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     public void declareQueues() throws IOException {
         //outgoing queues
         channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
+        channel.exchangeDeclare(STOP_QUEUE_NAME, "fanout");
         //incoming queues
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
         channel.queueDeclare(callbackQueueName, false, false, false, null);
+        channel.queueDeclare(REGISTRATION_QUEUE_NAME,  false, false, false, null);
     }
 
 
