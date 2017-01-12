@@ -8,11 +8,9 @@ import server.events.EventManager;
 import server.events.MicroServiceConnectedEvent;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 /**
  * @author Maximilian Schirm
@@ -25,7 +23,7 @@ public class MicroServiceManager {
 
     private static MicroServiceManager INSTANCE;
     //The max. # of tasks per service.
-    private final int MAXIMUM_UTILIZATION = 50;
+    public final static int MAXIMUM_UTILIZATION = 50;
     //Key : ID | Value : IP
     private HashMap<String, String> microServices = new HashMap<>();
 
@@ -154,7 +152,7 @@ public class MicroServiceManager {
      */
     private int checkUtilization() throws IOException {
         int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
-//        Log.log("currentAmountOfTasks: " + currTasks);
+        Log.log("currentAmountOfTasks: " + currTasks, LogLevel.LOW);
         int returnValue = 0;
 
         //To avoid dividing by 0
@@ -165,7 +163,11 @@ public class MicroServiceManager {
             startMicroService();
             returnValue++;
         }
-//        Log.log("started MSs: " + returnValue);
+        Log.log("started MSs: " + returnValue, LogLevel.LOW);
         return returnValue;
+    }
+
+    public Collection<String> getMicroservices() {
+        return microServices.keySet().stream().map(serviceID -> serviceID + " : " + microServices.get(serviceID)).collect(Collectors.toList());
     }
 }

@@ -40,6 +40,17 @@ public class PartialResultCollector implements IEventListener {
         timer.schedule(updateLoop, 0, 2000);
     }
 
+    public Collection<String> getOutstandingRequests(){
+        Collection<String> requests = new ArrayList<>();
+        for (String clientID : mappingClientIDtoExpectedResultsSize.keySet()) {
+            int expectedCount = mappingClientIDtoExpectedResultsSize.get(clientID);
+            Collection<IPartialResult> finished =  mappingClientIDtoFinishedPartialResults.get(clientID);
+            int finishedCount = (finished == null)?0:finished.size();
+            requests.add(clientID + " : Expected " + expectedCount + " , Finished " + finishedCount + ", Difference : " + (expectedCount-finishedCount) + ".");
+        }
+        return requests;
+    }
+
     protected static PartialResultCollector getInstance() {
         return INSTANCE;
     }

@@ -64,21 +64,24 @@ public class Log {
      * @param level
      */
     private void printOut(String message, LogLevel level) {
-        Platform.runLater(() -> {
+        //TODO : MAKE THREAD SAFE
+        Thread thread = new Thread(() -> {
+            synchronized (outputStream) {
+                int ordLev = level.ordinal();
+                int minLev = minimumRequiredLevel.ordinal();
 
-            int ordLev = level.ordinal();
-            int minLev = minimumRequiredLevel.ordinal();
-
-            if (minLev <= ordLev){
-                try {
-                    for(char c : message.toCharArray())
-                        outputStream.write(c);
-                    outputStream.write("\n".getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (minLev <= ordLev) {
+                    try {
+                        for (char c : message.toCharArray())
+                            outputStream.write(c);
+                        outputStream.write("\n".getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
+        thread.run();
     }
 
     public static LogLevel getMinimumRequiredLevel() {

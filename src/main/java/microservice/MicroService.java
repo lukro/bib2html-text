@@ -4,6 +4,7 @@ import com.rabbitmq.client.*;
 import global.controller.IConnectionPoint;
 import global.identifiers.QueueNames;
 import global.logging.Log;
+import global.logging.LogLevel;
 import global.model.IEntry;
 import microservice.model.processor.DefaultEntryProcessor;
 import microservice.model.processor.DummyEntryProcessor;
@@ -75,7 +76,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        System.out.println("MicroService (ID: " + microServiceID + " received a message");
+        Log.log("MicroService (ID: " + microServiceID + " received a message", LogLevel.LOW);
 
         IEntry received = SerializationUtils.deserialize(bytes);
 
