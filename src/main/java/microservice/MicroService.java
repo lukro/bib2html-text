@@ -5,7 +5,7 @@ import global.controller.IConnectionPoint;
 import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.model.IEntry;
-import global.model.MicroServiceStopRequest;
+import global.model.IStopOrder;
 import microservice.model.processor.DefaultEntryProcessor;
 import microservice.model.processor.IEntryProcessor;
 import org.apache.commons.lang3.SerializationUtils;
@@ -31,10 +31,21 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final Channel channel;
     private final Connection connection;
 
+    /**
+     * use only for services, running on the same device as the server
+     * @throws IOException
+     * @throws TimeoutException
+     */
     public MicroService() throws IOException, TimeoutException {
         this("localhost");
     }
 
+    /**
+     * use only for remote services
+     * @param hostIP: ipv4 adress of the device, the server is running on
+     * @throws IOException
+     * @throws TimeoutException
+     */
     public MicroService(String hostIP) throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         this.connection = factory.newConnection();
@@ -88,16 +99,14 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
         Object receivedObject = SerializationUtils.deserialize(bytes);
 
-        if(receivedObject instanceof MicroServiceStopRequest) {
-            if (((MicroServiceStopRequest) receivedObject).getMicroServiceIDToStop() == microServiceID) {
+        if(receivedObject instanceof IStopOrder) {
+            if (((IStopOrder) receivedObject).getMicroServiceID().equals(microServiceID)) {
                 closeConnection();
+                Log.log("Successfully closed MicroService: " + microServiceID);
             }
         } else {
-
             IEntry received = SerializationUtils.deserialize(bytes);
-
             AMQP.BasicProperties replyProps = getReplyProps(basicProperties);
-
             DEFAULT_PROCESSOR.processEntry(received).forEach(partialResult -> {
                 try {
                     channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(partialResult));
