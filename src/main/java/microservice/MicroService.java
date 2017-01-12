@@ -5,6 +5,7 @@ import global.controller.IConnectionPoint;
 import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.model.IEntry;
+import global.model.IStopOrder;
 import global.model.MicroServiceStopRequest;
 import microservice.model.processor.DefaultEntryProcessor;
 import microservice.model.processor.IEntryProcessor;
@@ -88,8 +89,8 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
         Object receivedObject = SerializationUtils.deserialize(bytes);
 
-        if(receivedObject instanceof MicroServiceStopRequest) {
-            if (((MicroServiceStopRequest) receivedObject).getMicroServiceIDToStop() == microServiceID) {
+        if(receivedObject instanceof IStopOrder) {
+            if (((IStopOrder) receivedObject).getMicroServiceID().equals(microServiceID)) {
                 closeConnection();
             }
         } else {
@@ -130,6 +131,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     public void closeConnection() {
         try {
             channel.close();
+            Log.log("successfully disconnected microservice");
         } catch (IOException | TimeoutException e) {
             Log.log("failed to close channel on MicroService: " + microServiceID, e);
         }

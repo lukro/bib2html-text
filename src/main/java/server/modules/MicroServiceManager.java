@@ -124,7 +124,7 @@ public class MicroServiceManager {
             channel.basicPublish(STOP_QUEUE_NAME, "", null, SerializationUtils.serialize(stopMe));
             String oldValue = microServices.get(idToRemove);
             microServices.remove(idToRemove, oldValue);
-            Log.log("Successfully disconnected service " + idToRemove, LogLevel.WARNING);
+//            Log.log("Successfully disconnected service " + idToRemove, LogLevel.WARNING);
             return true;
         } catch (IOException e) {
             Log.log("Failed to send cancel request to service " + idToRemove, e);
