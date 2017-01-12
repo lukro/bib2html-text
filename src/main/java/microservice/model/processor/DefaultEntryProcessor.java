@@ -30,12 +30,12 @@ public class DefaultEntryProcessor implements IEntryProcessor {
     /*
     defaults: future work, expandability
      */
-    private static final String CUSTOM_DEFAULT_CSL_NAME = "custom_default.csl";
-    private static final String CUSTOM_DEFAULT_TEMPLATE_NAME = "custom_default_template.html";
-    private static final Path PATH_TO_CUSTOM_DEFAULT_CSL = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_CSL_NAME).getFile());
-    private static final Path PATH_TO_CUSTOM_DEFAULT_TEMPLATE = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_TEMPLATE_NAME).getFile());
-    private static String CUSTOM_DEFAULT_CSL_CONTENT;
-    private static String CUSTOM_DEFAULT_TEMPLATE_CONTENT;
+//    private static final String CUSTOM_DEFAULT_CSL_NAME = "custom_default.csl";
+//    private static final String CUSTOM_DEFAULT_TEMPLATE_NAME = "custom_default_template.html";
+//    private static final Path PATH_TO_CUSTOM_DEFAULT_CSL = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_CSL_NAME).getFile());
+//    private static final Path PATH_TO_CUSTOM_DEFAULT_TEMPLATE = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_TEMPLATE_NAME).getFile());
+//    private static String CUSTOM_DEFAULT_CSL_CONTENT;
+//    private static String CUSTOM_DEFAULT_TEMPLATE_CONTENT;
 
     private static final IValidator<File> CSL_VALIDATOR = new CslValidator();
     private static final IValidator<File> TEMPLATE_VALIDATOR = new TemplateValidator();
@@ -48,36 +48,36 @@ public class DefaultEntryProcessor implements IEntryProcessor {
    init defaults: future work, expandability
     */
     static {
-        initCustomDefaults();
+//        initCustomDefaults();
     }
 
-    private static void initCustomDefaults() {
-        final Path defaultCslTarget =
-                Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), CUSTOM_DEFAULT_CSL_NAME);
-        final Path defaultTemplateTarget =
-                Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), CUSTOM_DEFAULT_TEMPLATE_NAME);
-
-        copyCustomDefaultsToWorkingDir(defaultCslTarget, defaultTemplateTarget);
-
-        try {
-            CUSTOM_DEFAULT_CSL_CONTENT = new String(Files.readAllBytes(defaultCslTarget));
-            CUSTOM_DEFAULT_TEMPLATE_CONTENT = new String(Files.readAllBytes(defaultTemplateTarget));
-        } catch (IOException e) {
-            Log.log("couldn't read defaults content.", LogLevel.ERROR);
-        }
-    }
+//    private static void initCustomDefaults() {
+//        final Path defaultCslTarget =
+//                Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), CUSTOM_DEFAULT_CSL_NAME);
+//        final Path defaultTemplateTarget =
+//                Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), CUSTOM_DEFAULT_TEMPLATE_NAME);
+//
+//        copyCustomDefaultsToWorkingDir(defaultCslTarget, defaultTemplateTarget);
+//
+//        try {
+//            CUSTOM_DEFAULT_CSL_CONTENT = new String(Files.readAllBytes(defaultCslTarget));
+//            CUSTOM_DEFAULT_TEMPLATE_CONTENT = new String(Files.readAllBytes(defaultTemplateTarget));
+//        } catch (IOException e) {
+//            Log.log("couldn't read defaults content.", LogLevel.ERROR);
+//        }
+//    }
 
     private static void copyCustomDefaultsToWorkingDir(Path defaultCslTarget, Path defaultTemplateTarget) {
-        try {
-            Files.copy(PATH_TO_CUSTOM_DEFAULT_CSL, defaultCslTarget);
-        } catch (IOException e) {
-            Log.log("couldn't init default csl.", LogLevel.ERROR);
-        }
-        try {
-            Files.copy(PATH_TO_CUSTOM_DEFAULT_TEMPLATE, defaultTemplateTarget);
-        } catch (IOException e) {
-            Log.log("couldn't init default template.", LogLevel.ERROR);
-        }
+//        try {
+//            Files.copy(PATH_TO_CUSTOM_DEFAULT_CSL, defaultCslTarget);
+//        } catch (IOException e) {
+//            Log.log("couldn't init default csl.", LogLevel.ERROR);
+//        }
+//        try {
+//            Files.copy(PATH_TO_CUSTOM_DEFAULT_TEMPLATE, defaultTemplateTarget);
+//        } catch (IOException e) {
+//            Log.log("couldn't init default template.", LogLevel.ERROR);
+//        }
     }
 
     public DefaultEntryProcessor() {
@@ -191,8 +191,8 @@ public class DefaultEntryProcessor implements IEntryProcessor {
                                 (wrapperFileName, resultFileName, cslFileName, templateFileName)
                                 .useCustomDefaultCsl(false)
                                 .useCustomDefaultTemplate(false)
-                                .defaultCslName(CUSTOM_DEFAULT_CSL_NAME)
-                                .defaultTemplateName(CUSTOM_DEFAULT_TEMPLATE_NAME)
+//                                .defaultCslName(CUSTOM_DEFAULT_CSL_NAME)
+//                                .defaultTemplateName(CUSTOM_DEFAULT_TEMPLATE_NAME)
                                 .usePandocDefaultCsl(false)
                                 .usePandocDefaultTemplate(false)
                                 .build();

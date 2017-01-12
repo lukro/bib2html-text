@@ -6,7 +6,9 @@ package global.identifiers;
 public enum  QueueNames {
 
     CLIENT_REQUEST_QUEUE_NAME("clientRequestQueue"),
-    TASK_QUEUE_NAME("taskQueue");
+    TASK_QUEUE_NAME("taskQueue"),
+    MICROSERVICE_REGISTRATION_QUEUE_NAME("registrationQueue"),
+    MICROSERVICE_STOP_QUEUE_NAME("stopQueue");
 
     private final String nameOfQueue;
     private QueueNames(String nameOfQueue) {
