@@ -4,9 +4,9 @@ import com.rabbitmq.client.*;
 import global.controller.IConnectionPoint;
 import global.identifiers.QueueNames;
 import global.logging.Log;
+import global.logging.LogLevel;
 import global.model.IEntry;
 import global.model.IStopOrder;
-import global.model.MicroServiceStopRequest;
 import microservice.model.processor.DefaultEntryProcessor;
 import microservice.model.processor.IEntryProcessor;
 import org.apache.commons.lang3.SerializationUtils;
@@ -32,10 +32,21 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final Channel channel;
     private final Connection connection;
 
+    /**
+     * use only for services, running on the same device as the server
+     * @throws IOException
+     * @throws TimeoutException
+     */
     public MicroService() throws IOException, TimeoutException {
         this("localhost");
     }
 
+    /**
+     * use only for remote services
+     * @param hostIP: ipv4 adress of the device, the server is running on
+     * @throws IOException
+     * @throws TimeoutException
+     */
     public MicroService(String hostIP) throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         this.connection = factory.newConnection();
@@ -85,7 +96,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-//        System.out.println("MicroService (ID: " + microServiceID + " received a message");
+        Log.log("MicroService (ID: " + microServiceID + " received a message", LogLevel.LOW);
 
         Object receivedObject = SerializationUtils.deserialize(bytes);
 
@@ -94,11 +105,8 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
                 closeConnection();
             }
         } else {
-
             IEntry received = SerializationUtils.deserialize(bytes);
-
             AMQP.BasicProperties replyProps = getReplyProps(basicProperties);
-
             DEFAULT_PROCESSOR.processEntry(received).forEach(partialResult -> {
                 try {
                     channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(partialResult));
@@ -114,9 +122,11 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void run() {
         try {
-            consumeIncomingQueues();
+            final String originalThreadName = Thread.currentThread().getName();
+            Thread.currentThread().setName(originalThreadName + " - A MicroService Thread");
+            initConnectionPoint();
         } catch (IOException e) {
-            Log.log("failed to consume incoming queues in microservice.run()", e);
+            Log.log("Failed to init the connection point in a MicroService",e);
         }
     }
 
@@ -140,7 +150,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void initConnectionPoint() throws IOException {
         declareQueues();
-        run();
+        consumeIncomingQueues();
     }
 
     @Override
