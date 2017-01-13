@@ -34,6 +34,17 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final Channel channel;
     private final Connection connection;
 
+
+    public static void main(String[] args){
+        try {
+            final MicroService createdService = (args.length == 0)? new MicroService() : new MicroService(args[0]);
+            Thread serviceThread = new Thread(createdService);
+            serviceThread.start();
+        } catch (IOException|TimeoutException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * use only for services, running on the same device as the server
      * @throws IOException
