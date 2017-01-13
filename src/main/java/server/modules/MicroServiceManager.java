@@ -12,7 +12,6 @@ import server.events.*;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -87,31 +86,6 @@ public class MicroServiceManager implements IEventListener {
     }
 
     /**
-     * Disconnects the MicroService with the ID.
-     * A disconnection means that the remaining Tasks for that MicroService will be redistributed.
-     * <p>
-     * DO NOT Confuse this Method with stopMicroService(), as it will not issue a STOP Command to that Service
-     * USE THIS Method for disconnecting from Services before stopping them or when communicating with externals.
-     *
-     * @param idToRemove The ID of the MicroService to disconnect.
-     * @return A boolean whether the disconnection was successful.
-     */
-    private boolean disconnectMicroService(String idToRemove) {
-        Log.log("Disconnecting MicroService " + idToRemove + "...");
-
-        try {
-            IStopOrder stopMe = new DefaultStopOrder(idToRemove);
-            channel.basicPublish(STOP_QUEUE_NAME, "", null, SerializationUtils.serialize(stopMe));
-            Log.log("Successfully disconnected service " + idToRemove);
-            EventManager.getInstance().publishEvent(new MicroServiceDisconnectedEvent(idToRemove));
-            return true;
-        } catch (IOException e) {
-            Log.log("Failed to send cancel request to service " + idToRemove, e);
-            return false;
-        }
-    }
-
-    /**
      * Checks the utilization of the system.
      * This method will start new microservices, until the number of tasks divided by the number of running services
      * is below MAXIMUM_UTILIZATION (test-value!!)
@@ -146,13 +120,11 @@ public class MicroServiceManager implements IEventListener {
         } else if(toNotify instanceof MicroServiceDisconnectedEvent){
             String disconnectedServiceID = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvcID();
             microServices.remove(disconnectedServiceID);
-        } else if(toNotify instanceof MicroserviceDisconnectionRequestEvent){
-            disconnectMicroService(((MicroserviceDisconnectionRequestEvent) toNotify).getToDisconnectID());
         }
     }
 
     @Override
     public Set<Class<? extends IEvent>> getEvents() {
-        return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, MicroserviceDisconnectionRequestEvent.class));
+        return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class));
     }
 }

@@ -91,18 +91,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         channel.basicConsume(REGISTRATION_QUEUE_NAME, true, this);
     }
 
-    @Override
-    public void notify(IEvent toNotify) {
-        if (toNotify instanceof FinishedCollectingResultEvent) {
-            handleFinishedCollectingResultEvent((FinishedCollectingResultEvent) toNotify);
-        } else if (toNotify instanceof RequestStoppedEvent) {
-            handleRequestStoppedEvent((RequestStoppedEvent) toNotify);
-        } else if (toNotify instanceof ClientBlockRequestEvent) {
-            String toBlock = ((ClientBlockRequestEvent) toNotify).getClientID();
-            blacklistClient(toBlock);
-        }
-    }
-
     /**
      * The action to take when a RequestStoppedEvent is registered.
      * <p>
@@ -141,13 +129,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 
 
     @Override
-    public Set<Class<? extends IEvent>> getEvents() {
-        Set<Class<? extends IEvent>> evts = new HashSet<>();
-        evts.addAll(Arrays.asList(FinishedCollectingResultEvent.class, RequestStoppedEvent.class, ClientBlockRequestEvent.class, MicroServiceConnectedEvent.class));
-        return evts;
-    }
-
-    @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
         Object deliveredObject = SerializationUtils.deserialize(bytes);
         if (deliveredObject instanceof IClientRequest) {
@@ -160,6 +141,9 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 //            EventManager.getInstance().publishEvent(event);
             Log.log("Received Registration Request!", LogLevel.SEVERE);
             handleReceivedRegistrationRequest((IRegistrationRequest)deliveredObject, basicProperties);
+        } else if (deliveredObject instanceof IStopOrderAck){
+            String idToRemove = deliveredObject.getStopMicroServiceID();
+            EventManager.getInstance().publishEvent(new MicroServiceDisconnectedEvent(idToRemove));
         }
     }
 
@@ -219,13 +203,12 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     private class CallbackInformation {
         private BasicProperties basicProperties;
         private BasicProperties replyProperties;
-
         private CallbackInformation(BasicProperties basicProperties, BasicProperties replyProperties) {
             this.basicProperties = basicProperties;
             this.replyProperties = replyProperties;
         }
-    }
 
+    }
     /**
      * Processes the received Request.
      *
@@ -329,8 +312,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         channel.queueDeclare(REGISTRATION_QUEUE_NAME, false, false, false, null);
     }
 
-
     //Empty (i.e. not yet used) methods from interface.
+
 
     @Override
     public String getHostIP() {
@@ -387,5 +370,39 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     //TODO : Replace with safer approach?
     public MicroServiceManager getMicroServiceManager() {
         return MicroServiceManager.getInstance();
+    }
+
+    private void sendStopOrderToMicroService(String idToRemove) {
+        Log.log("Disconnecting MicroService " + idToRemove + "...");
+
+        try {
+            IStopOrder stopMe = new DefaultStopOrder(idToRemove);
+            channel.basicPublish(STOP_QUEUE_NAME, "", null, SerializationUtils.serialize(stopMe));
+            Log.log("Successfully sent stop order to service " + idToRemove, LogLevel.LOW);
+        } catch (IOException e) {
+            Log.log("Failed to send cancel request to service " + idToRemove, e);
+        }
+    }
+
+    @Override
+    public void notify(IEvent toNotify) {
+        if (toNotify instanceof FinishedCollectingResultEvent) {
+            handleFinishedCollectingResultEvent((FinishedCollectingResultEvent) toNotify);
+        } else if (toNotify instanceof RequestStoppedEvent) {
+            handleRequestStoppedEvent((RequestStoppedEvent) toNotify);
+        } else if (toNotify instanceof ClientBlockRequestEvent) {
+            String toBlock = ((ClientBlockRequestEvent) toNotify).getClientID();
+            blacklistClient(toBlock);
+        } else if (toNotify instanceof  MicroserviceDisconnectionRequestEvent){
+            String idToRemove = ((MicroserviceDisconnectionRequestEvent) toNotify).getToDisconnectID();
+            sendStopOrderToMicroService(idToRemove);
+        }
+    }
+
+    @Override
+    public Set<Class<? extends IEvent>> getEvents() {
+        Set<Class<? extends IEvent>> evts = new HashSet<>();
+        evts.addAll(Arrays.asList(FinishedCollectingResultEvent.class, RequestStoppedEvent.class, ClientBlockRequestEvent.class, MicroServiceConnectedEvent.class, MicroserviceDisconnectionRequestEvent.class));
+        return evts;
     }
 }
