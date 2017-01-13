@@ -24,7 +24,6 @@ import java.util.concurrent.TimeoutException;
 public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     private final String hostIP;
-    //microServiceID is technically FINAL
     private final String microServiceID;
     private final String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
     private final String STOP_QUEUE_NAME = QueueNames.MICROSERVICE_STOP_QUEUE_NAME.toString();
@@ -35,18 +34,19 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final Connection connection;
 
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         try {
-            final MicroService createdService = (args.length == 0)? new MicroService() : new MicroService(args[0]);
+            final MicroService createdService = (args.length == 0) ? new MicroService() : new MicroService(args[0]);
             Thread serviceThread = new Thread(createdService);
             serviceThread.start();
-        } catch (IOException|TimeoutException e) {
+        } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
     }
 
     /**
      * use only for services, running on the same device as the server
+     *
      * @throws IOException
      * @throws TimeoutException
      */
@@ -56,6 +56,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     /**
      * use only for remote services
+     *
      * @param hostIP: ipv4 adress of the device, the server is running on
      * @throws IOException
      * @throws TimeoutException
@@ -114,7 +115,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
         Object receivedObject = SerializationUtils.deserialize(bytes);
 
-        if(receivedObject instanceof IStopOrder) {
+        if (receivedObject instanceof IStopOrder) {
             if (((IStopOrder) receivedObject).getMicroServiceID().equals(microServiceID)) {
                 closeConnection();
             }
@@ -122,8 +123,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             //TODO: set taskQueue
             Log.log("successfully received acknowledgement");
             consumeIncomingQueues();
-        }
-        else {
+        } else {
             IEntry received = SerializationUtils.deserialize(bytes);
             AMQP.BasicProperties replyProps = getReplyProps(basicProperties);
             DEFAULT_PROCESSOR.processEntry(received).forEach(partialResult -> {
@@ -145,7 +145,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             Thread.currentThread().setName(originalThreadName + " - A MicroService Thread");
             initConnectionPoint();
         } catch (IOException e) {
-            Log.log("Failed to init the connection point in a MicroService",e);
+            Log.log("Failed to init the connection point in a MicroService", e);
         }
     }
 
