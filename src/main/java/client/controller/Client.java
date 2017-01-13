@@ -26,6 +26,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     private final String clientID, callbackQueueName;
     private final String CLIENT_REQUEST_QUEUE_NAME = QueueNames.CLIENT_REQUEST_QUEUE_NAME.toString();
+    private final String CLIENT_CALLBACK_EXCHANGE_NAME = QueueNames.CLIENT_CALLBACK_EXCHANGE_NAME.toString();
     private String outputDirectory, hostIP;
 
     private Connection connection;
@@ -176,10 +177,12 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void declareQueues() throws IOException {
+        channel.exchangeDeclare(CLIENT_CALLBACK_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
         //outgoing queues
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
         //incoming queues
         channel.queueDeclare(callbackQueueName, false, false, false, null);
+        channel.queueBind(callbackQueueName, CLIENT_CALLBACK_EXCHANGE_NAME, clientID);
     }
 
     @Override

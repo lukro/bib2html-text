@@ -9,7 +9,8 @@ public enum QueueNames {
     TASK_QUEUE_NAME("taskQueue"),
     MICROSERVICE_REGISTRATION_QUEUE_NAME("registrationQueue"),
     MICROSERVICE_STOP_QUEUE_NAME("stopQueueName"),
-    STOP_EXCHANGE_NAME("stopExchange");
+    STOP_EXCHANGE_NAME("stopExchange"),
+    CLIENT_CALLBACK_EXCHANGE_NAME("clientCallbackExchangeName");
 
     private final String nameOfQueue;
 

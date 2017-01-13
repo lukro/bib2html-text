@@ -1,6 +1,7 @@
 package server.events;
 
 import global.model.DefaultResult;
+import global.model.IResult;
 
 /**
  * @author Maximilian Schirm
@@ -8,13 +9,13 @@ import global.model.DefaultResult;
  */
 public class FinishedCollectingResultEvent implements IEvent {
 
-    private final DefaultResult result;
+    private final IResult result;
 
-    public FinishedCollectingResultEvent(DefaultResult result) {
+    public FinishedCollectingResultEvent(IResult result) {
         this.result = result;
     }
 
-    public DefaultResult getResult() {
+    public IResult getResult() {
         return result;
     }
 }

@@ -32,7 +32,7 @@ public class DefaultEntryProcessor implements IEntryProcessor {
      */
     private static final String CUSTOM_DEFAULT_CSL_NAME = "custom_default.csl";
     private static final String CUSTOM_DEFAULT_TEMPLATE_NAME = "custom_default_template.html";
-//    private static final Path PATH_TO_CUSTOM_DEFAULT_CSL = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_CSL_NAME).getFile());
+    //    private static final Path PATH_TO_CUSTOM_DEFAULT_CSL = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_CSL_NAME).getFile());
 //    private static final Path PATH_TO_CUSTOM_DEFAULT_TEMPLATE = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_TEMPLATE_NAME).getFile());
     private static String CUSTOM_DEFAULT_CSL_CONTENT;
     private static String CUSTOM_DEFAULT_TEMPLATE_CONTENT;

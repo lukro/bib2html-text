@@ -29,6 +29,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     private final static String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
     private final String REGISTRATION_QUEUE_NAME = QueueNames.MICROSERVICE_REGISTRATION_QUEUE_NAME.toString();
     private final String STOP_EXCHANGE_NAME = QueueNames.STOP_EXCHANGE_NAME.toString();
+    private final String CLIENT_CALLBACK_EXCHANGE_NAME = QueueNames.CLIENT_CALLBACK_EXCHANGE_NAME.toString();
     private static final int PER_CONSUMER_LIMIT = MicroServiceManager.MAXIMUM_UTILIZATION;
 
     private final String serverID, hostIP, callbackQueueName;
@@ -121,7 +122,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         String clientID = toNotify.getResult().getClientID();
         CallbackInformation clientCBI = clientIDtoCallbackInformation.get(clientID);
         try {
-            channel.basicPublish("", clientCBI.basicProperties.getReplyTo(), clientCBI.replyProperties, SerializationUtils.serialize(toNotify.getResult()));
+            channel.basicPublish(CLIENT_CALLBACK_EXCHANGE_NAME, clientID, null, SerializationUtils.serialize(toNotify.getResult()));
+            Log.log("finished result. published to :" + clientID);
         } catch (IOException e) {
             Log.log("COULD NOT RETURN RESULT TO CLIENT", LogLevel.SEVERE);
             Log.log("", e);
@@ -195,8 +197,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      * Class for clean storing of a tuple of BasicProperties.
      */
     private class CallbackInformation {
-        private BasicProperties basicProperties;
-        private BasicProperties replyProperties;
+        private final BasicProperties basicProperties;
+        private final BasicProperties replyProperties;
 
         private CallbackInformation(BasicProperties basicProperties, BasicProperties replyProperties) {
             this.basicProperties = basicProperties;
@@ -288,6 +290,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     public void declareQueues() throws IOException {
         //outgoing queues
         channel.exchangeDeclare(STOP_EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
+        channel.exchangeDeclare(CLIENT_CALLBACK_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
         channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
         //incoming queues
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
