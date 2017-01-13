@@ -8,8 +8,7 @@ import global.model.DefaultStopOrder;
 import global.model.IStopOrder;
 import microservice.MicroService;
 import org.apache.commons.lang3.SerializationUtils;
-import server.events.EventManager;
-import server.events.MicroServiceConnectedEvent;
+import server.events.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
  *         Singleton class with greedy init
  *         Creates and stops MicroServices for a Server
  */
-public class MicroServiceManager {
+public class MicroServiceManager implements IEventListener {
 
     private static MicroServiceManager INSTANCE;
     //The max. # of tasks per service.
@@ -40,6 +39,7 @@ public class MicroServiceManager {
     private MicroServiceManager(Channel channel, String taskQueueName) {
         this.channel = channel;
         this.TASK_QUEUE_NAME = taskQueueName;
+        EventManager.getInstance().registerListener(this);
 
         TimerTask utilizationCheckerTask = new TimerTask() {
             @Override
@@ -81,18 +81,9 @@ public class MicroServiceManager {
      *
      * @return Key of a new Service.
      */
-    private String startMicroService() {
-        try {
-            Log.log("Starting microservice on server");
-            MicroService newService = new MicroService();
-            microServices.put(newService.getID(), newService.getHostIP());
-            EventManager.getInstance().publishEvent(new MicroServiceConnectedEvent(newService.getID()));
-            Log.log("Successfully started microservice");
-            return newService.getID();
-        } catch (IOException | TimeoutException e) {
-            Log.log("Failed to create a new MicroService, returned null", e);
-            return null;
-        }
+    private void startMicroService() {
+        Log.log("Starting microservice on server", LogLevel.LOW);
+        MicroService.main("localhost");
     }
 
     /**
@@ -123,9 +114,8 @@ public class MicroServiceManager {
         try {
             IStopOrder stopMe = new DefaultStopOrder(idToRemove);
             channel.basicPublish(STOP_QUEUE_NAME, "", null, SerializationUtils.serialize(stopMe));
-            String oldValue = microServices.get(idToRemove);
-            microServices.remove(idToRemove, oldValue);
-//            Log.log("Successfully disconnected service " + idToRemove, LogLevel.WARNING);
+            Log.log("Successfully disconnected service " + idToRemove);
+            EventManager.getInstance().publishEvent(new MicroServiceDisconnectedEvent(idToRemove));
             return true;
         } catch (IOException e) {
             Log.log("Failed to send cancel request to service " + idToRemove, e);
@@ -140,24 +130,41 @@ public class MicroServiceManager {
      *
      * @return number of added services. 0, if no new services where added.
      */
-    private int checkUtilization() throws IOException {
+    private void checkUtilization() throws IOException {
         int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
         Log.log("currentAmountOfTasks: " + currTasks, LogLevel.LOW);
-        int returnValue = 0;
+        int runningServicesCount = microServices.size();
 
         //To avoid dividing by 0
-        if (microServices.isEmpty())
+        if (runningServicesCount == 0) {
             startMicroService();
-
-        while (currTasks / microServices.size() > MAXIMUM_UTILIZATION) {
-            startMicroService();
-            returnValue++;
+            runningServicesCount++;
         }
-        Log.log("started MSs: " + returnValue, LogLevel.LOW);
-        return returnValue;
+
+        if (currTasks / runningServicesCount > MAXIMUM_UTILIZATION)
+            startMicroService();
     }
 
     public Collection<String> getMicroservices() {
         return microServices.keySet().stream().map(serviceID -> serviceID + " : " + microServices.get(serviceID)).collect(Collectors.toList());
+    }
+
+    @Override
+    public void notify(IEvent toNotify) {
+        if(toNotify instanceof MicroServiceConnectedEvent){
+            String connectedServiceID = ((MicroServiceConnectedEvent) toNotify).getConnectedSvcID();
+            String connectedServiceIP = ((MicroServiceConnectedEvent) toNotify).getConnectedSvcIP();
+            microServices.put(connectedServiceID, connectedServiceIP);
+        } else if(toNotify instanceof MicroServiceDisconnectedEvent){
+            String disconnectedServiceID = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvcID();
+            microServices.remove(disconnectedServiceID);
+        } else if(toNotify instanceof MicroserviceDisconnectionRequestEvent){
+            disconnectMicroService(((MicroserviceDisconnectionRequestEvent) toNotify).getToDisconnectID());
+        }
+    }
+
+    @Override
+    public Set<Class<? extends IEvent>> getEvents() {
+        return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class));
     }
 }

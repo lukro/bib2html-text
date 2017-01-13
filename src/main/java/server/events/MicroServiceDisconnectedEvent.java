@@ -8,13 +8,13 @@ import microservice.MicroService;
  */
 public class MicroServiceDisconnectedEvent implements IEvent {
 
-    private final MicroService disconnectedSvc;
+    private final String disconnectedSvcID;
 
-    public MicroServiceDisconnectedEvent(MicroService disconnectedSvc) {
-        this.disconnectedSvc = disconnectedSvc;
+    public MicroServiceDisconnectedEvent(String disconnectedSvcID) {
+        this.disconnectedSvcID = disconnectedSvcID;
     }
 
-    public MicroService getDisconnectedSvc() {
-        return disconnectedSvc;
+    public String getDisconnectedSvcID(){
+        return disconnectedSvcID;
     }
 }

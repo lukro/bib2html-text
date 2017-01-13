@@ -101,7 +101,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
             String toBlock = ((ClientBlockRequestEvent) toNotify).getClientID();
             blacklistClient(toBlock);
         } else if (toNotify instanceof MicroserviceDisconnectionRequestEvent) {
-            String toDisconnect = ((MicroserviceDisconnectionRequestEvent) toNotify).getToDisconnectID();
+            String toDisconnect = ((MicroserviceDisconnectionRequestEvent) toNotify).getToDisconnectID(); //TODO FUCKING move this to Event system
             MicroServiceManager.getInstance().stopMicroService(toDisconnect);
         }
     }
@@ -174,9 +174,11 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         CallbackInformation callbackInformation = new CallbackInformation(basicProperties, replyProps);
         IRegistrationAck ack = new DefaultRegistrationAck(TASK_QUEUE_NAME);
         try {
+            Log.log("Sending acknowledge connection request to a MicroService", LogLevel.LOW);
             channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(ack));
+            EventManager.getInstance().publishEvent(new MicroServiceConnectedEvent(deliveredObject.getID(),deliveredObject.getIP()));
         } catch (IOException e) {
-            Log.log("failed to send acknowledgement to microservice", e);
+            Log.log("Failed to send acknowledgement to microservice", e);
         }
 
     }

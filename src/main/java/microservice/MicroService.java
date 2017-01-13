@@ -23,6 +23,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
+    private static final boolean DEBUG = false;
     private final String hostIP;
     private final String microServiceID;
     private final String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
@@ -34,7 +35,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final Connection connection;
 
 
-    public static void main(String[] args) {
+    public static void main(String... args) {
         try {
             final MicroService createdService = (args.length == 0) ? new MicroService() : new MicroService(args[0]);
             Thread serviceThread = new Thread(createdService);
@@ -71,19 +72,6 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         initConnectionPoint();
     }
 
-    /*
-     * use only for remote services!
-     * TODO: remote services mit gleichem channel starten?
-     */
-//    public MicroService(String hostIP) throws IOException, TimeoutException {
-//        this.microServiceID = UUID.randomUUID().toString();
-//        ConnectionFactory factory = new ConnectionFactory();
-//        factory.setHost(hostIP);
-//        this.hostIP = hostIP;
-//        this.channel = factory.newConnection().createChannel();
-//        initConnectionPoint();
-//    }
-
     @Override
     public void handleConsumeOk(String s) {
 
@@ -111,26 +99,29 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        Log.log("MicroService (ID: " + microServiceID + " received a message", LogLevel.LOW);
+        if(DEBUG) Log.log("MicroService (ID: " + microServiceID + " received a message", LogLevel.LOW);
 
         Object receivedObject = SerializationUtils.deserialize(bytes);
 
         if (receivedObject instanceof IStopOrder) {
             if (((IStopOrder) receivedObject).getMicroServiceID().equals(microServiceID)) {
+                Log.log("Stopping MicroService", LogLevel.WARNING);
                 closeConnection();
+                Log.log("Disconnected MicroService", LogLevel.WARNING);
+                System.exit(0);
             }
         } else if (receivedObject instanceof IRegistrationAck) {
             //TODO: set taskQueue
             Log.log("successfully received acknowledgement");
             consumeIncomingQueues();
-        } else {
+        } else if (receivedObject instanceof IEntry){
             IEntry received = SerializationUtils.deserialize(bytes);
             AMQP.BasicProperties replyProps = getReplyProps(basicProperties);
             DEFAULT_PROCESSOR.processEntry(received).forEach(partialResult -> {
                 try {
                     channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(partialResult));
                 } catch (IOException e) {
-                    Log.log("Failed to send a partialresult to server", e);
+                    Log.log("Failed to send a PartialResult to server", e);
                 }
             });
             //TODO: IN THE END!!: uncomment & change boolean in consumeIncomingQueues()
