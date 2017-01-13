@@ -100,9 +100,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         } else if (toNotify instanceof ClientBlockRequestEvent) {
             String toBlock = ((ClientBlockRequestEvent) toNotify).getClientID();
             blacklistClient(toBlock);
-        } else if (toNotify instanceof MicroserviceDisconnectionRequestEvent) {
-            String toDisconnect = ((MicroserviceDisconnectionRequestEvent) toNotify).getToDisconnectID(); //TODO FUCKING move this to Event system
-            MicroServiceManager.getInstance().stopMicroService(toDisconnect);
         }
     }
 
