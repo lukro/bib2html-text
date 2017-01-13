@@ -15,8 +15,13 @@ public class PandocCommandCreator {
     private final String customDefaultCslName, customDefaultTemplateName;
     private final boolean useCustomDefaultCsl, useCustomDefaultTemplate;
 
-    private final String pandocDefaultTemplateName, pandocDefaultCslName;
     private final boolean usePandocDefaultTemplate, usePandocDefaultCsl;
+
+    public static final String PANDOC_DEFAULT_TEMPLATE_NAME = "default.html";
+    /*
+    future work, expandability: maybe pandoc provides a default csl file in the future
+     */
+    public static final String PANDOC_DEFAULT_CSL_NAME = "";
 
     private PandocCommandCreator(PandocCommandCreatorBuilder builder) {
 
@@ -30,9 +35,7 @@ public class PandocCommandCreator {
         this.useCustomDefaultCsl = builder.useCustomDefaultCsl;
         this.useCustomDefaultTemplate = builder.useCustomDefaultTemplate;
 
-        this.pandocDefaultTemplateName = builder.PANDOC_DEFAULT_TEMPLATE_NAME;
         this.usePandocDefaultTemplate = builder.usePandocDefaultTemplate;
-        this.pandocDefaultCslName = builder.PANDOC_DEFAULT_CSL_NAME;
         this.usePandocDefaultCsl = builder.usePandocDefaultCsl;
     }
 
@@ -45,13 +48,10 @@ public class PandocCommandCreator {
         private String defaultCslName = "", defaultTemplateName = "";
         private boolean useCustomDefaultCsl = false, useCustomDefaultTemplate = false;
 
-        public static final String PANDOC_DEFAULT_TEMPLATE_NAME = "default.html";
         private boolean usePandocDefaultTemplate = true;
-
         /*
         future work, expandability: maybe pandoc provides a default csl file in the future
          */
-        public static final String PANDOC_DEFAULT_CSL_NAME = "";
         private boolean usePandocDefaultCsl = false;
 
         public PandocCommandCreatorBuilder(String wrapperFileName, String resultName, String cslFileName, String templateFileName) {
@@ -136,7 +136,7 @@ public class PandocCommandCreator {
         if (useCustomDefaultTemplate)
             placeHolders[0] = customDefaultTemplateName;
         else if (usePandocDefaultTemplate)
-            placeHolders[0] = pandocDefaultTemplateName;
+            placeHolders[0] = PANDOC_DEFAULT_TEMPLATE_NAME;
         else
             placeHolders[0] = templateFileName;
 
@@ -144,7 +144,7 @@ public class PandocCommandCreator {
         if (useCustomDefaultCsl)
             placeHolders[1] = customDefaultCslName;
         else if (usePandocDefaultCsl)
-            placeHolders[1] = pandocDefaultCslName;
+            placeHolders[1] = PANDOC_DEFAULT_CSL_NAME;
         else
             placeHolders[1] = cslFileName;
 

@@ -32,8 +32,8 @@ public class DefaultEntryProcessor implements IEntryProcessor {
      */
     private static final String CUSTOM_DEFAULT_CSL_NAME = "custom_default.csl";
     private static final String CUSTOM_DEFAULT_TEMPLATE_NAME = "custom_default_template.html";
-//    private static final Path PATH_TO_CUSTOM_DEFAULT_CSL = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_CSL_NAME).getFile());
-//    private static final Path PATH_TO_CUSTOM_DEFAULT_TEMPLATE = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_TEMPLATE_NAME).getFile());
+    private static final Path PATH_TO_CUSTOM_DEFAULT_CSL = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_CSL_NAME).getFile());
+    private static final Path PATH_TO_CUSTOM_DEFAULT_TEMPLATE = Paths.get(DefaultEntryProcessor.class.getClassLoader().getResource(CUSTOM_DEFAULT_TEMPLATE_NAME).getFile());
     private static String CUSTOM_DEFAULT_CSL_CONTENT;
     private static String CUSTOM_DEFAULT_TEMPLATE_CONTENT;
 
@@ -48,7 +48,7 @@ public class DefaultEntryProcessor implements IEntryProcessor {
    init defaults: future work, expandability
     */
     static {
-        initCustomDefaults();
+//        initCustomDefaults();
     }
 
     private static void initCustomDefaults() {
@@ -68,60 +68,60 @@ public class DefaultEntryProcessor implements IEntryProcessor {
     }
 
     private static void copyCustomDefaultsToWorkingDir(Path defaultCslTarget, Path defaultTemplateTarget) {
-//        try {
-//            Files.copy(PATH_TO_CUSTOM_DEFAULT_CSL, defaultCslTarget);
-//        } catch (IOException e) {
-//            Log.log("couldn't init default csl.", LogLevel.ERROR);
-//        }
-//        try {
-//            Files.copy(PATH_TO_CUSTOM_DEFAULT_TEMPLATE, defaultTemplateTarget);
-//        } catch (IOException e) {
-//            Log.log("couldn't init default template.", LogLevel.ERROR);
-//        }
+        try {
+            Files.copy(PATH_TO_CUSTOM_DEFAULT_CSL, defaultCslTarget);
+        } catch (IOException e) {
+            Log.log("couldn't init default csl.", LogLevel.ERROR);
+        }
+        try {
+            Files.copy(PATH_TO_CUSTOM_DEFAULT_TEMPLATE, defaultTemplateTarget);
+        } catch (IOException e) {
+            Log.log("couldn't init default template.", LogLevel.ERROR);
+        }
     }
 
     public DefaultEntryProcessor() {
     }
 
+    /**
+     * @param toConvert entry you want to convert
+     * @return a list of resulting partial results
+     */
     @Override
     public List<IPartialResult> processEntry(IEntry toConvert) {
         fileIdentifiers = createFileIdentifiersFromIEntry(toConvert);
-
         ArrayList<IPartialResult> result = new ArrayList<>();
-
         final String wrapperFileName = fileIdentifiers.get(FileType.MD);
         final String bibFileName = fileIdentifiers.get(FileType.BIB);
         final String resultName = fileIdentifiers.get(FileType.RESULT);
         final String cslFileName = fileIdentifiers.get(FileType.CSL);
         final String templateName = fileIdentifiers.get(FileType.TEMPLATE);
-
         if (!writeBibFileAndWrapper(bibFileName, wrapperFileName, toConvert)) {
             return handleAbortionCausedByMissingRequiredFiles(toConvert, toConvert.getAmountOfExpectedPartials());
         }
-
-        final HashMap<String, PartialResultIdentifier> commands = buildPandocCommands(toConvert, wrapperFileName);
-
+        //generating & executing terminal commands begins here
+        final List<PandocCommandInformation> commandInformation = buildPandocCommandsPerIEntry(toConvert, wrapperFileName);
+//        DEBUG: check if commands are as expected
+//        Log.log("amountOfGeneratedPandocCommandsPerEntry: " + commandInformation.size());
+//        for (PandocCommandInformation currentCommandInformation : commandInformation) {
+//            Log.log("currentCommand: " + currentCommandInformation.command);
+//        }
         IPartialResult currentPartialResult = null;
         PartialResultIdentifier currentPartialIdentifier;
-
-        for (Map.Entry currentEntry : commands.entrySet()) {
-
-            currentPartialIdentifier = ((PartialResultIdentifier) currentEntry.getValue());
-
+        for (PandocCommandInformation currentCommandInformation : commandInformation) {
+            currentPartialIdentifier = currentCommandInformation.expectedIdentifier;
             final int currentCslIndex = currentPartialIdentifier.getCslFileIndex();
             final int currentTemplateIndex = currentPartialIdentifier.getTemplateFileIndex();
-
             writeCslFileIfNecessary(currentCslIndex, cslFileName, toConvert);
             writeTemplateIfNecessary(currentTemplateIndex, templateName, toConvert);
-
-            final String currentCommand = (String) currentEntry.getKey();
-
+            final String currentCommand = currentCommandInformation.command;
+            //executing command
             try {
                 final Process p = Runtime.getRuntime().exec(currentCommand);
                 p.waitFor();
-                byte[] currentResultBytes = Files.readAllBytes(new File(resultName).toPath());
-                String currentResultContent = new String(currentResultBytes);
-                currentPartialResult = new DefaultPartialResult(currentResultContent, commands.get(currentCommand));
+                final byte[] currentResultBytes = Files.readAllBytes(new File(resultName).toPath());
+                final String currentResultContent = new String(currentResultBytes);
+                currentPartialResult = new DefaultPartialResult(currentResultContent, currentPartialIdentifier);
             } catch (Exception e) {
                 Log.log("error while executing pandoc command or generating/reading result.", e);
                 currentPartialResult = createErrorPartial(currentPartialIdentifier);
@@ -141,52 +141,53 @@ public class DefaultEntryProcessor implements IEntryProcessor {
     }
 
     /**
-     * builds all pandoc commands
-     *
-     * @param toConvert
-     * @param wrapperFileName
-     * @return a list with pandoc commands
+     * inner class which provides the pandoc terminal command and the expected PartialResultIdentifier
      */
-    private HashMap<String, PartialResultIdentifier> buildPandocCommands(IEntry toConvert, String wrapperFileName) {
-        HashMap<String, PartialResultIdentifier> result = new HashMap<>();
+    private class PandocCommandInformation {
+        private final String command;
+        private final PartialResultIdentifier expectedIdentifier;
 
+        private PandocCommandInformation(String command, PartialResultIdentifier expectedIdentifier) {
+            this.command = command;
+            this.expectedIdentifier = expectedIdentifier;
+        }
+    }
+
+    /**
+     * builds all pandoc commands for given entry
+     *
+     * @param toConvert       entry you want to convert
+     * @param wrapperFileName name of wrapper file which references the .bib-file
+     * @return a list with pandoc commands and the expected partial result identifier
+     */
+    private ArrayList<PandocCommandInformation> buildPandocCommandsPerIEntry(IEntry toConvert, String wrapperFileName) {
+        ArrayList<PandocCommandInformation> result = new ArrayList<>();
         final EntryIdentifier entryIdentifier = toConvert.getEntryIdentifier();
-
         final String resultFileName = fileIdentifiers.get(FileType.RESULT);
-
-        int startIndexCsl, startIndexTemplate;
-
-        if (toConvert.getCslFiles().size() == 0) {
-            startIndexCsl = -1;
-        } else {
-            startIndexCsl = 0;
-        }
-
-        if (toConvert.getTemplates().size() == 0) {
-            startIndexTemplate = -1;
-        } else {
-            startIndexTemplate = 0;
-        }
-
+//        DEBUG: check if amount of csls and templates are as expected
+//        Log.log("AmountOfCsls: " + toConvert.getCslFiles().size());
+//        Log.log("AmountOfTemplates: " + toConvert.getTemplates().size());
+        final int startIndexCsl = getCorrectStartIndex(toConvert.getCslFiles());
+        final int startIndexTemplate = getCorrectStartIndex(toConvert.getTemplates());
+//        DEBUG: check if startIndexes are as expected
+//        Log.log("startIndexCsl: " + startIndexCsl);
+//        Log.log("startIndexTemplate: " + startIndexTemplate);
+        //generating commands
         for (int cslFileIndex = startIndexCsl; cslFileIndex < toConvert.getCslFiles().size(); cslFileIndex++) {
             final String cslFileName;
-
             if (cslFileIndex == -1) {
-                cslFileName = PandocCommandCreator.PandocCommandCreatorBuilder.PANDOC_DEFAULT_CSL_NAME;
+                cslFileName = PandocCommandCreator.PANDOC_DEFAULT_CSL_NAME;
             } else {
                 cslFileName = fileIdentifiers.get(FileType.CSL);
             }
-
             for (int templateFileIndex = startIndexTemplate; templateFileIndex < toConvert.getTemplates().size(); templateFileIndex++) {
                 final String templateFileName;
-
                 if (templateFileIndex == -1) {
-                    templateFileName = PandocCommandCreator.PandocCommandCreatorBuilder.PANDOC_DEFAULT_TEMPLATE_NAME;
+                    templateFileName = PandocCommandCreator.PANDOC_DEFAULT_TEMPLATE_NAME;
                 } else {
                     templateFileName = fileIdentifiers.get(FileType.TEMPLATE);
                 }
-
-                PandocCommandCreator commandCreator =
+                final PandocCommandCreator commandCreator =
                         new PandocCommandCreator.PandocCommandCreatorBuilder
                                 (wrapperFileName, resultFileName, cslFileName, templateFileName)
                                 .useCustomDefaultCsl(false)
@@ -196,14 +197,19 @@ public class DefaultEntryProcessor implements IEntryProcessor {
                                 .usePandocDefaultCsl(false)
                                 .usePandocDefaultTemplate(false)
                                 .build();
-
-                PartialResultIdentifier currentPartialResultIdentifier =
+                final String currentCommand = commandCreator.buildCommandString();
+                final PartialResultIdentifier currentPartialResultIdentifier =
                         new PartialResultIdentifier(entryIdentifier, cslFileIndex, templateFileIndex);
-
-                result.put(commandCreator.buildCommandString(), currentPartialResultIdentifier);
+                final PandocCommandInformation currentCommandInformation =
+                        new PandocCommandInformation(currentCommand, currentPartialResultIdentifier);
+                result.add(currentCommandInformation);
             }
         }
         return result;
+    }
+
+    private static int getCorrectStartIndex(List<String> list) {
+        return list.size() == 0 ? -1 : 0;
     }
 
     private static HashMap<FileType, String> createFileIdentifiersFromIEntry(IEntry iEntry) {
@@ -219,20 +225,13 @@ public class DefaultEntryProcessor implements IEntryProcessor {
 
     private static List<IPartialResult> handleAbortionCausedByMissingRequiredFiles(IEntry failedEntry, int expectedAmountOfPartials) {
         ArrayList<IPartialResult> result = new ArrayList<>();
-
-        EntryIdentifier failedEntryIdentifier = failedEntry.getEntryIdentifier();
-
-        IPartialResult currentErrorPartialResult;
-
-        PartialResultIdentifier errorIdentifier =
+        final EntryIdentifier failedEntryIdentifier = failedEntry.getEntryIdentifier();
+        final PartialResultIdentifier errorIdentifier =
                 new PartialResultIdentifier
                         (failedEntryIdentifier, -1337, -1337);
-
+        IPartialResult currentErrorPartialResult;
         for (int i = 0; i < expectedAmountOfPartials; i++) {
-
-            currentErrorPartialResult =
-                    createErrorPartial(errorIdentifier);
-
+            currentErrorPartialResult = createErrorPartial(errorIdentifier);
             result.add(currentErrorPartialResult);
         }
         return result;
@@ -243,7 +242,7 @@ public class DefaultEntryProcessor implements IEntryProcessor {
         return new DefaultPartialResult(FAILED_PARTIAL_ERROR_CONTENT, errorIdentifier);
     }
 
-    //write- & delete-ops
+    //WRITE- & DELETE-OPERATIONS BEGIN HERE:
 
     private static boolean writeBibFileAndWrapper(String bibFileName, String wrapperFileName, IEntry toConvert) {
         boolean result = false;

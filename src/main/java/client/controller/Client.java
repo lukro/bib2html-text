@@ -128,16 +128,16 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     private void logTimeAndWorkingLoadLimit() {
         long timeEnd = System.currentTimeMillis();
         long timeTakenMillis = (timeEnd - timeStart);
-        Log.log("timeTakenInMillis: " + timeTakenMillis, LogLevel.INFO);
+//        Log.log("timeTakenInMillis: " + timeTakenMillis, LogLevel.INFO);
         double timeTakenSecs = timeTakenMillis / 1000.0;
-        Log.log("timeTakenInSecs: " + timeTakenSecs, LogLevel.INFO);
+//        Log.log("timeTakenInSecs: " + timeTakenSecs, LogLevel.INFO);
         int timeTakenFullMins = ((Double) (timeTakenSecs / 60.0)).intValue();
-        Log.log("timeTakenInFullMins: " + timeTakenFullMins, LogLevel.INFO);
+//        Log.log("timeTakenInFullMins: " + timeTakenFullMins, LogLevel.INFO);
         int timeTakenFullMinsInSecs = timeTakenFullMins * 60;
-        Log.log("timeTakenFullMinsInSec: " + timeTakenFullMinsInSecs);
+//        Log.log("timeTakenFullMinsInSec: " + timeTakenFullMinsInSecs);
         int timeTakenSecDifference = ((Double) (timeTakenSecs - timeTakenFullMinsInSecs)).intValue();
         Log.log("TIME TAKEN: " + timeTakenFullMins + " min " + timeTakenSecDifference + " sec");
-        int workingLoadLimitXSecs = ((Double) ((double)clientRequestSize / (double) timeTakenFullMinsInSecs * AMOUNT_OF_SECS)).intValue();
+        int workingLoadLimitXSecs = ((Double) ((double) clientRequestSize / (double) timeTakenSecs * AMOUNT_OF_SECS)).intValue();
         Log.log("WORKING LOAD LIMIT: " + workingLoadLimitXSecs + " entries in " + AMOUNT_OF_SECS + " secs. ");
     }
 

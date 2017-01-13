@@ -28,7 +28,7 @@ public class Log {
      * @param message
      * @param t
      */
-    public static void log(String message, Throwable t){
+    public static void log(String message, Throwable t) {
         log(message, LogLevel.ERROR);
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
@@ -41,8 +41,8 @@ public class Log {
      *
      * @param message
      */
-    public static void log(String message){
-        if(INSTANCE != null)
+    public static void log(String message) {
+        if (INSTANCE != null)
             INSTANCE.printOut(message, LogLevel.INFO);
     }
 
@@ -52,8 +52,8 @@ public class Log {
      * @param message
      * @param level
      */
-    public static void log(String message, LogLevel level){
-        if(INSTANCE != null)
+    public static void log(String message, LogLevel level) {
+        if (INSTANCE != null)
             INSTANCE.printOut(message, level);
     }
 
@@ -64,7 +64,6 @@ public class Log {
      * @param level
      */
     private void printOut(String message, LogLevel level) {
-        //TODO : MAKE THREAD SAFE
         Thread thread = new Thread(() -> {
             synchronized (outputStream) {
                 int ordLev = level.ordinal();
@@ -85,22 +84,22 @@ public class Log {
     }
 
     public static LogLevel getMinimumRequiredLevel() {
-        if(INSTANCE != null)
+        if (INSTANCE != null)
             return INSTANCE.minimumRequiredLevel;
         return minimumRequiredLevel;
     }
 
-    private void setMinimumRequiredLevel(LogLevel minimumRequiredLevel){
+    private void setMinimumRequiredLevel(LogLevel minimumRequiredLevel) {
         this.minimumRequiredLevel = minimumRequiredLevel;
     }
 
     public static void alterMinimumRequiredLevel(LogLevel minimumRequiredLevel) {
-        if(INSTANCE != null)
+        if (INSTANCE != null)
             INSTANCE.setMinimumRequiredLevel(minimumRequiredLevel);
     }
 
-    public static void alterOutputStream(OutputStream newOutputStream){
-        if(INSTANCE != null)
+    public static void alterOutputStream(OutputStream newOutputStream) {
+        if (INSTANCE != null)
             INSTANCE.setOutputStream(newOutputStream);
     }
 

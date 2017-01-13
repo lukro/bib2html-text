@@ -218,8 +218,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      * Class for clean storing of a tuple of BasicProperties.
      */
     private class CallbackInformation {
-        BasicProperties basicProperties;
-        BasicProperties replyProperties;
+        private BasicProperties basicProperties;
+        private BasicProperties replyProperties;
 
         private CallbackInformation(BasicProperties basicProperties, BasicProperties replyProperties) {
             this.basicProperties = basicProperties;
@@ -327,7 +327,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         //incoming queues
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
         channel.queueDeclare(callbackQueueName, false, false, false, null);
-        channel.queueDeclare(REGISTRATION_QUEUE_NAME,  false, false, false, null);
+        channel.queueDeclare(REGISTRATION_QUEUE_NAME, false, false, false, null);
     }
 
 
@@ -381,12 +381,12 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     }
 
     //TODO : Replace with safer approach?
-    public PartialResultCollector getPartialResultCollector(){
+    public PartialResultCollector getPartialResultCollector() {
         return PartialResultCollector.getInstance();
     }
 
     //TODO : Replace with safer approach?
-    public MicroServiceManager getMicroServiceManager(){
+    public MicroServiceManager getMicroServiceManager() {
         return MicroServiceManager.getInstance();
     }
 }
