@@ -1,7 +1,5 @@
 package global.logging;
 
-import javafx.application.Platform;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;

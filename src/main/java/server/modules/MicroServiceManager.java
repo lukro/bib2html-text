@@ -4,10 +4,7 @@ import com.rabbitmq.client.Channel;
 import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.logging.LogLevel;
-import global.model.DefaultStopOrder;
-import global.model.IStopOrder;
 import microservice.MicroService;
-import org.apache.commons.lang3.SerializationUtils;
 import server.events.*;
 
 import java.io.IOException;

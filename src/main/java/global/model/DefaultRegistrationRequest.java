@@ -5,7 +5,7 @@ package global.model;
  */
 public class DefaultRegistrationRequest implements IRegistrationRequest {
 
-    String id, ip;
+    private final String id, ip;
 
     public DefaultRegistrationRequest(String ip, String id){
         this.ip = ip;

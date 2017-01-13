@@ -7,6 +7,7 @@ import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.logging.LogLevel;
 import global.model.*;
+import global.util.ConnectionUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import server.events.*;
 import server.events.IEventListener;
@@ -27,7 +28,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     private final static String CLIENT_REQUEST_QUEUE_NAME = QueueNames.CLIENT_REQUEST_QUEUE_NAME.toString();
     private final static String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
     private final String REGISTRATION_QUEUE_NAME = QueueNames.MICROSERVICE_REGISTRATION_QUEUE_NAME.toString();
-    private final String STOP_QUEUE_NAME = QueueNames.MICROSERVICE_STOP_QUEUE_NAME.toString();
+    private final String STOP_EXCHANGE_NAME = QueueNames.STOP_EXCHANGE_NAME.toString();
     private static final int PER_CONSUMER_LIMIT = MicroServiceManager.MAXIMUM_UTILIZATION;
 
     private final String serverID, hostIP, callbackQueueName;
@@ -137,27 +138,24 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
             ReceivedPartialResultEvent event = new ReceivedPartialResultEvent((IPartialResult) deliveredObject);
             EventManager.getInstance().publishEvent(event);
         } else if (deliveredObject instanceof IRegistrationRequest) {
+            Log.log("server received registration request from: " + ((IRegistrationRequest) deliveredObject).getID());
             ReceivedRegistrationRequestEvent event = new ReceivedRegistrationRequestEvent((IRegistrationRequest) deliveredObject);
-//            EventManager.getInstance().publishEvent(event);
-            Log.log("Received Registration Request!", LogLevel.SEVERE);
-            handleReceivedRegistrationRequest((IRegistrationRequest)deliveredObject, basicProperties);
-        } else if (deliveredObject instanceof IStopOrderAck){
-            String idToRemove = deliveredObject.getStopMicroServiceID();
+//            EventManager.BasicgetInstance().publishEvent(event);
+            Log.log("Received Registration Request!");
+            handleReceivedRegistrationRequest((IRegistrationRequest) deliveredObject, basicProperties);
+        } else if (deliveredObject instanceof IStopOrderAck) {
+            String idToRemove = ((IStopOrderAck) deliveredObject).getStoppedMicroServiceID();
             EventManager.getInstance().publishEvent(new MicroServiceDisconnectedEvent(idToRemove));
         }
     }
 
     private void handleReceivedRegistrationRequest(IRegistrationRequest deliveredObject, BasicProperties basicProperties) {
-        BasicProperties replyProps = new BasicProperties
-                .Builder()
-                .correlationId(basicProperties.getCorrelationId())
-                .build();
-        CallbackInformation callbackInformation = new CallbackInformation(basicProperties, replyProps);
-        IRegistrationAck ack = new DefaultRegistrationAck(TASK_QUEUE_NAME);
+        final BasicProperties replyProps = ConnectionUtils.getReplyProps(basicProperties);
+        final IRegistrationAck ack = new DefaultRegistrationAck(TASK_QUEUE_NAME);
         try {
-            Log.log("Sending acknowledge connection request to a MicroService", LogLevel.LOW);
+            Log.log("Sending acknowledge connection request to microService: " + basicProperties.getCorrelationId(), LogLevel.LOW);
             channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(ack));
-            EventManager.getInstance().publishEvent(new MicroServiceConnectedEvent(deliveredObject.getID(),deliveredObject.getIP()));
+            EventManager.getInstance().publishEvent(new MicroServiceConnectedEvent(deliveredObject.getID(), deliveredObject.getIP()));
         } catch (IOException e) {
             Log.log("Failed to send acknowledgement to microservice", e);
         }
@@ -174,14 +172,10 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      */
     private void handleDeliveredClientRequest(IClientRequest deliveredClientRequest, BasicProperties basicProperties) throws IOException {
         //Generate Callback info
-        String requestID = deliveredClientRequest.getClientID();
-        BasicProperties replyProps = new BasicProperties
-                .Builder()
-                .correlationId(basicProperties.getCorrelationId())
-                .build();
-        CallbackInformation callbackInformation = new CallbackInformation(basicProperties, replyProps);
+        final String requestID = deliveredClientRequest.getClientID();
+        final BasicProperties replyProps = ConnectionUtils.getReplyProps(basicProperties);
+        final CallbackInformation callbackInformation = new CallbackInformation(basicProperties, replyProps);
         clientIDtoCallbackInformation.put(requestID, callbackInformation);
-
         //Check for blacklisting and handle accordingly
         if (isBlacklisted(requestID)) {
             Log.log("Illegal ClientRequest with ID '" + requestID + "' refused.");
@@ -203,12 +197,13 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     private class CallbackInformation {
         private BasicProperties basicProperties;
         private BasicProperties replyProperties;
+
         private CallbackInformation(BasicProperties basicProperties, BasicProperties replyProperties) {
             this.basicProperties = basicProperties;
             this.replyProperties = replyProperties;
         }
-
     }
+
     /**
      * Processes the received Request.
      *
@@ -217,21 +212,9 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      */
     private void processDeliveredClientRequest(IClientRequest deliveredClientRequest) throws IOException {
         IEntry firstEntry = deliveredClientRequest.getEntries().get(0);
-        int countOfEntries = deliveredClientRequest.getEntries().size();
-
-//        int countOfCSL = firstEntry.getCslFiles().size();
-//        int countOfTempl = firstEntry.getTemplates().size();
-//
-//        if (countOfCSL == 0)
-//            countOfCSL = 1;
-//        if (countOfTempl == 0)
-//            countOfTempl = 1;
-
-//        int requestSize = countOfEntries * countOfCSL * countOfTempl;
-
-        int countOfPartialPerEntry = firstEntry.getAmountOfExpectedPartials();
-
-        int requestSize = countOfEntries * countOfPartialPerEntry;
+        final int countOfEntries = deliveredClientRequest.getEntries().size();
+        final int countOfPartialPerEntry = firstEntry.getAmountOfExpectedPartials();
+        final int requestSize = countOfEntries * countOfPartialPerEntry;
 
         RequestAcceptedEvent requestAcceptedEvent = new RequestAcceptedEvent(deliveredClientRequest.getClientID(), requestSize);
         EventManager.getInstance().publishEvent(requestAcceptedEvent);
@@ -304,8 +287,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     @Override
     public void declareQueues() throws IOException {
         //outgoing queues
+        channel.exchangeDeclare(STOP_EXCHANGE_NAME, "fanout");
         channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
-        channel.exchangeDeclare(STOP_QUEUE_NAME, "fanout");
         //incoming queues
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
         channel.queueDeclare(callbackQueueName, false, false, false, null);
@@ -313,7 +296,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     }
 
     //Empty (i.e. not yet used) methods from interface.
-
 
     @Override
     public String getHostIP() {
@@ -377,7 +359,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 
         try {
             IStopOrder stopMe = new DefaultStopOrder(idToRemove);
-            channel.basicPublish(STOP_QUEUE_NAME, "", null, SerializationUtils.serialize(stopMe));
+            channel.basicPublish(STOP_EXCHANGE_NAME, "", replyProps, SerializationUtils.serialize(stopMe));
             Log.log("Successfully sent stop order to service " + idToRemove, LogLevel.LOW);
         } catch (IOException e) {
             Log.log("Failed to send cancel request to service " + idToRemove, e);
@@ -393,7 +375,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         } else if (toNotify instanceof ClientBlockRequestEvent) {
             String toBlock = ((ClientBlockRequestEvent) toNotify).getClientID();
             blacklistClient(toBlock);
-        } else if (toNotify instanceof  MicroserviceDisconnectionRequestEvent){
+        } else if (toNotify instanceof MicroserviceDisconnectionRequestEvent) {
             String idToRemove = ((MicroserviceDisconnectionRequestEvent) toNotify).getToDisconnectID();
             sendStopOrderToMicroService(idToRemove);
         }

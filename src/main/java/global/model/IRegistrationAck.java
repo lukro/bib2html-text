@@ -7,6 +7,6 @@ import java.io.Serializable;
  */
 public interface IRegistrationAck extends Serializable {
 
-    public String getTaskQueueName();
+    String getTaskQueueName();
 
 }
