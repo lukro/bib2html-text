@@ -287,7 +287,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     @Override
     public void declareQueues() throws IOException {
         //outgoing queues
-        channel.exchangeDeclare(STOP_EXCHANGE_NAME, "fanout");
+        channel.exchangeDeclare(STOP_EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
         channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
         //incoming queues
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);

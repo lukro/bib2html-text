@@ -26,8 +26,9 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final String hostIP;
     private final String microServiceID;
     private final String REGISTRATION_QUEUE_NAME = QueueNames.MICROSERVICE_REGISTRATION_QUEUE_NAME.toString();
+    private final String STOP_EXCHANGE_NAME = QueueNames.STOP_EXCHANGE_NAME.toString();
     private final String registrationCallbackQueueName;
-    private final String STOP_QUEUE_NAME = QueueNames.MICROSERVICE_STOP_QUEUE_NAME.toString();
+    private final String stopQueueName;
     private String taskQueueName = "";
 
     private final IEntryProcessor DEFAULT_PROCESSOR = new DefaultEntryProcessor();
@@ -68,6 +69,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         this.hostIP = hostIP;
         this.microServiceID = UUID.randomUUID().toString();
         this.registrationCallbackQueueName = microServiceID;
+        this.stopQueueName = QueueNames.MICROSERVICE_STOP_QUEUE_NAME.toString() + microServiceID;
         final ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(hostIP);
         this.connection = factory.newConnection();
@@ -168,14 +170,16 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         //incoming queues
         channel.queueDeclare(REGISTRATION_QUEUE_NAME, false, false, false, null);
         channel.queueDeclare(registrationCallbackQueueName, false, false, false, null);
-        channel.queueDeclare(STOP_QUEUE_NAME, false, false, false, null);
-        channel.queueBind(STOP_QUEUE_NAME, QueueNames.STOP_EXCHANGE_NAME.toString(), "");
+        channel.queueDeclare(stopQueueName, false, false, false, null);
+        //declare exchange
+        channel.exchangeDeclare(STOP_EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
+        channel.queueBind(stopQueueName, STOP_EXCHANGE_NAME, "");
     }
 
     @Override
     public void consumeIncomingQueues() throws IOException {
         channel.basicConsume(registrationCallbackQueueName, true, this);
-        channel.basicConsume(STOP_QUEUE_NAME, true, this);
+        channel.basicConsume(stopQueueName, true, this);
     }
 
     private void consumeReceivedTaskQueue(IRegistrationAck registrationAck) {
