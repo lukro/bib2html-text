@@ -87,18 +87,6 @@ public class MicroServiceManager implements IEventListener {
     }
 
     /**
-     * Disconnects and then stops the MicroService.
-     *
-     * @param microserviceID The ID of the Service to stop.
-     * @return Whether the stopping was successful.
-     */
-    protected boolean stopMicroService(String microserviceID) {
-        Objects.requireNonNull(microserviceID);
-
-        return disconnectMicroService(microserviceID);
-    }
-
-    /**
      * Disconnects the MicroService with the ID.
      * A disconnection means that the remaining Tasks for that MicroService will be redistributed.
      * <p>
@@ -165,6 +153,6 @@ public class MicroServiceManager implements IEventListener {
 
     @Override
     public Set<Class<? extends IEvent>> getEvents() {
-        return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class));
+        return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, MicroserviceDisconnectionRequestEvent.class));
     }
 }

@@ -108,7 +108,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
                 Log.log("Stopping MicroService", LogLevel.WARNING);
                 closeConnection();
                 Log.log("Disconnected MicroService", LogLevel.WARNING);
-                System.exit(0);
+                Thread.currentThread().stop();
             }
         } else if (receivedObject instanceof IRegistrationAck) {
             //TODO: set taskQueue

@@ -143,7 +143,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     @Override
     public Set<Class<? extends IEvent>> getEvents() {
         Set<Class<? extends IEvent>> evts = new HashSet<>();
-        evts.addAll(Arrays.asList(FinishedCollectingResultEvent.class, RequestStoppedEvent.class, ClientBlockRequestEvent.class, MicroserviceDisconnectionRequestEvent.class, MicroServiceConnectedEvent.class));
+        evts.addAll(Arrays.asList(FinishedCollectingResultEvent.class, RequestStoppedEvent.class, ClientBlockRequestEvent.class, MicroServiceConnectedEvent.class));
         return evts;
     }
 
