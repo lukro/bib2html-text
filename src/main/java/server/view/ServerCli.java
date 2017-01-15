@@ -2,18 +2,11 @@ package server.view;
 
 import global.logging.Log;
 import global.logging.LogLevel;
-import global.model.IClientRequest;
-import server.events.EventManager;
-import server.events.IEvent;
-import server.events.IEventListener;
-import server.modules.MicroServiceManager;
-import server.modules.PartialResultCollector;
 import server.modules.Server;
 
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.Scanner;
-import java.util.Set;
 
 /**
  * @author Maximilian Schirm
@@ -53,7 +46,7 @@ public class ServerCli {
                         server.getPartialResultCollector().getOutstandingRequests().forEach(status -> Log.log(status));
                         break;
                     case "list services":
-                        server.getMicroServiceManager().getMicroservices().forEach(service -> Log.log(service));
+                        server.getMicroServiceManager().getMicroServices().forEach(service -> Log.log(service));
                         break;
                     case "help":
                         printHelp();

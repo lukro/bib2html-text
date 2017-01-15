@@ -7,6 +7,6 @@ import java.io.Serializable;
  */
 public interface IRegistrationRefuse extends Serializable {
 
-    public String getREUIOhgsikdiofgiudrgiudrfikugergpagpr();
+    String getREUIOhgsikdiofgiudrgiudrfikugergpagpr();
 
 }

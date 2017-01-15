@@ -4,11 +4,11 @@ package server.events;
  * @author Maximilian Schirm
  *         created 10.12.2016
  */
-public class MicroserviceDisconnectionRequestEvent implements IEvent {
+public class MicroServiceDisconnectionRequestEvent implements IEvent {
 
     private final String toDisconnectID;
 
-    public MicroserviceDisconnectionRequestEvent(String toDisconnectID) {
+    public MicroServiceDisconnectionRequestEvent(String toDisconnectID) {
         this.toDisconnectID = toDisconnectID;
     }
 

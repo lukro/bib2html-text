@@ -22,15 +22,14 @@ public class MicroServiceManager implements IEventListener {
 
     private static MicroServiceManager INSTANCE;
     //The max. # of tasks per service.
-    public final static int MAXIMUM_UTILIZATION = 25;
     private final static int UTIL_START_DELAY = 1500;
     private final static int UTIL_FREQ = 500;
+    public final static int MAXIMUM_UTILIZATION = 25;
     //Key : ID | Value : IP
     private HashMap<String, String> microServices = new HashMap<>();
 
     private final Channel channel;
     private final String TASK_QUEUE_NAME;
-    private final String STOP_QUEUE_NAME = QueueNames.MICROSERVICE_STOP_QUEUE_NAME.toString();
 
     private MicroServiceManager(Channel channel, String taskQueueName) {
         this.channel = channel;
@@ -90,7 +89,7 @@ public class MicroServiceManager implements IEventListener {
      * @return number of added services. 0, if no new services where added.
      */
     private void checkUtilization() throws IOException {
-        int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
+        final int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
         Log.log("currentAmountOfTasks: " + currTasks, LogLevel.LOW);
         int runningServicesCount = microServices.size();
 
@@ -104,17 +103,17 @@ public class MicroServiceManager implements IEventListener {
             startMicroService();
     }
 
-    public Collection<String> getMicroservices() {
+    public Collection<String> getMicroServices() {
         return microServices.keySet().stream().map(serviceID -> serviceID + " : " + microServices.get(serviceID)).collect(Collectors.toList());
     }
 
     @Override
     public void notify(IEvent toNotify) {
-        if(toNotify instanceof MicroServiceConnectedEvent){
+        if (toNotify instanceof MicroServiceConnectedEvent) {
             String connectedServiceID = ((MicroServiceConnectedEvent) toNotify).getConnectedSvcID();
             String connectedServiceIP = ((MicroServiceConnectedEvent) toNotify).getConnectedSvcIP();
             microServices.put(connectedServiceID, connectedServiceIP);
-        } else if(toNotify instanceof MicroServiceDisconnectedEvent){
+        } else if (toNotify instanceof MicroServiceDisconnectedEvent) {
             String disconnectedServiceID = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvcID();
             microServices.remove(disconnectedServiceID);
         }

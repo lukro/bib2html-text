@@ -1,6 +1,5 @@
 package server.events;
 
-import global.model.DefaultResult;
 import global.model.IResult;
 
 /**

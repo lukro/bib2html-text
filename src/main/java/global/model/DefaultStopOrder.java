@@ -5,14 +5,14 @@ package global.model;
  */
 public class DefaultStopOrder implements IStopOrder {
 
-    private final String microserviceID;
+    private final String microServiceID;
 
-    public DefaultStopOrder(String microserviceID) {
-        this.microserviceID = microserviceID;
+    public DefaultStopOrder(String microServiceID) {
+        this.microServiceID = microServiceID;
     }
 
     @Override
     public String getMicroServiceID() {
-        return microserviceID;
+        return microServiceID;
     }
 }

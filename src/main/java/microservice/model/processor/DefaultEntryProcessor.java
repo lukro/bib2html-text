@@ -37,6 +37,9 @@ public class DefaultEntryProcessor implements IEntryProcessor {
     private static String CUSTOM_DEFAULT_CSL_CONTENT;
     private static String CUSTOM_DEFAULT_TEMPLATE_CONTENT;
 
+    /*
+    validators: future work, expandability
+     */
     private static final IValidator<File> CSL_VALIDATOR = new CslValidator();
     private static final IValidator<File> TEMPLATE_VALIDATOR = new TemplateValidator();
 

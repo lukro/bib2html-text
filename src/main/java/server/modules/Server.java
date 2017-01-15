@@ -27,10 +27,10 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 
     private final static String CLIENT_REQUEST_QUEUE_NAME = QueueNames.CLIENT_REQUEST_QUEUE_NAME.toString();
     private final static String TASK_QUEUE_NAME = QueueNames.TASK_QUEUE_NAME.toString();
-    private final String REGISTRATION_QUEUE_NAME = QueueNames.MICROSERVICE_REGISTRATION_QUEUE_NAME.toString();
-    private final String STOP_EXCHANGE_NAME = QueueNames.STOP_EXCHANGE_NAME.toString();
-    private final String CLIENT_CALLBACK_EXCHANGE_NAME = QueueNames.CLIENT_CALLBACK_EXCHANGE_NAME.toString();
-    private static final int PER_CONSUMER_LIMIT = MicroServiceManager.MAXIMUM_UTILIZATION;
+    private final static String REGISTRATION_QUEUE_NAME = QueueNames.MICROSERVICE_REGISTRATION_QUEUE_NAME.toString();
+    private final static String STOP_EXCHANGE_NAME = QueueNames.STOP_EXCHANGE_NAME.toString();
+    private final static String CLIENT_CALLBACK_EXCHANGE_NAME = QueueNames.CLIENT_CALLBACK_EXCHANGE_NAME.toString();
+    private final static int PER_CONSUMER_LIMIT = MicroServiceManager.MAXIMUM_UTILIZATION;
 
     private final String serverID, hostIP, callbackQueueName;
     private final Connection connection;
@@ -120,9 +120,12 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      */
     private void handleFinishedCollectingResultEvent(FinishedCollectingResultEvent toNotify) {
         String clientID = toNotify.getResult().getClientID();
+        Log.log("clientID from Result: " + clientID);
         CallbackInformation clientCBI = clientIDtoCallbackInformation.get(clientID);
+        Log.log("clientID from CBI: " + clientCBI.basicProperties.getCorrelationId());
         try {
-            channel.basicPublish(CLIENT_CALLBACK_EXCHANGE_NAME, clientID, null, SerializationUtils.serialize(toNotify.getResult()));
+            channel.basicPublish("", clientCBI.basicProperties.getReplyTo(), clientCBI.replyProperties, SerializationUtils.serialize(toNotify.getResult()));
+//            channel.basicPublish(CLIENT_CALLBACK_EXCHANGE_NAME, clientID, null, SerializationUtils.serialize(toNotify.getResult()));
             Log.log("finished result. published to :" + clientID);
         } catch (IOException e) {
             Log.log("COULD NOT RETURN RESULT TO CLIENT", LogLevel.SEVERE);
@@ -378,16 +381,16 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         } else if (toNotify instanceof ClientBlockRequestEvent) {
             String toBlock = ((ClientBlockRequestEvent) toNotify).getClientID();
             blacklistClient(toBlock);
-        } else if (toNotify instanceof MicroserviceDisconnectionRequestEvent) {
-            String idToRemove = ((MicroserviceDisconnectionRequestEvent) toNotify).getToDisconnectID();
+        } else if (toNotify instanceof MicroServiceDisconnectionRequestEvent) {
+            String idToRemove = ((MicroServiceDisconnectionRequestEvent) toNotify).getToDisconnectID();
             sendStopOrderToMicroService(idToRemove);
         }
     }
 
     @Override
     public Set<Class<? extends IEvent>> getEvents() {
-        Set<Class<? extends IEvent>> evts = new HashSet<>();
-        evts.addAll(Arrays.asList(FinishedCollectingResultEvent.class, RequestStoppedEvent.class, ClientBlockRequestEvent.class, MicroServiceConnectedEvent.class, MicroserviceDisconnectionRequestEvent.class));
-        return evts;
+        Set<Class<? extends IEvent>> events = new HashSet<>();
+        events.addAll(Arrays.asList(FinishedCollectingResultEvent.class, RequestStoppedEvent.class, ClientBlockRequestEvent.class, MicroServiceConnectedEvent.class, MicroServiceDisconnectionRequestEvent.class));
+        return events;
     }
 }

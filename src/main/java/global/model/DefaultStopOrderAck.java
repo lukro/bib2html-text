@@ -6,11 +6,11 @@ package global.model;
 public class DefaultStopOrderAck implements IStopOrderAck {
 
     private final String stoppedMicroServiceID;
-    private final String stoppedMicroServieIP;
+    private final String stoppedMicroServiceIP;
 
     public DefaultStopOrderAck(String stoppedMicroServiceID, String stoppedMicroServiceIP) {
         this.stoppedMicroServiceID = stoppedMicroServiceID;
-        this.stoppedMicroServieIP = stoppedMicroServiceIP;
+        this.stoppedMicroServiceIP = stoppedMicroServiceIP;
     }
 
     @Override
@@ -20,6 +20,6 @@ public class DefaultStopOrderAck implements IStopOrderAck {
 
     @Override
     public String getStoppedMicroServiceIP() {
-        return stoppedMicroServieIP;
+        return stoppedMicroServiceIP;
     }
 }

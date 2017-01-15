@@ -1,7 +1,5 @@
 package server.events;
 
-import microservice.MicroService;
-
 /**
  * @author Maximilian Schirm
  *         created 09.12.2016
@@ -14,7 +12,7 @@ public class MicroServiceDisconnectedEvent implements IEvent {
         this.disconnectedSvcID = disconnectedSvcID;
     }
 
-    public String getDisconnectedSvcID(){
+    public String getDisconnectedSvcID() {
         return disconnectedSvcID;
     }
 }

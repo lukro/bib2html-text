@@ -1,5 +1,6 @@
 package client.controller;
 
+import client.model.Client;
 import global.controller.Console;
 import global.logging.Log;
 import global.logging.LogLevel;
@@ -106,7 +107,7 @@ public class ClientController {
         templateChooser.setTitle("Select a Template file...");
         templateChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("TEMPLATE File (*.latex)", "*.latex"));
         File newTemplate = templateChooser.showOpenDialog(new Popup());
-        if(newTemplate == null) {
+        if (newTemplate == null) {
             Log.log("User aborted template selection", LogLevel.INFO);
         } else if (client.getClientFileModel().addTemplate(newTemplate)) {
             templateDirectoryTextField.setText(newTemplate.getAbsolutePath());

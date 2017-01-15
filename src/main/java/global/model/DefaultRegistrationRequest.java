@@ -5,20 +5,20 @@ package global.model;
  */
 public class DefaultRegistrationRequest implements IRegistrationRequest {
 
-    private final String id, ip;
+    private final String ID, hostIP;
 
-    public DefaultRegistrationRequest(String ip, String id){
-        this.ip = ip;
-        this.id = id;
+    public DefaultRegistrationRequest(String ID, String hostIP) {
+        this.ID = ID;
+        this.hostIP = hostIP;
     }
 
     @Override
     public String getIP() {
-        return ip;
+        return hostIP;
     }
 
     @Override
     public String getID() {
-        return id;
+        return ID;
     }
 }

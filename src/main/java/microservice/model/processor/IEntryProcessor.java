@@ -7,10 +7,10 @@ import java.util.List;
 
 /**
  * @author Maximilian
- * on 27.12.2016
+ *         on 27.12.2016
  */
 public interface IEntryProcessor {
 
-    public List<IPartialResult> processEntry(IEntry toConvert);
+    List<IPartialResult> processEntry(IEntry toConvert);
 
 }

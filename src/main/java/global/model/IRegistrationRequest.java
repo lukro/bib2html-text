@@ -7,8 +7,8 @@ import java.io.Serializable;
  */
 public interface IRegistrationRequest extends Serializable {
 
-    public String getIP();
+    String getIP();
 
-    public String getID();
+    String getID();
 
 }

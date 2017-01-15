@@ -31,6 +31,8 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final String stopQueueName;
     private String taskQueueName = "";
 
+    private volatile boolean isRunning = false;
+
     private final IEntryProcessor DEFAULT_PROCESSOR = new DefaultEntryProcessor();
     private final Connection connection;
     private final Channel channel;
@@ -38,18 +40,17 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final BasicProperties registrationReplyProps;
 
     public static void main(String... args) {
+        final MicroService createdService;
         try {
-            final MicroService createdService = (args.length == 0) ? new MicroService() : new MicroService(args[0]);
-            final Thread serviceThread = new Thread(createdService);
-            serviceThread.start();
+            createdService = (args.length == 0) ? new MicroService() : new MicroService(args[0]);
+            createdService.start();
         } catch (IOException | TimeoutException e) {
             Log.log("failed to start microService.", e);
-            Thread.currentThread().stop();
         }
     }
 
     /**
-     * use only for LOCAL services, running on the same device as the server
+     * use only for LOCAL services, isRunning on the same device as the server
      *
      * @throws IOException      if rabbitmq couldn't create channel or connection
      * @throws TimeoutException if rabbitmq timeouts
@@ -61,7 +62,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     /**
      * use only for REMOTE services
      *
-     * @param hostIP: ipv4 adress of the device, the server is running on
+     * @param hostIP: ipv4 adress of the device, the server is isRunning on
      * @throws IOException      if rabbitmq couldn't create channel or connection
      * @throws TimeoutException if rabbitmq timeouts
      */
@@ -113,11 +114,10 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         final AMQP.BasicProperties replyProps = ConnectionUtils.getReplyProps(basicProperties);
         if (receivedObject instanceof IStopOrder) {
             if (((IStopOrder) receivedObject).getMicroServiceID().equals(microServiceID)) {
-                Log.log("Stopping MicroService", LogLevel.WARNING);
+                Log.log("Stopping MicroService", LogLevel.INFO);
                 sendStopOrderAck(basicProperties, replyProps);
-                closeConnection();
-                Log.log("Disconnected MicroService", LogLevel.WARNING);
-                Thread.currentThread().stop();
+                terminate();
+                Log.log("Disconnected MicroService", LogLevel.INFO);
             }
         } else if (receivedObject instanceof IRegistrationAck) {
             consumeReceivedTaskQueue(((IRegistrationAck) receivedObject));
@@ -142,8 +142,12 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             Thread.currentThread().setName(originalThreadName + " - A MicroService Thread");
             initConnectionPoint();
         } catch (IOException e) {
-            Log.log("Failed to init the connection point in a MicroService", e);
+            Log.log("Failed to init connection point in a MicroService", e);
         }
+        while (isRunning) {
+            //microService isRunning
+        }
+        this.closeConnection();
     }
 
     @Override
@@ -151,7 +155,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         try {
             channel.close();
             connection.close();
-            Log.log("successfully disconnected microservice");
+            Log.log("successfully disconnected microservice", LogLevel.INFO);
         } catch (IOException | TimeoutException e) {
             Log.log("failed to close channel/connection from MicroService: " + microServiceID, e);
         }
@@ -185,7 +189,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private void consumeReceivedTaskQueue(IRegistrationAck registrationAck) {
         final String receivedTaskQueueName = registrationAck.getTaskQueueName();
         this.taskQueueName = receivedTaskQueueName;
-        Log.log("successfully received acknowledgement: " + taskQueueName);
+        Log.log("successfully received acknowledgement: " + taskQueueName, LogLevel.INFO);
         try {
             channel.queueDeclare(taskQueueName, false, false, false, null);
             channel.basicConsume(taskQueueName, true, this);
@@ -195,7 +199,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     }
 
     private void initRegistrationProcess() throws IOException {
-        IRegistrationRequest registrationRequest = new DefaultRegistrationRequest(hostIP, microServiceID);
+        IRegistrationRequest registrationRequest = new DefaultRegistrationRequest(microServiceID, hostIP);
         channel.basicPublish("", REGISTRATION_QUEUE_NAME, registrationReplyProps, SerializationUtils.serialize(registrationRequest));
     }
 
@@ -212,6 +216,16 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private void sendStopOrderAck(AMQP.BasicProperties basicProperties, AMQP.BasicProperties replyProps) throws IOException {
         IStopOrderAck stopOrderAck = new DefaultStopOrderAck(this.getID(), this.getHostIP());
         channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(stopOrderAck));
+    }
+
+    private void start() {
+        Thread serviceThread = new Thread(this);
+        serviceThread.start();
+        isRunning = true;
+    }
+
+    private void terminate() {
+        isRunning = false;
     }
 
 }

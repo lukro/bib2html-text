@@ -1,6 +1,6 @@
 package server.controller;
 
-import client.controller.Client;
+import client.model.Client;
 import global.controller.Console;
 import global.logging.Log;
 import global.logging.LogLevel;
@@ -11,7 +11,6 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
-import microservice.MicroService;
 import server.events.*;
 import server.modules.Server;
 
@@ -134,7 +133,7 @@ public class ServerController implements IEventListener {
     public void removeMicroServiceButtonPressed() {
         if (microServiceListView.getSelectionModel().getSelectedItem() != null) {
             String serviceIDToRemove = microServiceListView.getSelectionModel().getSelectedItem();
-            EventManager.getInstance().publishEvent(new MicroserviceDisconnectionRequestEvent(serviceIDToRemove));
+            EventManager.getInstance().publishEvent(new MicroServiceDisconnectionRequestEvent(serviceIDToRemove));
         }
     }
 

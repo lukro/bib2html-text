@@ -39,7 +39,7 @@ public class DefaultResult implements IResult {
         //Group Results
         Map<PartialResultIdentifier, Collection<IPartialResult>> collectionMap = new HashMap<>();
         partials.forEach(partial -> {
-            PartialResultIdentifier identifier = partial.getIdentifier();
+            final PartialResultIdentifier identifier = partial.getIdentifier();
             if (collectionMap.containsKey(identifier))
                 collectionMap.get(identifier).add(partial);
             else {
@@ -57,14 +57,12 @@ public class DefaultResult implements IResult {
             tempResults.forEach(result -> bldr.append(result.getContent()));
             generatedStrings.add(bldr.toString());
         });
-
         //Extract Client ID
         String cid = partials.stream()
                 .findFirst()
                 .get()
                 .getIdentifier()
                 .getClientID();
-
         return new DefaultResult(cid, generatedStrings);
     }
 }

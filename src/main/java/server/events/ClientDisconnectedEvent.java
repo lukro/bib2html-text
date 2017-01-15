@@ -1,6 +1,6 @@
 package server.events;
 
-import client.controller.Client;
+import client.model.Client;
 
 import java.util.Objects;
 
