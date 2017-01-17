@@ -11,8 +11,10 @@ public class DefaultClientRequest implements IClientRequest {
 
     private final String clientID;
     private final ArrayList<IEntry> entries;
+    private String secretKey;
 
-    public DefaultClientRequest(String clientID, Collection<IEntry> entries) {
+    public DefaultClientRequest(String secretKey, String clientID, Collection<IEntry> entries) {
+        this.secretKey = secretKey;
         this.clientID = clientID;
         this.entries = new ArrayList<>(entries);
     }
@@ -21,6 +23,9 @@ public class DefaultClientRequest implements IClientRequest {
     public String getClientID() {
         return clientID;
     }
+
+    @Override
+    public String getSecretKey() { return secretKey; }
 
     @Override
     public ArrayList<IEntry> getEntries() {

@@ -1,7 +1,5 @@
 package server.modules;
 
-import client.controller.ClientFileHandler;
-import client.model.Client;
 import com.rabbitmq.client.*;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import global.controller.IConnectionPoint;
@@ -13,7 +11,6 @@ import global.util.ConnectionUtils;
 import global.util.FileUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import server.events.*;
-import server.events.IEventListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +32,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     private final static String STOP_EXCHANGE_NAME = QueueNames.STOP_EXCHANGE_NAME.toString();
     private final static String CLIENT_CALLBACK_EXCHANGE_NAME = QueueNames.CLIENT_CALLBACK_EXCHANGE_NAME.toString();
     private final static int PER_CONSUMER_LIMIT = MicroServiceManager.MAXIMUM_UTILIZATION;
+    private final static String DEFAULT_BLACKLIST_FILE_NAME = "blacklist.txt";
+    private final static String VALID_CLIENT_SECRET_KEYS_FILE_NAME = "secretkeys.txt";
 
     private final String serverID, hostIP, callbackQueueName;
     private final Connection connection;
@@ -42,7 +41,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     private final BasicProperties replyProps;
     private HashMap<String, CallbackInformation> clientIDtoCallbackInformation = new HashMap<>();
     private Collection<String> blacklistedClients = new ArrayList<>();
-    private final String DEFAULT_BLACKLIST_FILE_NAME = "blacklist.txt";
+    private Collection<String> validSecretKeys = new ArrayList<>();
 
 
     public Server() throws IOException, TimeoutException {
@@ -182,18 +181,25 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         final BasicProperties replyProps = ConnectionUtils.getReplyProps(basicProperties);
         final CallbackInformation callbackInformation = new CallbackInformation(basicProperties, replyProps);
         clientIDtoCallbackInformation.put(requestID, callbackInformation);
-        //Check for blacklisting and handle accordingly
-        if (isBlacklisted(requestID)) {
-            Log.log("Illegal ClientRequest with ID '" + requestID + "' refused.");
-            channel.basicPublish("", basicProperties.getReplyTo(), clientIDtoCallbackInformation.get(requestID).replyProperties, SerializationUtils.serialize("Unfortunately you have been banned."));
+        //check received secretKey
+        if (!isValidSecretKey(deliveredClientRequest.getSecretKey())) {
+            Log.log("Invalid secret key from request with ID '" + requestID + "'");
+            channel.basicPublish("", basicProperties.getReplyTo(), clientIDtoCallbackInformation.get(requestID).replyProperties, SerializationUtils.serialize("Invalid secret key."));
             clientIDtoCallbackInformation.remove(requestID);
         } else {
-            if (deliveredClientRequest.getEntries().isEmpty()) {
-                Log.log("received request with 0 entries.", LogLevel.INFO);
-                channel.basicPublish("", basicProperties.getReplyTo(), clientIDtoCallbackInformation.get(requestID).replyProperties, SerializationUtils.serialize("Server received empty request. Conversion aborted."));
+            //Check for blacklisting and handle accordingly
+            if (isBlacklisted(requestID)) {
+                Log.log("Illegal ClientRequest with ID '" + requestID + "' refused.");
+                channel.basicPublish("", basicProperties.getReplyTo(), clientIDtoCallbackInformation.get(requestID).replyProperties, SerializationUtils.serialize("Unfortunately you have been banned."));
                 clientIDtoCallbackInformation.remove(requestID);
-            } else
-                processDeliveredClientRequest(deliveredClientRequest);
+            } else {
+                if (deliveredClientRequest.getEntries().isEmpty()) {
+                    Log.log("received request with 0 entries.", LogLevel.INFO);
+                    channel.basicPublish("", basicProperties.getReplyTo(), clientIDtoCallbackInformation.get(requestID).replyProperties, SerializationUtils.serialize("Server received empty request. Conversion aborted."));
+                    clientIDtoCallbackInformation.remove(requestID);
+                } else
+                    processDeliveredClientRequest(deliveredClientRequest);
+            }
         }
     }
 
@@ -250,6 +256,28 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         blacklistedClients = allLines;
     }
 
+    private void initSecretKeyFile() {
+        if (!Files.exists(Paths.get(VALID_CLIENT_SECRET_KEYS_FILE_NAME)))
+            createSecretKeyFile();
+        List<String> allLines;
+        try {
+            allLines = Files.readAllLines(Paths.get(VALID_CLIENT_SECRET_KEYS_FILE_NAME));
+        } catch (IOException e) {
+            Log.log("Couldn't read secretKey file.", e);
+            createSecretKeyFile();
+            allLines = new ArrayList<>();
+        }
+        validSecretKeys = allLines;
+    }
+
+    private void createSecretKeyFile() {
+        try {
+            Files.createFile(Paths.get(VALID_CLIENT_SECRET_KEYS_FILE_NAME));
+        } catch (IOException e) {
+            Log.log("Couldn't create blacklist file.", e);
+        }
+    }
+
     private void createBlacklistFile() {
         try {
             Files.createFile(Paths.get(DEFAULT_BLACKLIST_FILE_NAME));
@@ -266,13 +294,13 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
                 + validChars + "{%3$s}-"
                 + validChars + "{%4$s}-"
                 + validChars + "{%5$s}";
-//        String regEx = validChars + "{8}"
-//                + validChars + "{4}"
-//                + validChars + "{4}"
-//                + validChars + "{4}"
-//                + validChars + "{12}";
+        String regEx = validChars + "{8}"
+                + validChars + "{4}"
+                + validChars + "{4}"
+                + validChars + "{4}"
+                + validChars + "{12}";
         regEx2 = String.format(regEx2, groupLengths);
-        if (!clientID.matches(regEx2))
+        if (!clientID.matches(regEx))
             return false;
         return true;
     }
@@ -286,6 +314,10 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      */
     private boolean isBlacklisted(String clientID) {
         return blacklistedClients.contains(clientID);
+    }
+
+    private boolean isValidSecretKey(String secretKey) {
+        return validSecretKeys.contains(secretKey);
     }
 
     /**
@@ -313,6 +345,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 
     @Override
     public void initConnectionPoint() throws IOException {
+        initSecretKeyFile();
         initBlacklist();
         declareQueues();
         run();

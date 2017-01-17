@@ -128,6 +128,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
             Log.log("Message is instance of IResult.", LogLevel.INFO);
             handleResult((IResult) deliveredObject);
         } else {
+            //TODO: log message debuggen (start zeichen)
             Log.log("SERVER: " + new String(bytes), LogLevel.SEVERE);
         }
     }
@@ -236,6 +237,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     }
 
     private IClientRequest createClientRequest() throws IOException {
-        return new DefaultClientRequest(clientID, BibTeXFileSplitter.INSTANCE.createIEntryListFromClientFileModel(clientFileModel));
+        //TODO: valid keys
+        return new DefaultClientRequest("defaultKey", clientID, BibTeXFileSplitter.INSTANCE.createIEntryListFromClientFileModel(clientFileModel));
     }
 }
