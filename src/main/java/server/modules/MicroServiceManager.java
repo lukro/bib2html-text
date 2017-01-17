@@ -89,18 +89,18 @@ public class MicroServiceManager implements IEventListener {
      * @return number of added services. 0, if no new services where added.
      */
     private void checkUtilization() throws IOException {
-        final int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
-        Log.log("currentAmountOfTasks: " + currTasks, LogLevel.LOW);
-        int runningServicesCount = microServices.size();
-
-        //To avoid dividing by 0
-        if (runningServicesCount == 0) {
-            startMicroService();
-            runningServicesCount++;
-        }
-
-        if (currTasks / runningServicesCount > MAXIMUM_UTILIZATION)
-            startMicroService();
+//        final int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
+//        Log.log("currentAmountOfTasks: " + currTasks, LogLevel.LOW);
+//        int runningServicesCount = microServices.size();
+//
+//        //To avoid dividing by 0
+//        if (runningServicesCount == 0) {
+//            startMicroService();
+//            runningServicesCount++;
+//        }
+//
+//        if (currTasks / runningServicesCount > MAXIMUM_UTILIZATION)
+//            startMicroService();
     }
 
     public Collection<String> getMicroServices() {

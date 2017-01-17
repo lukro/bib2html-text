@@ -1,5 +1,7 @@
 package server.modules;
 
+import client.controller.ClientFileHandler;
+import client.model.Client;
 import com.rabbitmq.client.*;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import global.controller.IConnectionPoint;
@@ -8,10 +10,12 @@ import global.logging.Log;
 import global.logging.LogLevel;
 import global.model.*;
 import global.util.ConnectionUtils;
+import global.util.FileUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import server.events.*;
 import server.events.IEventListener;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -37,6 +41,8 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     private final Channel channel;
     private final BasicProperties replyProps;
     private HashMap<String, CallbackInformation> clientIDtoCallbackInformation = new HashMap<>();
+    private Collection<String> blacklistedClients = new ArrayList<>();
+    private final String DEFAULT_BLACKLIST_FILE_NAME = "blacklist.txt";
 
 
     public Server() throws IOException, TimeoutException {
@@ -70,11 +76,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         PartialResultCollector.getInstance();
         EventManager.getInstance().registerListener(this);
         initConnectionPoint();
-
-        //create blacklistfile, if it does not exist
-        if (!Files.exists(Paths.get("blacklist.txt"))) {
-            Files.createFile(Paths.get("blacklist.txt"));
-        }
     }
 
     @Override
@@ -231,54 +232,88 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         }
     }
 
-    private Collection<String> blacklistedClients = new HashSet<>();
+    private void initBlacklist() {
+        if (!Files.exists(Paths.get(DEFAULT_BLACKLIST_FILE_NAME)))
+            createBlacklistFile();
+        List<String> allLines;
+        try {
+            allLines = Files.readAllLines(Paths.get(DEFAULT_BLACKLIST_FILE_NAME));
+        } catch (IOException e) {
+            Log.log("Couldn't read blacklist file.", e);
+            createBlacklistFile();
+            allLines = new ArrayList<>();
+        }
+
+        for (String line : allLines)
+            if (!isValidUUID(line))
+                allLines.remove(line);
+        blacklistedClients = allLines;
+    }
+
+    private void createBlacklistFile() {
+        try {
+            Files.createFile(Paths.get(DEFAULT_BLACKLIST_FILE_NAME));
+        } catch (IOException e) {
+            Log.log("Couldn't create blacklist file.", e);
+        }
+    }
+
+    private boolean isValidUUID(String clientID) {
+        final String validChars = "[a-fA-F0-9]";
+        final String[] groupLengths = {8 + "", 4 + "", 4 + "", 4 + "", 12 + ""};
+        String regEx2 = validChars + "{%1$s}-"
+                + validChars + "{%2$s}-"
+                + validChars + "{%3$s}-"
+                + validChars + "{%4$s}-"
+                + validChars + "{%5$s}";
+//        String regEx = validChars + "{8}"
+//                + validChars + "{4}"
+//                + validChars + "{4}"
+//                + validChars + "{4}"
+//                + validChars + "{12}";
+        regEx2 = String.format(regEx2, groupLengths);
+        if (!clientID.matches(regEx2))
+            return false;
+        return true;
+    }
 
     /**
      * Tells us whether a certain client id was blacklisted.
-     * Can later be expanded by persistent blacklist file.
-     * TODO Make persistent
+     * Uses a persistent blacklist file.
      *
      * @param clientID The id for which we want to know the blacklisting state
      * @return A boolean.
      */
     private boolean isBlacklisted(String clientID) {
         return blacklistedClients.contains(clientID);
-//        List<String> lines = null;
-//        try {
-//            lines = Files.readAllLines(Paths.get("blacklist.txt"));
-//            for(String line: lines) {
-//                if(clientID.equals(line))
-//                    return true;
-//            }
-//        } catch (IOException e) {
-//            Log.log("Could not read blacklist file", e);
-//        }
-//        return false;
     }
 
     /**
      * Blacklists the client id.
-     * Can be expanded by persistent blacklist file.
-     * TODO Make persistent
+     * Uses a persistent blacklist file.
      *
      * @param clientIDToBlock The id to block.
      */
     private void blacklistClient(String clientIDToBlock) {
-
         blacklistedClients.add(clientIDToBlock);
-        Log.log("Blacklisted Client " + clientIDToBlock, LogLevel.WARNING);
+        String currentBlacklistContent = "";
+        try {
+            currentBlacklistContent = FileUtils.readStringFromFile(new File(DEFAULT_BLACKLIST_FILE_NAME));
+        } catch (IOException e) {
+            Log.log("Couldn't read blacklist-file.", e);
+        }
+        final String newBlacklistContent = currentBlacklistContent + System.lineSeparator();
 
-//        try {
-//            Files.write(Paths.get("blacklist.txt"), (clientIDToBlock + "\n").getBytes());
-//        } catch (IOException e) {
-//            Log.log("Failed to write to blacklist file", e);
-//        }
-//        blacklistedClients.add(clientIDToBlock);
-//        Log.log("Blacklisted Client " + clientIDToBlock, LogLevel.WARNING);
+        try {
+            Files.write(Paths.get(DEFAULT_BLACKLIST_FILE_NAME), newBlacklistContent.getBytes());
+        } catch (IOException e) {
+            Log.log("Couldn't write blacklist-file.", e);
+        }
     }
 
     @Override
     public void initConnectionPoint() throws IOException {
+        initBlacklist();
         declareQueues();
         run();
     }
