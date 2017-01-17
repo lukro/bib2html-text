@@ -49,7 +49,40 @@ public class ServerController implements IEventListener {
     ListView<String> microServiceListView;
 
     @FXML
-    ListView<String> clientRequestListView;
+    ListView<ClientRequestDisplayItem> clientRequestListView;
+
+    private class ClientRequestDisplayItem {
+        private final String clientID;
+        private final int expectedSize;
+        private double completion;
+
+        private ClientRequestDisplayItem(String clientID, int expectedSize) {
+            this.clientID = clientID;
+            this.expectedSize = expectedSize;
+            completion = 0.0;
+        }
+
+        public void setCompletion(double completion) {
+            this.completion = completion;
+        }
+
+        @Override
+        public String toString() {
+            return clientID + ", Expected Size : " + expectedSize + " (" + completion + ")";
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ClientRequestDisplayItem that = (ClientRequestDisplayItem) o;
+            return clientID.equals(that.clientID);
+        }
+
+        public String getClientID() {
+            return clientID;
+        }
+    }
 
     public ServerController() {
         Thread serverStartThread = new Thread(new Runnable() {
@@ -114,12 +147,23 @@ public class ServerController implements IEventListener {
             Log.log("Removed Request with ID " + toRemoveClientID, LogLevel.WARNING);
             Platform.runLater(() -> clientRequestListView.getItems().remove(toRemoveClientID));
         } else if (toNotify instanceof RequestAcceptedEvent) {
-            String toAddRequestString = ((RequestAcceptedEvent) toNotify).getRequestID() + " - Size : " + ((RequestAcceptedEvent) toNotify).getReqSize();
-            Platform.runLater(() -> clientRequestListView.getItems().add(toAddRequestString));
+            int newRequestSize = ((RequestAcceptedEvent) toNotify).getReqSize();
+            String newClientID = ((RequestAcceptedEvent) toNotify).getRequestID();
+            ClientRequestDisplayItem newDisplayItem = new ClientRequestDisplayItem(newClientID, newRequestSize);
+            Platform.runLater(() -> clientRequestListView.getItems().add(newDisplayItem));
         } else if (toNotify instanceof FinishedCollectingResultEvent) {
-            IResult result = ((FinishedCollectingResultEvent) toNotify).getResult();
-            String toRemoveString = result.getClientID() + " - Size : " + result.getFileContents().size();
-            Platform.runLater(() -> clientRequestListView.getItems().remove(toRemoveString));
+            String removeClientID = ((FinishedCollectingResultEvent) toNotify).getResult().getClientID();
+            ClientRequestDisplayItem toRemoveItem = new ClientRequestDisplayItem(removeClientID, 0);
+            Platform.runLater(() -> clientRequestListView.getItems().remove(toRemoveItem));
+        } else if (toNotify instanceof ProgressUpdateEvent) {
+            String toUpdateClientID = ((ProgressUpdateEvent) toNotify).getClientID();
+            double newCompletion = ((ProgressUpdateEvent) toNotify).getProgress();
+            for (ClientRequestDisplayItem item : clientRequestListView.getItems()) {
+                if (item.getClientID().equals(toUpdateClientID)) {
+                    item.setCompletion(newCompletion);
+                    break;
+                }
+            }
         }
     }
 
@@ -128,7 +172,7 @@ public class ServerController implements IEventListener {
         return new HashSet(Arrays.asList(ClientRegisteredEvent.class, ClientDisconnectedEvent.class,
                 MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class,
                 RequestStoppedEvent.class, RequestAcceptedEvent.class,
-                FinishedCollectingResultEvent.class));
+                FinishedCollectingResultEvent.class, ProgressUpdateEvent.class));
     }
 
     public void removeMicroServiceButtonPressed() {
@@ -148,7 +192,7 @@ public class ServerController implements IEventListener {
 
     public void cancelRequestButtonPressed() {
         if (clientRequestListView.getSelectionModel().getSelectedItem() != null) {
-            String toStopClientID = clientRequestListView.getSelectionModel().getSelectedItem();
+            String toStopClientID = clientRequestListView.getSelectionModel().getSelectedItem().getClientID();
             EventManager.getInstance().publishEvent(new RequestStoppedEvent(toStopClientID));
         }
     }

@@ -26,7 +26,7 @@ public class ClientGui extends Application {
         Pane root = loader.load();
         Scene scene = new Scene(root, 1280, 720);
         primaryStage.setScene(scene);
-        primaryStage.setTitle("bib2hmtl-text Client 0.0.1");
+        primaryStage.setTitle("bib2hmtl-text Client 0.9.1");
         primaryStage.show();
     }
 

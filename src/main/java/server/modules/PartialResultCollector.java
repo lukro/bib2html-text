@@ -86,6 +86,7 @@ public class PartialResultCollector implements IEventListener {
             mappingClientIDtoExpectedResultsSize.forEach((key, size) -> {
                 Collection<IPartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
                 if (parts != null)
+                    EventManager.getInstance().publishEvent(new ProgressUpdateEvent(key, getProgressForClientID(key)));
                     if (parts.size() == size) {
                         EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(DefaultResult.buildResultfromPartials(parts)));
                         mappingClientIDtoFinishedPartialResults.remove(key);
@@ -104,4 +105,9 @@ public class PartialResultCollector implements IEventListener {
         return evts;
     }
 
+    private synchronized double getProgressForClientID(String clientID){
+        double toFinish = mappingClientIDtoExpectedResultsSize.get(clientID);
+        double finished = mappingClientIDtoFinishedPartialResults.get(clientID).size();
+        return toFinish/finished;
+    }
 }

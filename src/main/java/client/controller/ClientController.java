@@ -28,6 +28,7 @@ public class ClientController {
 
     private Client client;
     private Console consoleStream;
+    private final static String DEFAULT_OUT_DIR = System.getProperty("user.home");
 
     public ClientController() {
         try {
@@ -69,6 +70,11 @@ public class ClientController {
         //Init here.
         if (client == null)
             Log.log("Client was not properly initialized! Instance broken!", LogLevel.ERROR);
+
+        //Set default output dir
+        outputDirectoryTextField.setText(DEFAULT_OUT_DIR);
+        client.setOutputDirectory(DEFAULT_OUT_DIR);
+
 
         outputFileTypeComboBox.getItems().addAll(ResultFileExtension.values());
         outputFileTypeComboBox.getSelectionModel().select(0);
