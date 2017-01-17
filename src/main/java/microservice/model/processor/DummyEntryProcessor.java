@@ -1,5 +1,7 @@
 package microservice.model.processor;
 
+import global.identifiers.EntryIdentifier;
+import global.identifiers.IIdentifier;
 import global.identifiers.PartialResultIdentifier;
 import global.model.DefaultPartialResult;
 import global.model.IEntry;
@@ -22,13 +24,16 @@ public class DummyEntryProcessor implements IEntryProcessor {
 
     @Override
     public List<IPartialResult> processEntry(IEntry toConvert) {
-        String dummyContent = toConvert.getContent();
-        int countOfReplies = toConvert.getCslFiles().size() * toConvert.getTemplates().size();
-        List<IPartialResult> returnList = new ArrayList<>();
-        for (int i = -1; i < countOfReplies; i++) {
-            returnList.add(new DefaultPartialResult(dummyContent, new PartialResultIdentifier(toConvert.getEntryIdentifier(), 1, 1, false)));
+        List<IPartialResult> result = new ArrayList<>();
+        final String content = toConvert.getContent();
+        final int expectedAmountOfPartials = toConvert.getAmountOfExpectedPartials();
+        final EntryIdentifier entryIdentifier = toConvert.getEntryIdentifier();
+        for (int i = 0; i < expectedAmountOfPartials; i++) {
+            final PartialResultIdentifier currentPartialIdentifier = new PartialResultIdentifier(entryIdentifier, -99, -99, false);
+            final IPartialResult currentPartial = new DefaultPartialResult(content, currentPartialIdentifier);
+            result.add(currentPartial);
         }
-        return returnList;
+        return result;
     }
 
 }

@@ -8,11 +8,11 @@ import java.io.OutputStream;
 
 /**
  * @author Maximilian Schirm
- * 15.12.2016
+ *         15.12.2016
  */
 public class Console extends OutputStream {
 
-    TextArea textArea;
+    private final TextArea textArea;
 
     public Console(TextArea textArea) {
         this.textArea = textArea;

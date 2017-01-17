@@ -1,20 +1,18 @@
 package server.events;
 
-import microservice.MicroService;
-
 /**
  * @author Maximilian Schirm
  *         created 09.12.2016
  */
 public class MicroServiceDisconnectedEvent implements IEvent {
 
-    private final MicroService disconnectedSvc;
+    private final String disconnectedSvcID;
 
-    public MicroServiceDisconnectedEvent(MicroService disconnectedSvc) {
-        this.disconnectedSvc = disconnectedSvc;
+    public MicroServiceDisconnectedEvent(String disconnectedSvcID) {
+        this.disconnectedSvcID = disconnectedSvcID;
     }
 
-    public MicroService getDisconnectedSvc() {
-        return disconnectedSvc;
+    public String getDisconnectedSvcID() {
+        return disconnectedSvcID;
     }
 }

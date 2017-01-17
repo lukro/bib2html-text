@@ -85,6 +85,19 @@ public class DefaultEntry implements IEntry {
     }
 
     @Override
+    public int getAmountOfExpectedPartials() {
+        int amountOfCsl = this.getCslFiles().size();
+        int amountOfTemplates = this.getTemplates().size();
+
+        if (amountOfCsl == 0)
+            amountOfCsl = 1;
+        if (amountOfTemplates == 0)
+            amountOfTemplates = 1;
+
+        return amountOfCsl * amountOfTemplates;
+    }
+
+    @Override
     public String toString() {
         return (System.lineSeparator() + "Entry with clientID '" +
                 entryIdentifier.getClientID() + "' and content: "

@@ -19,6 +19,8 @@ public interface IEntry extends Serializable {
 
     ArrayList<String> getTemplates();
 
+    int getAmountOfExpectedPartials();
+
     String toString();
 
 }

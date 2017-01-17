@@ -1,7 +1,5 @@
 package global.identifiers;
 
-import java.util.Objects;
-
 /**
  * @author Maximilian Schirm, daan
  *         created: 05.12.2016
@@ -41,6 +39,14 @@ public class PartialResultIdentifier implements IIdentifier {
         return entryIdentifier.getPositionInBibFile();
     }
 
+    public int getCslFileIndex() {
+        return cslFileIndex;
+    }
+
+    public int getTemplateFileIndex() {
+        return templateFileIndex;
+    }
+
     @Override
     public String toString() {
         return ("PartialResult for client " + entryIdentifier.getClientID() +
@@ -53,6 +59,7 @@ public class PartialResultIdentifier implements IIdentifier {
 
     /**
      * Ignores EntryIdentifier aside from the bib file index
+     *
      * @param o The object to compare.
      * @return A boolean for equality.
      */

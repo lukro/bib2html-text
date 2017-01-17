@@ -115,7 +115,7 @@ public class ClientFileModel {
         try {
             Objects.requireNonNull(templateToAdd);
         } catch (NullPointerException e) {
-            Log.log("(templateToAdd == null) in clientFileModel.addTemplate()", LogLevel.WARNING);
+            Log.log("User aborted template selection", LogLevel.INFO);
             return false;
         }
         if (templates.contains(templateToAdd))

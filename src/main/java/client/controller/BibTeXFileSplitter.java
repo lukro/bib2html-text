@@ -38,7 +38,7 @@ public enum BibTeXFileSplitter {
 
     }
 
-    ArrayList<IEntry> createIEntryListFromClientFileModel(ClientFileModel clientFileModel) {
+    public ArrayList<IEntry> createIEntryListFromClientFileModel(ClientFileModel clientFileModel) {
         Objects.requireNonNull(clientFileModel, "(clientFileModel == null) in BibTexEntryFormatter.createIEntryListFromClientFileModel()");
         ArrayList<IEntry> entryObjectList = new ArrayList<>();
         ArrayList<String> cslFilesAsStrings, templatesAsStrings;

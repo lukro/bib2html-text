@@ -7,12 +7,18 @@ package server.events;
 public class MicroServiceConnectedEvent implements IEvent {
 
     private final String connectedSvcID;
+    private final String connectedSvcIP;
 
-    public MicroServiceConnectedEvent(String connectedSvcID) {
+    public MicroServiceConnectedEvent(String connectedSvcID, String connectedSvcIP) {
         this.connectedSvcID = connectedSvcID;
+        this.connectedSvcIP = connectedSvcIP;
     }
 
     public String getConnectedSvcID() {
         return connectedSvcID;
+    }
+
+    public String getConnectedSvcIP() {
+        return connectedSvcIP;
     }
 }

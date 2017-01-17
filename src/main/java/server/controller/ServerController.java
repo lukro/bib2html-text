@@ -1,6 +1,6 @@
 package server.controller;
 
-import client.controller.Client;
+import client.model.Client;
 import global.controller.Console;
 import global.logging.Log;
 import global.logging.LogLevel;
@@ -11,7 +11,6 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
-import microservice.MicroService;
 import server.events.*;
 import server.modules.Server;
 
@@ -52,11 +51,21 @@ public class ServerController implements IEventListener {
     ListView<String> clientRequestListView;
 
     public ServerController() {
-        try {
-            server = new Server();
-        } catch (IOException | TimeoutException e) {
-            Log.log("Failed to initialize Server", e);
-        }
+        Thread serverStartThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final String originalThreadName = Thread.currentThread().getName();
+                    Thread.currentThread().setName(originalThreadName + " - ServerStartThread");
+                    server = new Server();
+                } catch (IOException | TimeoutException e) {
+                    Log.log("Failed to initialize Server", e);
+                    System.exit(-1);
+                }
+
+            }
+        });
+        serverStartThread.start();
     }
 
     @FXML
@@ -74,6 +83,7 @@ public class ServerController implements IEventListener {
             serverAdressLabel.setText(Inet4Address.getLocalHost().getHostAddress());
         } catch (UnknownHostException e) {
             Log.log("Failed to display Host IP", e);
+            serverAdressLabel.setText("ERROR");
         }
 
         EventManager.getInstance().registerListener(this);
@@ -95,9 +105,9 @@ public class ServerController implements IEventListener {
             Log.log("Registered Microservice with ID " + toAddID, LogLevel.WARNING);
             Platform.runLater(() -> microServiceListView.getItems().add(toAddID));
         } else if (toNotify instanceof MicroServiceDisconnectedEvent) {
-            MicroService toRemove = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvc();
-            Log.log("Unregistered Microservice with ID " + toRemove.getID(), LogLevel.WARNING);
-            Platform.runLater(() -> microServiceListView.getItems().remove(toRemove));
+            String disconnectedServiceID = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvcID();
+            Log.log("Unregistered Microservice with ID " + disconnectedServiceID, LogLevel.WARNING);
+            Platform.runLater(() -> microServiceListView.getItems().remove(disconnectedServiceID));
         } else if (toNotify instanceof RequestStoppedEvent) {
             String toRemoveClientID = ((RequestStoppedEvent) toNotify).getStoppedRequestClientID();
             Log.log("Removed Request with ID " + toRemoveClientID, LogLevel.WARNING);
@@ -105,7 +115,7 @@ public class ServerController implements IEventListener {
         } else if (toNotify instanceof RequestAcceptedEvent) {
             String toAddRequestString = ((RequestAcceptedEvent) toNotify).getRequestID() + " - Size : " + ((RequestAcceptedEvent) toNotify).getReqSize();
             Platform.runLater(() -> clientRequestListView.getItems().add(toAddRequestString));
-        } else if (toNotify instanceof FinishedCollectingResultEvent){
+        } else if (toNotify instanceof FinishedCollectingResultEvent) {
             IResult result = ((FinishedCollectingResultEvent) toNotify).getResult();
             String toRemoveString = result.getClientID() + " - Size : " + result.getFileContents().size();
             Platform.runLater(() -> clientRequestListView.getItems().remove(toRemoveString));
@@ -120,18 +130,16 @@ public class ServerController implements IEventListener {
                 FinishedCollectingResultEvent.class));
     }
 
-    public void removeMicroserviceButtonPressed() {
+    public void removeMicroServiceButtonPressed() {
         if (microServiceListView.getSelectionModel().getSelectedItem() != null) {
             String serviceIDToRemove = microServiceListView.getSelectionModel().getSelectedItem();
-            Log.log("Disconnecting MicroSerivce " + serviceIDToRemove);
-            EventManager.getInstance().publishEvent(new MicroserviceDisconnectionRequestEvent(serviceIDToRemove));
+            EventManager.getInstance().publishEvent(new MicroServiceDisconnectionRequestEvent(serviceIDToRemove));
         }
     }
 
     public void removeClientButtonPressed() {
         if (clientListView.getSelectionModel().getSelectedItem() != null) {
             String clientToBlock = clientListView.getSelectionModel().getSelectedItem().getID();
-            Log.log("Blocking Client " + clientToBlock);
             EventManager.getInstance().publishEvent(new ClientBlockRequestEvent(clientToBlock));
         }
     }
@@ -139,7 +147,6 @@ public class ServerController implements IEventListener {
     public void cancelRequestButtonPressed() {
         if (clientRequestListView.getSelectionModel().getSelectedItem() != null) {
             String toStopClientID = clientRequestListView.getSelectionModel().getSelectedItem();
-            Log.log("Cancelling Request " + toStopClientID);
             EventManager.getInstance().publishEvent(new RequestStoppedEvent(toStopClientID));
         }
     }

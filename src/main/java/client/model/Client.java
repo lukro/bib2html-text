@@ -1,6 +1,6 @@
-package client.controller;
+package client.model;
 
-import client.model.ClientFileModel;
+import client.controller.BibTeXFileSplitter;
 import com.rabbitmq.client.*;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import global.controller.IConnectionPoint;
@@ -15,6 +15,8 @@ import org.apache.commons.lang3.SerializationUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
@@ -26,13 +28,19 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     private final String clientID, callbackQueueName;
     private final String CLIENT_REQUEST_QUEUE_NAME = QueueNames.CLIENT_REQUEST_QUEUE_NAME.toString();
-    private String outputDirectory, hostIP;
+    private final String CLIENT_CALLBACK_EXCHANGE_NAME = QueueNames.CLIENT_CALLBACK_EXCHANGE_NAME.toString();
+    private String hostIP;
 
     private Connection connection;
     private Channel channel;
     private final BasicProperties replyProps;
 
     private ClientFileModel clientFileModel;
+    private String outputDirectory;
+    private final String DEFAULT_RESULT_PREFIX = "result";
+    private final SimpleDateFormat DEFAULT_TIMESTAMP_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss");
+    private final String DEFAULT_RESULT_FILE_EXTENSION = ResultFileExtension.HTML.toString();
+    private String resultFileExtension = DEFAULT_RESULT_FILE_EXTENSION;
 
 
     public Client() throws IOException {
@@ -72,13 +80,17 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     }
 
     private long timeStart = 0;
+    private long clientRequestSize = 0;
+    private final double AMOUNT_OF_SECS = 59;
 
-    void sendClientRequest() throws IOException {
+    public void sendClientRequest() throws IOException {
         //time measuring starts before request creation
         //timeStart = System.currentTimeMillis();
-        channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, replyProps, SerializationUtils.serialize(this.createClientRequest()));
+        IClientRequest clientRequestToSend = this.createClientRequest();
+        channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, replyProps, SerializationUtils.serialize(clientRequestToSend));
         //time measuring starts after request creation
         timeStart = System.currentTimeMillis();
+        clientRequestSize = clientRequestToSend.getEntries().size();
         Log.log("Client with ID: " + this.clientID + " sent a ClientRequest.", LogLevel.INFO);
     }
 
@@ -109,12 +121,10 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
-        long timeEnd = System.currentTimeMillis();
-        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName + "(@" + timeEnd + ")", LogLevel.LOW);
-        Log.log("TIME TAKEN : " + ((timeEnd - timeStart) / 1000.0) + " sec");
-        Object deliveredObject = SerializationUtils.deserialize(bytes);
+        Log.log("Client with ID: " + this.clientID + " received a message on queue: " + this.callbackQueueName);
+        logTimeAndWorkingLoadLimit();
+        final Object deliveredObject = SerializationUtils.deserialize(bytes);
         if (deliveredObject instanceof IResult) {
-            //TODO: handle Result
             Log.log("Message is instance of IResult.", LogLevel.INFO);
             handleResult((IResult) deliveredObject);
         } else {
@@ -122,15 +132,32 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         }
     }
 
-    private void handleResult(IResult result) {
-        StringBuilder builder = new StringBuilder();
+    private void logTimeAndWorkingLoadLimit() {
+        long timeEnd = System.currentTimeMillis();
+        long timeTakenMillis = (timeEnd - timeStart);
+//        Log.log("timeTakenInMillis: " + timeTakenMillis, LogLevel.INFO);
+        double timeTakenSecs = timeTakenMillis / 1000.0;
+//        Log.log("timeTakenInSecs: " + timeTakenSecs, LogLevel.INFO);
+        int timeTakenFullMins = ((Double) (timeTakenSecs / 60.0)).intValue();
+//        Log.log("timeTakenInFullMins: " + timeTakenFullMins, LogLevel.INFO);
+        int timeTakenFullMinsInSecs = timeTakenFullMins * 60;
+//        Log.log("timeTakenFullMinsInSec: " + timeTakenFullMinsInSecs);
+        int timeTakenSecDifference = ((Double) (timeTakenSecs - timeTakenFullMinsInSecs)).intValue();
+        Log.log("TIME TAKEN: " + timeTakenFullMins + " min " + timeTakenSecDifference + " sec");
+        int workingLoadLimitXSecs = ((Double) ((double) clientRequestSize / (double) timeTakenSecs * AMOUNT_OF_SECS)).intValue();
+        Log.log("WORKING LOAD LIMIT: " + workingLoadLimitXSecs + " entries in " + AMOUNT_OF_SECS + " secs. ");
+    }
 
+    private void handleResult(IResult result) {
+        final StringBuilder builder = new StringBuilder();
         for (String currentFileContent : result.getFileContents()) {
             builder.append(currentFileContent);
         }
-        File outDir = new File(outputDirectory);
-        String filename = result.getClientID();
-        if (outDir == null || !outDir.exists())
+        //        System.out.println(builder.toString());
+        final File outDir = new File(outputDirectory);
+        final String timeStamp = DEFAULT_TIMESTAMP_FORMAT.format(new Date());
+        final String filename = DEFAULT_RESULT_PREFIX + "_" + timeStamp + resultFileExtension;
+        if (!outDir.exists())
             Log.log("Output-directory doesn't exist!", LogLevel.SEVERE);
         else
             try {
@@ -158,6 +185,9 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
         //incoming queues
         channel.queueDeclare(callbackQueueName, false, false, false, null);
+
+        channel.exchangeDeclare(CLIENT_CALLBACK_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
+        channel.queueBind(callbackQueueName, CLIENT_CALLBACK_EXCHANGE_NAME, clientID);
     }
 
     @Override
@@ -165,7 +195,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         return hostIP;
     }
 
-    boolean connectToHost(String hostIP) {
+    public boolean connectToHost(String hostIP) {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(hostIP);
         try {
@@ -189,7 +219,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         return clientID;
     }
 
-    ClientFileModel getClientFileModel() {
+    public ClientFileModel getClientFileModel() {
         return clientFileModel;
     }
 
@@ -197,8 +227,12 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         return outputDirectory;
     }
 
-    void setOutputDirectory(String outputDirectory) {
+    public void setOutputDirectory(String outputDirectory) {
         this.outputDirectory = outputDirectory;
+    }
+
+    public void setResultFileExtension(ResultFileExtension resultFileExtension) {
+        this.resultFileExtension = resultFileExtension.toString();
     }
 
     private IClientRequest createClientRequest() throws IOException {

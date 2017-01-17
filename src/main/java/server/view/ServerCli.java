@@ -2,18 +2,11 @@ package server.view;
 
 import global.logging.Log;
 import global.logging.LogLevel;
-import global.model.IClientRequest;
-import server.events.EventManager;
-import server.events.IEvent;
-import server.events.IEventListener;
-import server.modules.MicroServiceManager;
-import server.modules.PartialResultCollector;
 import server.modules.Server;
 
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.Scanner;
-import java.util.Set;
 
 /**
  * @author Maximilian Schirm
@@ -30,7 +23,13 @@ public class ServerCli {
             Server server = new Server();
             Log.log("Started server @ " + server.getHostIP());
             Log.log("Please enter a command... (type \"help\" for help)");
-            Log.alterMinimumRequiredLevel(LogLevel.valueOf(args[0]));
+
+            //Set the log level
+            if(args.length == 0)
+                Log.alterMinimumRequiredLevel(LogLevel.INFO);
+            else
+                Log.alterMinimumRequiredLevel(LogLevel.valueOf(args[0]));
+
             Log.log("Set log level to " + Log.getMinimumRequiredLevel());
             String command = "";
             while(consoleScanner.hasNextLine()){
@@ -47,7 +46,7 @@ public class ServerCli {
                         server.getPartialResultCollector().getOutstandingRequests().forEach(status -> Log.log(status));
                         break;
                     case "list services":
-                        server.getMicroServiceManager().getMicroservices().forEach(service -> Log.log(service));
+                        server.getMicroServiceManager().getMicroServices().forEach(service -> Log.log(service));
                         break;
                     case "help":
                         printHelp();

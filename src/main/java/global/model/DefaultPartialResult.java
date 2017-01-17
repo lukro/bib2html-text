@@ -17,7 +17,6 @@ public class DefaultPartialResult implements IPartialResult {
     public DefaultPartialResult(String content, PartialResultIdentifier identifier) {
         Objects.requireNonNull(content);
         Objects.requireNonNull(identifier);
-
         this.content = content;
         this.identifier = identifier;
     }
@@ -30,4 +29,8 @@ public class DefaultPartialResult implements IPartialResult {
         return content;
     }
 
+    @Override
+    public int compareTo(IPartialResult o) {
+        return Integer.signum(this.getIdentifier().getPositionInBibFile() - o.getIdentifier().getPositionInBibFile());
+    }
 }
