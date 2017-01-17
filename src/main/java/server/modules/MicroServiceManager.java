@@ -116,11 +116,13 @@ public class MicroServiceManager implements IEventListener {
         } else if (toNotify instanceof MicroServiceDisconnectedEvent) {
             String disconnectedServiceID = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvcID();
             microServices.remove(disconnectedServiceID);
+        } else if (toNotify instanceof StartMicroServiceEvent) {
+            startMicroService();
         }
     }
 
     @Override
     public Set<Class<? extends IEvent>> getEvents() {
-        return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class));
+        return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, StartMicroServiceEvent.class));
     }
 }

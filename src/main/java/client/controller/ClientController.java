@@ -1,10 +1,14 @@
 package client.controller;
 
 import client.model.Client;
+import client.model.ResultFileExtension;
 import global.controller.Console;
+import global.identifiers.FileType;
 import global.logging.Log;
 import global.logging.LogLevel;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -44,7 +48,10 @@ public class ClientController {
     private ListView<File> cslFilesListView;
 
     @FXML
-    private TextField templateDirectoryTextField;
+    private ListView<File> templateListView;
+
+    @FXML
+    private ComboBox<ResultFileExtension> outputFileTypeComboBox;
 
     @FXML
     private TextField outputDirectoryTextField;
@@ -62,6 +69,10 @@ public class ClientController {
         //Init here.
         if (client == null)
             Log.log("Client was not properly initialized! Instance broken!", LogLevel.ERROR);
+
+        outputFileTypeComboBox.getItems().addAll(ResultFileExtension.values());
+        outputFileTypeComboBox.getSelectionModel().select(0);
+        outputFileTypeComboBox.setOnAction((event) -> client.setResultFileExtension(outputFileTypeComboBox.getValue()));
 
         Log.log("Client Initialized.");
     }
@@ -100,25 +111,6 @@ public class ClientController {
             Log.log("Selected new Output Directory " + outputDirNew.getAbsolutePath());
         }
     }
-
-    @FXML
-    public void chooseTemplateButtonPressed() {
-        FileChooser templateChooser = new FileChooser();
-        templateChooser.setTitle("Select a Template file...");
-        templateChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("TEMPLATE File (*.latex)", "*.latex"));
-        File newTemplate = templateChooser.showOpenDialog(new Popup());
-        if (newTemplate == null) {
-            Log.log("User aborted template selection", LogLevel.INFO);
-        } else if (client.getClientFileModel().addTemplate(newTemplate)) {
-            templateDirectoryTextField.setText(newTemplate.getAbsolutePath());
-            Log.log("User selected new template " + newTemplate.getAbsolutePath(), LogLevel.INFO);
-        } else {
-            Log.log("Could not set new template", LogLevel.WARNING);
-        }
-    }
-
-    //BIB LIST BUTTONS
-
 
     @FXML
     public void addBibButtonPressed() {
@@ -196,7 +188,40 @@ public class ClientController {
         Log.log("Removed all .csl-files from the selection.", LogLevel.INFO);
     }
 
+    @FXML
     public void clearLogButtonPressed() {
         consoleStream.clearTextArea();
+    }
+
+    @FXML
+    public void addTmplButtonPressed(ActionEvent actionEvent) {
+        FileChooser templateChooser = new FileChooser();
+        templateChooser.setTitle("Select a Template file...");
+        templateChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("TEMPLATE File (*.html)", "*.html"));
+        File newTemplate = templateChooser.showOpenDialog(new Popup());
+        if (newTemplate == null) {
+            Log.log("User aborted template selection", LogLevel.INFO);
+        } else if (client.getClientFileModel().addTemplate(newTemplate)) {
+            templateListView.getItems().add(newTemplate);
+            Log.log("User added a new template " + newTemplate.getAbsolutePath(), LogLevel.INFO);
+        } else {
+            Log.log("Could not add new template", LogLevel.WARNING);
+        }
+    }
+
+    @FXML
+    public void removeTmplButtonPressed(ActionEvent actionEvent) {
+        File toRemove = templateListView.getSelectionModel().getSelectedItem();
+        if (client.getClientFileModel().removeTemplate(toRemove)) {
+            templateListView.getItems().remove(toRemove);
+            Log.log("Removed template file '" + toRemove + "' from the selection.", LogLevel.INFO);
+        }
+    }
+
+    @FXML
+    public void clearTmplButtonPressed(ActionEvent actionEvent) {
+        client.getClientFileModel().clearTemplates();
+        templateListView.getItems().clear();
+        Log.log("Removed all template files from the selection.", LogLevel.INFO);
     }
 }

@@ -6,6 +6,7 @@ import global.logging.Log;
 import global.logging.LogLevel;
 import global.model.IResult;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
@@ -137,6 +138,7 @@ public class ServerController implements IEventListener {
         }
     }
 
+    @Deprecated
     public void removeClientButtonPressed() {
         if (clientListView.getSelectionModel().getSelectedItem() != null) {
             String clientToBlock = clientListView.getSelectionModel().getSelectedItem().getID();
@@ -153,5 +155,9 @@ public class ServerController implements IEventListener {
 
     public void clearLogButtonPressed() {
         consoleStream.clearTextArea();
+    }
+
+    public void addMicroServiceButtonPressed(ActionEvent event) {
+        EventManager.getInstance().publishEvent(new StartMicroServiceEvent());
     }
 }
