@@ -110,8 +110,10 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
         Log.log("MicroService (ID: " + microServiceID + " received a message", LogLevel.LOW);
+
         final Object receivedObject = SerializationUtils.deserialize(bytes);
         final AMQP.BasicProperties replyProps = ConnectionUtils.getReplyProps(basicProperties);
+
         if (receivedObject instanceof IStopOrder) {
             if (((IStopOrder) receivedObject).getMicroServiceID().equals(microServiceID)) {
                 Log.log("Stopping MicroService", LogLevel.INFO);
@@ -155,9 +157,12 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         try {
             channel.close();
             connection.close();
-            Log.log("successfully disconnected microservice", LogLevel.INFO);
+            Log.log("Successfully disconnected microservice", LogLevel.INFO);
         } catch (IOException | TimeoutException e) {
-            Log.log("failed to close channel/connection from MicroService: " + microServiceID, e);
+            Log.log("Failed to close channel/connection from MicroService: " + microServiceID, e);
+        } finally {
+//          System.exit(0); Only use when applying the approach of starting MicroServices in MSM.addMicroService() from jar
+            Thread.currentThread().stop();
         }
     }
 
