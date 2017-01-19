@@ -1,10 +1,8 @@
 package server.controller;
 
-import client.model.Client;
 import global.controller.Console;
 import global.logging.Log;
 import global.logging.LogLevel;
-import global.model.IResult;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -15,9 +13,7 @@ import server.modules.Server;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -53,16 +49,20 @@ public class ServerController implements IEventListener {
         private final String clientID;
         private final int expectedSize;
         private double completion;
+
         private ClientRequestDisplayItem(String clientID, int expectedSize) {
             this.clientID = clientID;
             this.expectedSize = expectedSize;
-            completion = 0.0;
+            this.completion = 0.0;
+        }
+
+        public String getClientID() {
+            return clientID;
         }
 
         public void setCompletion(double completion) {
             this.completion = completion;
         }
-
         @Override
         public String toString() {
             return clientID + ", Expected Size : " + expectedSize + " (" + completion + ")";
@@ -76,11 +76,12 @@ public class ServerController implements IEventListener {
             return clientID.equals(that.clientID);
         }
 
-        public String getClientID() {
-            return clientID;
+        @Override
+        public int hashCode(){
+            return clientID.hashCode();
         }
-
     }
+
     public ServerController() {
         Thread serverStartThread = new Thread(new Runnable() {
             @Override
@@ -133,27 +134,48 @@ public class ServerController implements IEventListener {
             Platform.runLater(() -> microServiceListView.getItems().remove(disconnectedServiceID));
         } else if (toNotify instanceof RequestStoppedEvent) {
             String toRemoveClientID = ((RequestStoppedEvent) toNotify).getStoppedRequestClientID();
+            ClientRequestDisplayItem temp = new ClientRequestDisplayItem(toRemoveClientID,0);
+            displayedClientRequests.remove(temp);
             Log.log("Removed Request with ID " + toRemoveClientID, LogLevel.WARNING);
-            Platform.runLater(() -> clientRequestListView.getItems().remove(toRemoveClientID));
+            updateClientRequestListView();
         } else if (toNotify instanceof RequestAcceptedEvent) {
             int newRequestSize = ((RequestAcceptedEvent) toNotify).getReqSize();
             String newClientID = ((RequestAcceptedEvent) toNotify).getRequestID();
             ClientRequestDisplayItem newDisplayItem = new ClientRequestDisplayItem(newClientID, newRequestSize);
-            Platform.runLater(() -> clientRequestListView.getItems().add(newDisplayItem));
+            displayedClientRequests.add(newDisplayItem);
+            updateClientRequestListView();
         } else if (toNotify instanceof FinishedCollectingResultEvent) {
             String removeClientID = ((FinishedCollectingResultEvent) toNotify).getResult().getClientID();
             ClientRequestDisplayItem toRemoveItem = new ClientRequestDisplayItem(removeClientID, 0);
-            Platform.runLater(() -> clientRequestListView.getItems().remove(toRemoveItem));
+            displayedClientRequests.remove(toRemoveItem);
+            updateClientRequestListView();
         } else if (toNotify instanceof ProgressUpdateEvent) {
             String toUpdateClientID = ((ProgressUpdateEvent) toNotify).getClientID();
             double newCompletion = ((ProgressUpdateEvent) toNotify).getProgress();
-            for (ClientRequestDisplayItem item : clientRequestListView.getItems()) {
+            //Only display 2 decimals after 0
+            newCompletion = newCompletion - (newCompletion % 0.01);
+
+            for (ClientRequestDisplayItem item : displayedClientRequests) {
                 if (item.getClientID().equals(toUpdateClientID)) {
                     item.setCompletion(newCompletion);
                     break;
                 }
             }
+            updateClientRequestListView();
         }
+    }
+
+    private List<ClientRequestDisplayItem> displayedClientRequests = new ArrayList<>();
+
+    /**
+     * Updates the contents of the ClientRequestListView with the contents from displayedClientRequests.
+     * May be improved by using Observables.
+     */
+    private void updateClientRequestListView(){
+        Platform.runLater(() -> {
+            clientRequestListView.getItems().clear();
+            clientRequestListView.getItems().addAll(displayedClientRequests);
+        });
     }
 
     @Override

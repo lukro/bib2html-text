@@ -64,7 +64,6 @@ public class PartialResultCollector implements IEventListener {
             }
             presentResults.add(partialResult);
             mappingClientIDtoFinishedPartialResults.put(id, presentResults);
-
         } else if (toNotify instanceof ReceivedErrorEvent) {
             ReceivedErrorEvent tempEvent = (ReceivedErrorEvent) toNotify;
             String id = tempEvent.getResultID();
@@ -81,19 +80,18 @@ public class PartialResultCollector implements IEventListener {
     /**
      * Checks whether any of the results is finished creating yet and - if that is the case - sends out a FinishedCollectingResultEvent.
      */
-    private void update() {
-        synchronized (mappingClientIDtoExpectedResultsSize) {
-            mappingClientIDtoExpectedResultsSize.forEach((key, size) -> {
-                Collection<IPartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
-                if (parts != null)
-                    EventManager.getInstance().publishEvent(new ProgressUpdateEvent(key, getProgressForClientID(key)));
-                    if (parts.size() == size) {
-                        EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(DefaultResult.buildResultfromPartials(parts)));
-                        mappingClientIDtoFinishedPartialResults.remove(key);
-                        mappingClientIDtoExpectedResultsSize.remove(key);
-                    }
-            });
-        }
+    private synchronized void update() {
+        mappingClientIDtoExpectedResultsSize.forEach((key, size) -> {
+            Collection<IPartialResult> parts = mappingClientIDtoFinishedPartialResults.get(key);
+            if (parts != null) {
+                EventManager.getInstance().publishEvent(new ProgressUpdateEvent(key, getProgressForClientID(key)));
+                if (parts.size() == size) {
+                    EventManager.getInstance().publishEvent(new FinishedCollectingResultEvent(DefaultResult.buildResultfromPartials(parts)));
+                    mappingClientIDtoFinishedPartialResults.remove(key);
+                    mappingClientIDtoExpectedResultsSize.remove(key);
+                }
+            }
+        });
     }
 
     @Override
@@ -108,6 +106,6 @@ public class PartialResultCollector implements IEventListener {
     private synchronized double getProgressForClientID(String clientID){
         double toFinish = mappingClientIDtoExpectedResultsSize.get(clientID);
         double finished = mappingClientIDtoFinishedPartialResults.get(clientID).size();
-        return toFinish/finished;
+        return finished/toFinish;
     }
 }

@@ -102,6 +102,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      */
     private void handleRequestStoppedEvent(RequestStoppedEvent toNotify) {
         String toStopClientID = toNotify.getStoppedRequestClientID();
+        //TODO remove queued entries, tell PRC to disregard all associated orders
         CallbackInformation clientCBI = clientIDtoCallbackInformation.get(toStopClientID);
         try {
             channel.basicPublish("", clientCBI.basicProperties.getReplyTo(), clientCBI.replyProperties, SerializationUtils.serialize("Server Admin forcefully stopped your Request."));
