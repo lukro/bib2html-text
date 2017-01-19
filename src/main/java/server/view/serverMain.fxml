@@ -4,6 +4,7 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
@@ -14,7 +15,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="720.0" maxWidth="1280.0" prefHeight="720.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="server.controller.ServerController">
+<AnchorPane maxHeight="720.0" maxWidth="1280.0" prefHeight="720.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/8.0.101" xmlns:fx="http://javafx.com/fxml/1" fx:controller="server.controller.ServerController">
    <children>
       <SplitPane dividerPositions="0.334" layoutX="233.0" layoutY="166.0" prefHeight="720.0" prefWidth="1280.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
@@ -84,11 +85,21 @@
                                           </Label>
                                        </children>
                                     </HBox>
-                                    <Button mnemonicParsing="false" onAction="#clearLogButtonPressed" text="Clear Log">
+                                    <HBox prefHeight="30.0" prefWidth="420.0">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#clearLogButtonPressed" text="Clear Log">
+                                             <HBox.margin>
+                                                <Insets left="15.0" />
+                                             </HBox.margin></Button>
+                                          <CheckBox fx:id="useUtilisationCheckingBox" mnemonicParsing="false" onAction="#switchUseUtilisationCheckingBoxClicked" text="Use Utilisation Checking">
+                                             <HBox.margin>
+                                                <Insets left="15.0" top="4.0" />
+                                             </HBox.margin></CheckBox>
+                                       </children>
                                        <VBox.margin>
-                                          <Insets left="15.0" top="2.0" />
+                                          <Insets top="12.0" />
                                        </VBox.margin>
-                                    </Button>
+                                    </HBox>
                                     <TextArea fx:id="serverConsoleTextArea" prefHeight="642.0" prefWidth="420.0">
                                        <VBox.margin>
                                           <Insets bottom="5.0" left="15.0" right="15.0" top="5.0" />

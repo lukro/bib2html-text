@@ -8,10 +8,7 @@ import global.model.IResult;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import server.events.*;
 import server.modules.Server;
 
@@ -30,7 +27,6 @@ import java.util.concurrent.TimeoutException;
 
 public class ServerController implements IEventListener {
 
-    private Server server;
     private Console consoleStream;
 
     @FXML
@@ -43,7 +39,7 @@ public class ServerController implements IEventListener {
     TextArea serverConsoleTextArea;
 
     @FXML
-    ListView<Client> clientListView;
+    CheckBox useUtilisationCheckingBox;
 
     @FXML
     ListView<String> microServiceListView;
@@ -51,11 +47,12 @@ public class ServerController implements IEventListener {
     @FXML
     ListView<ClientRequestDisplayItem> clientRequestListView;
 
+
     private class ClientRequestDisplayItem {
+
         private final String clientID;
         private final int expectedSize;
         private double completion;
-
         private ClientRequestDisplayItem(String clientID, int expectedSize) {
             this.clientID = clientID;
             this.expectedSize = expectedSize;
@@ -82,8 +79,8 @@ public class ServerController implements IEventListener {
         public String getClientID() {
             return clientID;
         }
-    }
 
+    }
     public ServerController() {
         Thread serverStartThread = new Thread(new Runnable() {
             @Override
@@ -91,7 +88,7 @@ public class ServerController implements IEventListener {
                 try {
                     final String originalThreadName = Thread.currentThread().getName();
                     Thread.currentThread().setName(originalThreadName + " - ServerStartThread");
-                    server = new Server();
+                    new Server();
                 } catch (IOException | TimeoutException e) {
                     Log.log("Failed to initialize Server", e);
                     System.exit(-1);
@@ -126,15 +123,7 @@ public class ServerController implements IEventListener {
 
     @Override
     public void notify(IEvent toNotify) {
-        if (toNotify instanceof ClientRegisteredEvent) {
-            Client toAdd = ((ClientRegisteredEvent) toNotify).getRegisteredClient();
-            Log.log("Registered Client with ID " + toAdd.getID(), LogLevel.INFO);
-            Platform.runLater(() -> clientListView.getItems().add(toAdd));
-        } else if (toNotify instanceof ClientDisconnectedEvent) {
-            Client toRemove = ((ClientDisconnectedEvent) toNotify).getDisconnectedClient();
-            Log.log("Disconnected Client with ID " + toRemove.getID(), LogLevel.WARNING);
-            Platform.runLater(() -> clientListView.getItems().remove(toRemove));
-        } else if (toNotify instanceof MicroServiceConnectedEvent) {
+        if (toNotify instanceof MicroServiceConnectedEvent) {
             String toAddID = ((MicroServiceConnectedEvent) toNotify).getConnectedSvcID();
             Log.log("Registered Microservice with ID " + toAddID, LogLevel.WARNING);
             Platform.runLater(() -> microServiceListView.getItems().add(toAddID));
@@ -182,14 +171,6 @@ public class ServerController implements IEventListener {
         }
     }
 
-    @Deprecated
-    public void removeClientButtonPressed() {
-        if (clientListView.getSelectionModel().getSelectedItem() != null) {
-            String clientToBlock = clientListView.getSelectionModel().getSelectedItem().getID();
-            EventManager.getInstance().publishEvent(new ClientBlockRequestEvent(clientToBlock));
-        }
-    }
-
     public void cancelRequestButtonPressed() {
         if (clientRequestListView.getSelectionModel().getSelectedItem() != null) {
             String toStopClientID = clientRequestListView.getSelectionModel().getSelectedItem().getClientID();
@@ -203,5 +184,9 @@ public class ServerController implements IEventListener {
 
     public void addMicroServiceButtonPressed(ActionEvent event) {
         EventManager.getInstance().publishEvent(new StartMicroServiceEvent());
+    }
+
+    public void switchUseUtilisationCheckingBoxClicked(ActionEvent actionEvent) {
+        EventManager.getInstance().publishEvent(new SwitchUtilisationCheckingEvent(useUtilisationCheckingBox.isSelected()));
     }
 }
