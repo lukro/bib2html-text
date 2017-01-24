@@ -83,6 +83,10 @@ public class PerfLog {
         loggingKeyToLogContentMap.put(loggingKey, theContent);
     }
 
+    private String getEntryForKey(String key) {
+        return loggingKeyToLogContentMap.get(key).toString();
+    }
+
     private void writeToFiles() {
         loggingKeyToLogContentMap.forEach((currentKey, currentEntry) -> {
             if(currentEntry.hasBeenChanged){
@@ -105,6 +109,10 @@ public class PerfLog {
     public static void writeChanges() {
         if(INSTANCE!=null)
             INSTANCE.writeToFiles();
+    }
+
+    public static String obtainLogEntryForKey(String key){
+        return INSTANCE.getEntryForKey(key);
     }
 
     /**

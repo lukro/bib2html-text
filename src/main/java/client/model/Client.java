@@ -7,6 +7,7 @@ import global.controller.IConnectionPoint;
 import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.logging.LogLevel;
+import global.logging.PerfLog;
 import global.model.DefaultClientRequest;
 import global.model.IClientRequest;
 import global.model.IResult;
@@ -146,6 +147,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         Log.log("TIME TAKEN: " + timeTakenFullMins + " min " + timeTakenSecDifference + " sec");
         int workingLoadLimitXSecs = ((Double) ((double) clientRequestSize / (double) timeTakenSecs * AMOUNT_OF_SECS)).intValue();
         Log.log("WORKING LOAD LIMIT: " + workingLoadLimitXSecs + " entries in " + AMOUNT_OF_SECS + " secs. ");
+        PerfLog.log(getID()+"-LastTimeTakenSeconds",timeTakenSecs+"",false);
     }
 
     private void handleResult(IResult result) {
