@@ -11,7 +11,7 @@ public class DefaultClientRequest implements IClientRequest {
 
     private final String clientID;
     private final ArrayList<IEntry> entries;
-    private String secretKey;
+    private final String secretKey;
 
     public DefaultClientRequest(String secretKey, String clientID, Collection<IEntry> entries) {
         this.secretKey = secretKey;
