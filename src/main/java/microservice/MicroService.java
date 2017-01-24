@@ -6,6 +6,7 @@ import global.controller.IConnectionPoint;
 import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.logging.LogLevel;
+import global.logging.PerfLog;
 import global.model.*;
 import global.util.ConnectionUtils;
 import microservice.model.processor.DefaultEntryProcessor;
@@ -13,6 +14,7 @@ import microservice.model.processor.IEntryProcessor;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
@@ -32,6 +34,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private String taskQueueName = "";
 
     private volatile boolean isRunning = false;
+    private final static boolean LOGGING = true;
 
     private final IEntryProcessor DEFAULT_PROCESSOR = new DefaultEntryProcessor();
     private final Connection connection;
@@ -110,8 +113,10 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void handleDelivery(String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
         Log.log("MicroService (ID: " + microServiceID + " received a message", LogLevel.LOW);
+
         final Object receivedObject = SerializationUtils.deserialize(bytes);
         final AMQP.BasicProperties replyProps = ConnectionUtils.getReplyProps(basicProperties);
+
         if (receivedObject instanceof IStopOrder) {
             if (((IStopOrder) receivedObject).getMicroServiceID().equals(microServiceID)) {
                 Log.log("Stopping MicroService", LogLevel.INFO);
@@ -123,15 +128,29 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             consumeReceivedTaskQueue(((IRegistrationAck) receivedObject));
         } else if (receivedObject instanceof IEntry) {
             IEntry received = SerializationUtils.deserialize(bytes);
-            DEFAULT_PROCESSOR.processEntry(received).forEach(partialResult -> {
+
+            //Process and measure time
+            long timeStart = System.currentTimeMillis();
+            List<IPartialResult> resultList = DEFAULT_PROCESSOR.processEntry(received);
+            long timeDelta = System.currentTimeMillis() - timeStart;
+            double performance = timeDelta / resultList.size();
+
+            if(LOGGING) {
+                //Log measurement
+                PerfLog.log(getID() + "-TimeMSPerEntry", performance + "");
+                PerfLog.writeChanges();
+            }
+
+            resultList.forEach(partialResult -> {
                 try {
                     channel.basicPublish("", basicProperties.getReplyTo(), replyProps, SerializationUtils.serialize(partialResult));
                 } catch (IOException e) {
                     Log.log("Failed to send a PartialResult to server", e);
                 }
             });
+
             //TODO: IN THE END!!: uncomment & change boolean in consumeIncomingQueues()
-//        channel.basicAck(envelope.getDeliveryTag(), false);
+            //channel.basicAck(envelope.getDeliveryTag(), false);
         }
     }
 
@@ -155,9 +174,12 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         try {
             channel.close();
             connection.close();
-            Log.log("successfully disconnected microservice", LogLevel.INFO);
+            Log.log("Successfully disconnected microservice", LogLevel.INFO);
         } catch (IOException | TimeoutException e) {
-            Log.log("failed to close channel/connection from MicroService: " + microServiceID, e);
+            Log.log("Failed to close channel/connection from MicroService: " + microServiceID, e);
+        } finally {
+//          System.exit(0); Only use when applying the approach of starting MicroServices in MSM.addMicroService() from jar
+            Thread.currentThread().stop();
         }
     }
 

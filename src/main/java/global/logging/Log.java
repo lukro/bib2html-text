@@ -7,7 +7,7 @@ import java.io.StringWriter;
 
 /**
  * @author Maximilian Schirm
- * @created 07.12.2016
+ * created 07.12.2016
  */
 
 public class Log {

@@ -38,7 +38,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     private ClientFileModel clientFileModel;
     private String outputDirectory;
     private final String DEFAULT_RESULT_PREFIX = "result";
-    private final SimpleDateFormat DEFAULT_TIMESTAMP_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss");
+    private final SimpleDateFormat DEFAULT_TIMESTAMP_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private final String DEFAULT_RESULT_FILE_EXTENSION = ResultFileExtension.HTML.toString();
     private String resultFileExtension = DEFAULT_RESULT_FILE_EXTENSION;
 
@@ -150,22 +150,23 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     }
 
     private void handleResult(IResult result) {
-        final StringBuilder builder = new StringBuilder();
-        for (String currentFileContent : result.getFileContents()) {
-            builder.append(currentFileContent);
-        }
-        //        System.out.println(builder.toString());
         final File outDir = new File(outputDirectory);
-        final String timeStamp = DEFAULT_TIMESTAMP_FORMAT.format(new Date());
-        final String filename = DEFAULT_RESULT_PREFIX + "_" + timeStamp + resultFileExtension;
-        if (!outDir.exists())
-            Log.log("Output-directory doesn't exist!", LogLevel.SEVERE);
-        else
-            try {
-                Files.write(new File(outDir, filename).toPath(), builder.toString().getBytes());
-            } catch (IOException e) {
-                Log.log("Failed to write output file", e);
+        int additionalIndex = 0;
+        for (String resultContent : result.getFileContents()) {
+            final String timeStamp = DEFAULT_TIMESTAMP_FORMAT.format(new Date());
+            final String filename = DEFAULT_RESULT_PREFIX + "_" + timeStamp + additionalIndex + resultFileExtension;
+
+            if (!outDir.exists())
+                Log.log("Output-directory doesn't exist!", LogLevel.SEVERE);
+            else {
+                try {
+                    Files.write(new File(outDir, filename).toPath(), resultContent.getBytes());
+                } catch (IOException e) {
+                    Log.log("Failed to write output file", e);
+                }
             }
+            additionalIndex++;
+        }
     }
 
     @Override

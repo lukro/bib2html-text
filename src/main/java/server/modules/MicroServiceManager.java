@@ -21,13 +21,15 @@ import java.util.stream.Collectors;
 public class MicroServiceManager implements IEventListener {
 
     private static MicroServiceManager INSTANCE;
+    //Decides whether to use utilisation checking.
+    private static boolean USE_LOAD_BALANCING = false;
     //The max. # of tasks per service.
     private final static int UTIL_START_DELAY = 1500;
     private final static int UTIL_FREQ = 500;
     public final static int MAXIMUM_UTILIZATION = 25;
+
     //Key : ID | Value : IP
     private HashMap<String, String> microServices = new HashMap<>();
-
     private final Channel channel;
     private final String TASK_QUEUE_NAME;
 
@@ -40,7 +42,7 @@ public class MicroServiceManager implements IEventListener {
             @Override
             public void run() {
                 try {
-                    checkUtilization();
+                    if(USE_LOAD_BALANCING) checkUtilization();
                     Log.log("Utilization Checker Task did another round...", LogLevel.LOW);
                 } catch (IOException e) {
                     Log.log("Utilization Checker ran into Problems", e);
@@ -118,11 +120,13 @@ public class MicroServiceManager implements IEventListener {
             microServices.remove(disconnectedServiceID);
         } else if (toNotify instanceof StartMicroServiceEvent) {
             startMicroService();
+        } else if (toNotify instanceof SwitchUtilisationCheckingEvent) {
+            USE_LOAD_BALANCING = ((SwitchUtilisationCheckingEvent) toNotify).isUseChecking();
         }
     }
 
     @Override
     public Set<Class<? extends IEvent>> getEvents() {
-        return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, StartMicroServiceEvent.class));
+        return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, StartMicroServiceEvent.class, SwitchUtilisationCheckingEvent.class));
     }
 }

@@ -102,6 +102,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      */
     private void handleRequestStoppedEvent(RequestStoppedEvent toNotify) {
         String toStopClientID = toNotify.getStoppedRequestClientID();
+        //TODO remove queued entries, tell PRC to disregard all associated orders
         CallbackInformation clientCBI = clientIDtoCallbackInformation.get(toStopClientID);
         try {
             channel.basicPublish("", clientCBI.basicProperties.getReplyTo(), clientCBI.replyProperties, SerializationUtils.serialize("Server Admin forcefully stopped your Request."));
@@ -120,13 +121,13 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
      */
     private void handleFinishedCollectingResultEvent(FinishedCollectingResultEvent toNotify) {
         String clientID = toNotify.getResult().getClientID();
-        Log.log("clientID from Result: " + clientID);
+        Log.log("ClientID from Result: " + clientID, LogLevel.LOW);
         CallbackInformation clientCBI = clientIDtoCallbackInformation.get(clientID);
-        Log.log("clientID from CBI: " + clientCBI.basicProperties.getCorrelationId());
+        Log.log("ClientID from CBI: " + clientCBI.basicProperties.getCorrelationId(), LogLevel.LOW);
         try {
             channel.basicPublish("", clientCBI.basicProperties.getReplyTo(), clientCBI.replyProperties, SerializationUtils.serialize(toNotify.getResult()));
 //            channel.basicPublish(CLIENT_CALLBACK_EXCHANGE_NAME, clientID, null, SerializationUtils.serialize(toNotify.getResult()));
-            Log.log("finished result. published to :" + clientID);
+            Log.log("Finished result. Published to :" + clientID);
         } catch (IOException e) {
             Log.log("COULD NOT RETURN RESULT TO CLIENT", LogLevel.SEVERE);
             Log.log("", e);
