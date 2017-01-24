@@ -30,6 +30,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     private final String CLIENT_REQUEST_QUEUE_NAME = QueueNames.CLIENT_REQUEST_QUEUE_NAME.toString();
     private final String CLIENT_CALLBACK_EXCHANGE_NAME = QueueNames.CLIENT_CALLBACK_EXCHANGE_NAME.toString();
     private String hostIP;
+    private String secretKey = "";
 
     private Connection connection;
     private Channel channel;
@@ -238,7 +239,11 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     }
 
     private IClientRequest createClientRequest() throws IOException {
-        //TODO: valid keys
-        return new DefaultClientRequest("defaultKey", clientID, BibTeXFileSplitter.INSTANCE.createIEntryListFromClientFileModel(clientFileModel));
+        return new DefaultClientRequest(secretKey, clientID, BibTeXFileSplitter.INSTANCE.createIEntryListFromClientFileModel(clientFileModel));
+    }
+
+    public void setKeyToUse(String secretKey) {
+        this.secretKey = secretKey;
+        Log.log("Set secretKey to: " + secretKey);
     }
 }

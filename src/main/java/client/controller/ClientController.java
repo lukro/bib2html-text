@@ -3,7 +3,6 @@ package client.controller;
 import client.model.Client;
 import client.model.ResultFileExtension;
 import global.controller.Console;
-import global.identifiers.FileType;
 import global.logging.Log;
 import global.logging.LogLevel;
 import javafx.event.ActionEvent;
@@ -50,6 +49,9 @@ public class ClientController {
 
     @FXML
     private ListView<File> templateListView;
+
+    @FXML
+    private TextField secretKeyTextField;
 
     @FXML
     private ComboBox<ResultFileExtension> outputFileTypeComboBox;
@@ -229,5 +231,9 @@ public class ClientController {
         client.getClientFileModel().clearTemplates();
         templateListView.getItems().clear();
         Log.log("Removed all template files from the selection.", LogLevel.INFO);
+    }
+
+    public void setSecretKeyButtonPressed(ActionEvent actionEvent) {
+        client.setKeyToUse(secretKeyTextField.getText());
     }
 }

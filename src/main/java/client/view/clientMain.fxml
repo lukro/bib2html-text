@@ -116,6 +116,25 @@
                               <Insets top="15.0" />
                            </VBox.margin>
                         </HBox>
+                        <HBox layoutX="10.0" layoutY="25.0" prefHeight="34.0" prefWidth="423.0">
+                           <children>
+                              <Button maxWidth="75.0" mnemonicParsing="false" onAction="#setSecretKeyButtonPressed" prefWidth="75.0" text="Set">
+                                 <HBox.margin>
+                                    <Insets left="25.0" />
+                                 </HBox.margin>
+                              </Button>
+                              <TextField fx:id="secretKeyTextField" prefHeight="25.0" prefWidth="200.0">
+                                 <HBox.margin>
+                                    <Insets left="15.0" />
+                                 </HBox.margin>
+                              </TextField>
+                              <Label prefHeight="25.0" text="Secret Key">
+                                 <HBox.margin>
+                                    <Insets left="12.0" />
+                                 </HBox.margin>
+                              </Label>
+                           </children>
+                        </HBox>
                         <HBox prefHeight="34.0" prefWidth="423.0">
                            <children>
                               <Button mnemonicParsing="false" onAction="#chooseOutputDirectoryButtonPressed" prefWidth="75.0" text="Choose">
