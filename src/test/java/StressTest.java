@@ -16,12 +16,13 @@ public abstract class StressTest {
 
     private static Server server;
     private static Client client;
+    private static final Path WORKING_DIRECTORY = Paths.get(System.getProperty("user.dir"));
 
     public static void main(String[] args) throws Exception {
         server = new Server();
         client = new Client();
-        EventManager.getInstance().registerListener(server);
-        Log.alterMinimumRequiredLevel(LogLevel.INFO);
+//        EventManager.getInstance().registerListener(server);
+        Log.alterMinimumRequiredLevel(LogLevel.WARNING);
         initNumberOfMicroServices(1);
         testFunctionality();
 //        testThousandPerSixty();
@@ -29,24 +30,29 @@ public abstract class StressTest {
     }
 
     public static void testFunctionality() throws Exception {
-        Path bibFilePath = Paths.get("C:\\Users\\pc\\IdeaProjects\\bib2html-text\\bib2html-text\\test_files\\mybib.bib");
+        Path bibFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "test_files/thousand.bib");
         client.getClientFileModel().addBibFile(bibFilePath.toFile());
-        Path cslFilePath = Paths.get("C:\\Users\\pc\\IdeaProjects\\bib2html-text\\bib2html-text\\custom_default.csl");
-        client.getClientFileModel().addCslFile(cslFilePath.toFile());
-        Path templateFilePath = Paths.get("C:\\Users\\pc\\IdeaProjects\\bib2html-text\\bib2html-text\\custom_default_template.html");
-        client.getClientFileModel().addTemplate(templateFilePath.toFile());
-//        client.setOutputDirectory("C:\\Users\\pc\\Desktop\\SWP\\pipapo");
+//        Path cslFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "custom_default.csl");
+//        client.getClientFileModel().addCslFile(cslFilePath.toFile());
+//        Path templateFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "custom_default_template.html");
+//        client.getClientFileModel().addTemplate(templateFilePath.toFile());
+
+        //outputDirector anpassen!
+        client.setOutputDirectory("C:\\Users\\pc\\Desktop\\SWP\\pipapo");
         client.sendClientRequest();
     }
 
     public static void testThousandPerSixty() throws Exception {
-        Path bibFilePath = Paths.get("C:\\Users\\pc\\IdeaProjects\\bib2html-text\\bib2html-text\\test_files\\mybib2.bib");
+        Path bibFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "test_files/thousand.bib");
         client.getClientFileModel().addBibFile(bibFilePath.toFile());
-        Path cslFilePath = Paths.get("C:\\Users\\pc\\IdeaProjects\\bib2html-text\\bib2html-text\\custom_default.csl");
-        client.getClientFileModel().addCslFile(cslFilePath.toFile());
-        Path templateFilePath = Paths.get("C:\\Users\\pc\\IdeaProjects\\bib2html-text\\bib2html-text\\custom_default_template.html");
-        client.getClientFileModel().addTemplate(templateFilePath.toFile());
-//        client.setOutputDirectory("C:\\Users\\pc\\Desktop\\SWP\\pipapo");
+//        Path cslFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "custom_default.csl");
+//        client.getClientFileModel().addCslFile(cslFilePath.toFile());
+//        Path templateFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "custom_default_template.html");
+//        client.getClientFileModel().addTemplate(templateFilePath.toFile());
+
+        //outputDirector anpassen!
+        client.setOutputDirectory("C:\\Users\\pc\\Desktop\\SWP\\pipapo");
+        client.sendClientRequest();
         client.sendClientRequest();
     }
 

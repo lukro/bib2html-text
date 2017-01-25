@@ -90,6 +90,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         //time measuring starts before request creation
         //timeStart = System.currentTimeMillis();
         IClientRequest clientRequestToSend = this.createClientRequest();
+        System.out.println("published request with: " + clientRequestToSend.getEntries().size() + " entries");
         channel.basicPublish("", CLIENT_REQUEST_QUEUE_NAME, replyProps, SerializationUtils.serialize(clientRequestToSend));
         //time measuring starts after request creation
         timeStart = System.currentTimeMillis();

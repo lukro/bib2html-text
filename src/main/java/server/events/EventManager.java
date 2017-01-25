@@ -42,7 +42,7 @@ public class EventManager {
                 }
             });
         } catch (NullPointerException e) {
-            Log.log("No classes registered for the event " + toPublish.getClass(), e);
+//            Log.log("No classes registered for the event " + toPublish.getClass(), e);
         }
     }
 
