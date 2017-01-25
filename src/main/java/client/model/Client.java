@@ -43,6 +43,8 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     private final String DEFAULT_RESULT_FILE_EXTENSION = ResultFileExtension.HTML.toString();
     private String resultFileExtension = DEFAULT_RESULT_FILE_EXTENSION;
 
+    private long requestSentTimeInMillis;
+
 
     public Client() throws IOException {
         this("localhost");
@@ -93,6 +95,8 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         timeStart = System.currentTimeMillis();
         clientRequestSize = clientRequestToSend.getEntries().size();
         Log.log("Client with ID: " + this.clientID + " sent a ClientRequest.", LogLevel.INFO);
+        requestSentTimeInMillis = System.currentTimeMillis();
+        System.out.println("Request sent at: " + requestSentTimeInMillis);
     }
 
     @Override
@@ -128,6 +132,9 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         if (deliveredObject instanceof IResult) {
             Log.log("Message is instance of IResult.", LogLevel.INFO);
             handleResult((IResult) deliveredObject);
+            long resultReceivedTimeInMillis = System.currentTimeMillis();
+            System.out.println("Result received at: " + resultReceivedTimeInMillis);
+            System.out.println("Time taken: " + (resultReceivedTimeInMillis-requestSentTimeInMillis) + " milliseconds");
         } else {
             Log.log("SERVER: " + new String(bytes), LogLevel.SEVERE);
         }
