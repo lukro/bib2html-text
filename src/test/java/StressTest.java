@@ -26,18 +26,19 @@ public abstract class StressTest {
         initNumberOfMicroServices(1);
         testFunctionality();
 //        testThousandPerSixty();
-//        testUnlimitedSpam();
+//        testBigRequest(100);
+//        testSuperSpam();
     }
 
     public static void testFunctionality() throws Exception {
-        Path bibFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "test_files/thousand.bib");
+        Path bibFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "test_files/mybib.bib");
         client.getClientFileModel().addBibFile(bibFilePath.toFile());
 //        Path cslFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "custom_default.csl");
 //        client.getClientFileModel().addCslFile(cslFilePath.toFile());
 //        Path templateFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "custom_default_template.html");
 //        client.getClientFileModel().addTemplate(templateFilePath.toFile());
 
-        //outputDirector anpassen!
+        //TODO: outputDirectory anpassen!
         client.setOutputDirectory("C:\\Users\\pc\\Desktop\\SWP\\pipapo");
         client.sendClientRequest();
     }
@@ -50,21 +51,39 @@ public abstract class StressTest {
 //        Path templateFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "custom_default_template.html");
 //        client.getClientFileModel().addTemplate(templateFilePath.toFile());
 
-        //outputDirector anpassen!
+        //TODO: outputDirectory anpassen!
         client.setOutputDirectory("C:\\Users\\pc\\Desktop\\SWP\\pipapo");
-        client.sendClientRequest();
         client.sendClientRequest();
     }
 
-    public static void testUnlimitedSpam() throws Exception {
-        Path bibFilePath = Paths.get("\\test_files\\rfc.bib");
-        client.getClientFileModel().addBibFile(bibFilePath.toFile());
-        Path cslFilePath = Paths.get("\\test_files\\harvard_cite_style.csl");
-        client.getClientFileModel().addCslFile(cslFilePath.toFile());
-        Path templateFilePath = Paths.get("\\custom_default_template.html");
-        client.getClientFileModel().addTemplate(templateFilePath.toFile());
-//        client.setOutputDirectory("C:\\Users\\pc\\Desktop\\SWP\\pipapo");
+    public static void testBigRequest(int entriesTimesThousand) throws Exception {
+        for (int i = 0; i < entriesTimesThousand; i++) {
+            Path bibFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "test_files/thousand.bib");
+            client.getClientFileModel().addBibFile(bibFilePath.toFile());
+        }
+//        Path cslFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "custom_default.csl");
+//        client.getClientFileModel().addCslFile(cslFilePath.toFile());
+//        Path templateFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "custom_default_template.html");
+//        client.getClientFileModel().addTemplate(templateFilePath.toFile());
+
+        //TODO: outputDirectory anpassen!
+        client.setOutputDirectory("C:\\Users\\pc\\Desktop\\SWP\\pipapo");
         client.sendClientRequest();
+    }
+
+    public static void testSuperSpam() throws Exception {
+        Path bibFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "test_files/mybib.bib");
+        while (true) {
+            Client c = new Client();
+            c.getClientFileModel().addBibFile(bibFilePath.toFile());
+//        Path cslFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "custom_default.csl");
+//        client.getClientFileModel().addCslFile(cslFilePath.toFile());
+//        Path templateFilePath = Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), "custom_default_template.html");
+//        client.getClientFileModel().addTemplate(templateFilePath.toFile());
+            //TODO: outputDirectory anpassen!
+            c.setOutputDirectory("C:\\Users\\pc\\Desktop\\SWP\\pipapo");
+            c.sendClientRequest();
+        }
     }
 
     public static void initNumberOfMicroServices(int numberOfServices) throws Exception {
