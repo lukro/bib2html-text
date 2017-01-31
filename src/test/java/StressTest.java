@@ -23,9 +23,13 @@ public abstract class StressTest {
         client = new Client();
 //        EventManager.getInstance().registerListener(server);
         Log.alterMinimumRequiredLevel(LogLevel.WARNING);
+
+        //TODO: HEY DOMI HIER DIE ZAHL BEARBEITEN, NIMM EINFACH WERTE VON 1 BIS X, X >= 4
         initNumberOfMicroServices(1);
-        testFunctionality();
-//        testThousandPerSixty();
+
+
+        //testFunctionality();
+        testThousandPerSixty();
 //        testBigRequest(100);
 //        testSuperSpam();
     }
@@ -52,7 +56,7 @@ public abstract class StressTest {
 //        client.getClientFileModel().addTemplate(templateFilePath.toFile());
 
         //TODO: outputDirectory anpassen!
-        client.setOutputDirectory("C:\\Users\\pc\\Desktop\\SWP\\pipapo");
+        //client.setOutputDirectory(System.getProperty("user.home")+ "\\SWP_OutDirTest");
         client.sendClientRequest();
     }
 
