@@ -17,6 +17,7 @@ public class PerfLog {
     private static final char CSV_SEPERATOR = ';';
     private Map<String, LogContent> loggingKeyToLogContentMap;
     private File outputDirectory;
+    private boolean loggingActive = false;
 
     private class LogContent{
         private boolean hasBeenChanged = true;
@@ -62,6 +63,10 @@ public class PerfLog {
         loggingKeyToLogContentMap = new HashMap<>();
     }
 
+    public void setLoggingActive(boolean active){
+        loggingActive = active;
+    }
+
     public void setOutputDirectory(File outputDirectory) {
         this.outputDirectory = outputDirectory;
         loggingKeyToLogContentMap.forEach((key, content) -> content.setHasBeenChanged(true));
@@ -84,7 +89,7 @@ public class PerfLog {
     }
 
     private void writeToFiles() {
-        loggingKeyToLogContentMap.forEach((currentKey, currentEntry) -> {
+        if(loggingActive) loggingKeyToLogContentMap.forEach((currentKey, currentEntry) -> {
             if(currentEntry.hasBeenChanged){
                 try{
                     String outputFileContent = currentKey + CSV_SEPERATOR + currentEntry.toString();

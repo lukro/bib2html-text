@@ -150,7 +150,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             });
 
             //TODO: IN THE END!!: uncomment & change boolean in consumeIncomingQueues()
-            //channel.basicAck(envelope.getDeliveryTag(), false);
+            channel.basicAck(envelope.getDeliveryTag(), false);
         }
     }
 
@@ -214,7 +214,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         Log.log("successfully received acknowledgement: " + taskQueueName, LogLevel.INFO);
         try {
             channel.queueDeclare(taskQueueName, false, false, false, null);
-            channel.basicConsume(taskQueueName, true, this);
+            channel.basicConsume(taskQueueName, false, this);
         } catch (IOException e) {
             Log.log("couldn't declare/consume taskQueue received from server.", e);
         }
