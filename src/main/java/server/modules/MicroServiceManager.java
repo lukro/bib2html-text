@@ -122,11 +122,18 @@ public class MicroServiceManager implements IEventListener {
             startMicroService();
         } else if (toNotify instanceof SwitchUtilisationCheckingEvent) {
             USE_LOAD_BALANCING = ((SwitchUtilisationCheckingEvent) toNotify).isUseChecking();
+        } else if (toNotify instanceof KillAllMicroservicesEvent) {
+            killAllTheZombies();
         }
+    }
+
+    private void killAllTheZombies() {
+        //TODO : KARSTEN, YOUR TURN! DESTROY THEM ALL! YOU ARE MANKINDS LAST HOPE!
+        //...
     }
 
     @Override
     public Set<Class<? extends IEvent>> getEvents() {
-        return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, StartMicroServiceEvent.class, SwitchUtilisationCheckingEvent.class));
+        return new HashSet<>(Arrays.asList(KillAllMicroservicesEvent.class, MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, StartMicroServiceEvent.class, SwitchUtilisationCheckingEvent.class));
     }
 }
