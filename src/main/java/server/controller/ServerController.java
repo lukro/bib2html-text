@@ -46,10 +46,11 @@ public class ServerController implements IEventListener {
 
     private class ClientRequestDisplayItem {
 
+
         private final String clientID;
+
         private final int expectedSize;
         private double completion;
-
         private ClientRequestDisplayItem(String clientID, int expectedSize) {
             this.clientID = clientID;
             this.expectedSize = expectedSize;
@@ -63,11 +64,11 @@ public class ServerController implements IEventListener {
         public void setCompletion(double completion) {
             this.completion = completion;
         }
+
         @Override
         public String toString() {
             return clientID + ", Expected Size : " + expectedSize + " (" + completion + ")";
         }
-
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -80,8 +81,8 @@ public class ServerController implements IEventListener {
         public int hashCode(){
             return clientID.hashCode();
         }
-    }
 
+    }
     public ServerController() {
         Thread serverStartThread = new Thread(new Runnable() {
             @Override
@@ -202,6 +203,10 @@ public class ServerController implements IEventListener {
 
     public void clearLogButtonPressed() {
         consoleStream.clearTextArea();
+    }
+
+    public void refreshKeysButtonPressed(ActionEvent event) {
+        EventManager.getInstance().publishEvent(new RefreshSecretKeysEvent());
     }
 
     public void addMicroServiceButtonPressed(ActionEvent event) {

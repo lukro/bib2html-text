@@ -453,13 +453,16 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         } else if (toNotify instanceof MicroServiceDisconnectionRequestEvent) {
             String idToRemove = ((MicroServiceDisconnectionRequestEvent) toNotify).getToDisconnectID();
             sendStopOrderToMicroService(idToRemove);
+        } else if (toNotify instanceof RefreshSecretKeysEvent) {
+            Log.log("Refreshing the secret keys from the secretkeys.txt in the Server directory...");
+            initSecretKeyFile();
         }
     }
 
     @Override
     public Set<Class<? extends IEvent>> getEvents() {
         Set<Class<? extends IEvent>> events = new HashSet<>();
-        events.addAll(Arrays.asList(FinishedCollectingResultEvent.class, RequestStoppedEvent.class, ClientBlockRequestEvent.class, MicroServiceConnectedEvent.class, MicroServiceDisconnectionRequestEvent.class));
+        events.addAll(Arrays.asList(RefreshSecretKeysEvent.class, FinishedCollectingResultEvent.class, RequestStoppedEvent.class, ClientBlockRequestEvent.class, MicroServiceConnectedEvent.class, MicroServiceDisconnectionRequestEvent.class));
         return events;
     }
 }
