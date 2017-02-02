@@ -55,6 +55,14 @@ public class DefaultEntryProcessor implements IEntryProcessor {
 //        initCustomDefaults();
     }
 
+    private String wrapperFileName;
+    private String bibFileName;
+    private String resultName;
+    private String cslFileName;
+    private String templateName;
+    private int currentTemplateIndex;
+    private int currentCslIndex;
+
     private static void initCustomDefaults() {
         final Path defaultCslTarget =
                 Paths.get(WORKING_DIRECTORY.toAbsolutePath().toString(), CUSTOM_DEFAULT_CSL_NAME);
@@ -95,11 +103,11 @@ public class DefaultEntryProcessor implements IEntryProcessor {
     public List<IPartialResult> processEntry(IEntry toConvert) {
         fileIdentifiers = createFileIdentifiersFromIEntry(toConvert);
         ArrayList<IPartialResult> result = new ArrayList<>();
-        final String wrapperFileName = fileIdentifiers.get(FileType.MD);
-        final String bibFileName = fileIdentifiers.get(FileType.BIB);
-        final String resultName = fileIdentifiers.get(FileType.RESULT);
-        final String cslFileName = fileIdentifiers.get(FileType.CSL);
-        final String templateName = fileIdentifiers.get(FileType.TEMPLATE);
+        wrapperFileName = fileIdentifiers.get(FileType.MD);
+        bibFileName = fileIdentifiers.get(FileType.BIB);
+        resultName = fileIdentifiers.get(FileType.RESULT);
+        cslFileName = fileIdentifiers.get(FileType.CSL);
+        templateName = fileIdentifiers.get(FileType.TEMPLATE);
         if (!writeBibFileAndWrapper(bibFileName, wrapperFileName, toConvert)) {
             return handleAbortionCausedByMissingRequiredFiles(toConvert, toConvert.getAmountOfExpectedPartials());
         }
@@ -114,8 +122,8 @@ public class DefaultEntryProcessor implements IEntryProcessor {
         PartialResultIdentifier currentPartialIdentifier;
         for (PandocCommandInformation currentCommandInformation : commandInformation) {
             currentPartialIdentifier = currentCommandInformation.expectedIdentifier;
-            final int currentCslIndex = currentPartialIdentifier.getCslFileIndex();
-            final int currentTemplateIndex = currentPartialIdentifier.getTemplateFileIndex();
+            currentCslIndex = currentPartialIdentifier.getCslFileIndex();
+            currentTemplateIndex = currentPartialIdentifier.getTemplateFileIndex();
             writeCslFileIfNecessary(currentCslIndex, cslFileName, toConvert);
             writeTemplateIfNecessary(currentTemplateIndex, templateName, toConvert);
             final String currentCommand = currentCommandInformation.command;
@@ -327,6 +335,14 @@ public class DefaultEntryProcessor implements IEntryProcessor {
         } catch (IOException e) {
             Log.log("couldn't delete or wrapper-file.", LogLevel.ERROR);
         }
+    }
+
+    public void cleanUp(){
+        deleteBibFile(bibFileName);
+        deleteCslFileIfNecessary(currentCslIndex, cslFileName);
+        deleteResult(resultName);
+        deleteTemplateIfNecessary(currentTemplateIndex, templateName);
+        deleteWrapper(wrapperFileName);
     }
 
 }

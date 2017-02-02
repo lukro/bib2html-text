@@ -43,9 +43,11 @@ public class ServerCli {
                         }
                         break;
                     case "list requests":
+                        //TODO : Use events instead and remove use of direct instance references
                         server.getPartialResultCollector().getOutstandingRequests().forEach(status -> Log.log(status));
                         break;
                     case "list services":
+                        //TODO : Use events instead and remove use of direct instance referencesa
                         server.getMicroServiceManager().getMicroServices().forEach(service -> Log.log(service));
                         break;
                     case "help":

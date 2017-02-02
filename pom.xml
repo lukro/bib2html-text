@@ -74,6 +74,13 @@
                     <include>*.html</include>
                 </includes>
             </resource>
+            <resource>
+                <filtering>false</filtering>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>*.jar</include>
+                </includes>
+            </resource>
         </resources>
     </build>
 </project>

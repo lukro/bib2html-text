@@ -83,6 +83,15 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
                 .correlationId(microServiceID)
                 .replyTo(registrationCallbackQueueName)
                 .build();
+
+        Runnable deathRunner = new Runnable() {
+            @Override
+            public void run() {
+                //Delete all files left
+                DEFAULT_PROCESSOR.cleanUp();
+            }
+        };
+        Runtime.getRuntime().addShutdownHook(new Thread(deathRunner));
     }
 
     @Override

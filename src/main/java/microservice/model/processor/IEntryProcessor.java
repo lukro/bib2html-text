@@ -13,4 +13,6 @@ public interface IEntryProcessor {
 
     List<IPartialResult> processEntry(IEntry toConvert);
 
+    void cleanUp();
+
 }

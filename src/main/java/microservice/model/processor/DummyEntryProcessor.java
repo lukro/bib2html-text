@@ -36,4 +36,9 @@ public class DummyEntryProcessor implements IEntryProcessor {
         return result;
     }
 
+    @Override
+    public void cleanUp() {
+        return; //It's a dummy, there's nothing to clean up.
+    }
+
 }

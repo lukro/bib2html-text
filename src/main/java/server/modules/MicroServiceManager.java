@@ -6,7 +6,7 @@ import global.logging.LogLevel;
 import microservice.MicroService;
 import server.events.*;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,6 +32,9 @@ public class MicroServiceManager implements IEventListener {
     private HashMap<String, String> microServices = new HashMap<>();
     private final Channel channel;
     private final String TASK_QUEUE_NAME;
+    static {
+        copyJarToWorkingDir();
+    }
 
     private MicroServiceManager(Channel channel, String taskQueueName) {
         this.channel = channel;
@@ -80,7 +83,14 @@ public class MicroServiceManager implements IEventListener {
      */
     private void startMicroService() {
         Log.log("Starting microservice on server", LogLevel.LOW);
-        MicroService.main("localhost");
+        try {
+            String[] cmd = { "java.exe", "-jar", "microservice.jar"};
+            ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+            Process process = processBuilder.start();
+        } catch (IOException e) {
+            Log.log("Could not start MicroService" + e.getStackTrace());
+        }
+        //MicroService.main("localhost");
     }
 
     /**
@@ -101,7 +111,7 @@ public class MicroServiceManager implements IEventListener {
             runningServicesCount++;
         }
 
-        if (currTasks / runningServicesCount > MAXIMUM_UTILIZATION && runningServicesCount < MAXIMUM_AUTOMATIC_SERVICES)
+        if (currTasks / runningServicesCount > MAXIMUM_UTILIZATION)
             startMicroService();
     }
 
@@ -128,5 +138,28 @@ public class MicroServiceManager implements IEventListener {
     @Override
     public Set<Class<? extends IEvent>> getEvents() {
         return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, StartMicroServiceEvent.class, SwitchUtilisationCheckingEvent.class));
+    }
+
+    public static void copyJarToWorkingDir() {
+        InputStream stream = null;
+        OutputStream resStreamOut = null;
+        String jarFolder;
+        String resourceName = "/microservice.jar";
+
+        try {
+            stream = MicroServiceManager.class.getResourceAsStream(resourceName);
+            if(stream == null)
+                throw new Exception("Cannot get resource \"" + resourceName + "\" from Jar file.");
+
+            int readBytes;
+            byte[] buffer = new byte[4096];
+            jarFolder = new File(MicroServiceManager.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile().getPath().replace('\\', '/');
+            resStreamOut = new FileOutputStream(jarFolder + resourceName);
+            while ((readBytes = stream.read(buffer)) > 0) {
+                resStreamOut.write(buffer, 0, readBytes);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }
