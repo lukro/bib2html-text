@@ -1,9 +1,9 @@
 package global.model;
 
+import global.identifiers.IIdentifier;
 import global.identifiers.EntryIdentifier;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 public class DefaultEntry implements IEntry {
 
-    private final EntryIdentifier entryIdentifier;
+    private final IIdentifier entryIdentifier;
     private final String content;
     private final ArrayList<String> cslFiles, templateFiles;
 
@@ -65,7 +65,7 @@ public class DefaultEntry implements IEntry {
     }
 
     @Override
-    public EntryIdentifier getEntryIdentifier() {
+    public IIdentifier getEntryIdentifier() {
         return entryIdentifier;
     }
 

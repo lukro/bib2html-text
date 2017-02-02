@@ -27,7 +27,7 @@ public class DummyEntryProcessor implements IEntryProcessor {
         List<IPartialResult> result = new ArrayList<>();
         final String content = toConvert.getContent();
         final int expectedAmountOfPartials = toConvert.getAmountOfExpectedPartials();
-        final EntryIdentifier entryIdentifier = toConvert.getEntryIdentifier();
+        final IIdentifier entryIdentifier = toConvert.getEntryIdentifier();
         for (int i = 0; i < expectedAmountOfPartials; i++) {
             final PartialResultIdentifier currentPartialIdentifier = new PartialResultIdentifier(entryIdentifier, -99, -99, false);
             final IPartialResult currentPartial = new DefaultPartialResult(content, currentPartialIdentifier);

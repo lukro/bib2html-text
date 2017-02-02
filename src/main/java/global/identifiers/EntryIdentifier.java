@@ -6,7 +6,8 @@ import java.util.Objects;
  * @author Maximilian Schirm, daan
  *         created: 05.12.2016
  *         <p>
- *         Identifies an DefaultEntry precisely
+ *         Identifies and entry by the Clients ID, combined with the index of its file (more than one file per request)
+ *         and the position of the Bib Entry in this file.
  */
 
 public class EntryIdentifier implements IIdentifier {

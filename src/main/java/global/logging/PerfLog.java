@@ -9,6 +9,10 @@ import java.util.Map;
 /**
  * @author Maximilian
  * created on 23.01.2017
+ *
+ * Offers logging tools accessible statically from anywhere in the project.
+ * NOTE : Disabled by default, use setLoggingState(true) for enabling log file output.
+ *
  */
 public class PerfLog {
 
@@ -17,7 +21,7 @@ public class PerfLog {
     private static final char CSV_SEPERATOR = ';';
     private Map<String, LogContent> loggingKeyToLogContentMap;
     private File outputDirectory;
-    private boolean loggingActive = false;
+    private static boolean loggingActive = false;
 
     private class LogContent{
         private boolean hasBeenChanged = true;
@@ -63,7 +67,7 @@ public class PerfLog {
         loggingKeyToLogContentMap = new HashMap<>();
     }
 
-    public void setLoggingActive(boolean active){
+    private void setLoggingActive(boolean active){
         loggingActive = active;
     }
 
@@ -103,6 +107,15 @@ public class PerfLog {
     }
 
     //Public methods (all static)
+
+    /**
+     * Used for activating and deactivating the log file output.
+     *
+     * @param isActive
+     */
+    public static void setLoggingState(boolean isActive){
+        INSTANCE.setLoggingActive(isActive);
+    }
 
     /**
      * Will write the changed log entries to their files.

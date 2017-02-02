@@ -4,20 +4,21 @@ package global.identifiers;
  * @author Maximilian Schirm, daan
  *         created: 05.12.2016
  *         <p>
- *         Identifies a DefaultResult
+ *         Identifes a PartialResult by its EntryIdentifier combined with the index of the csl file and the template
+ *         used for the conversion.
  */
 
 public class PartialResultIdentifier implements IIdentifier {
 
-    private final EntryIdentifier entryIdentifier;
+    private final IIdentifier entryIdentifier;
     private final int cslFileIndex, templateFileIndex;
     private boolean hasErrors;
 
-    public PartialResultIdentifier(EntryIdentifier entryIdentifier, int cslFileIndex, int templateFileIndex) {
+    public PartialResultIdentifier(IIdentifier entryIdentifier, int cslFileIndex, int templateFileIndex) {
         this(entryIdentifier, cslFileIndex, templateFileIndex, false);
     }
 
-    public PartialResultIdentifier(EntryIdentifier entryIdentifier, int cslFileIndex, int templateFileIndex, boolean hasErrors) {
+    public PartialResultIdentifier(IIdentifier entryIdentifier, int cslFileIndex, int templateFileIndex, boolean hasErrors) {
         this.entryIdentifier = entryIdentifier;
         this.cslFileIndex = cslFileIndex;
         this.templateFileIndex = templateFileIndex;

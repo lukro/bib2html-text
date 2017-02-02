@@ -2,6 +2,7 @@ package global.identifiers;
 
 /**
  * @author Maximilian, daan
+ * Used in Client, Server and MicroService for standardized communication between them via RabbitMQ.
  */
 public enum QueueNames {
 

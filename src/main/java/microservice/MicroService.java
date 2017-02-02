@@ -149,7 +149,6 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
                 }
             });
 
-            //TODO: IN THE END!!: uncomment & change boolean in consumeIncomingQueues()
             channel.basicAck(envelope.getDeliveryTag(), false);
         }
     }

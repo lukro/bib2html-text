@@ -2,6 +2,7 @@ package microservice.model.processor;
 
 import global.identifiers.EntryIdentifier;
 import global.identifiers.FileType;
+import global.identifiers.IIdentifier;
 import global.identifiers.PartialResultIdentifier;
 import global.logging.Log;
 import global.logging.LogLevel;
@@ -165,7 +166,7 @@ public class DefaultEntryProcessor implements IEntryProcessor {
      */
     private ArrayList<PandocCommandInformation> buildPandocCommandsPerIEntry(IEntry toConvert, String wrapperFileName) {
         ArrayList<PandocCommandInformation> result = new ArrayList<>();
-        final EntryIdentifier entryIdentifier = toConvert.getEntryIdentifier();
+        final IIdentifier entryIdentifier = toConvert.getEntryIdentifier();
         final String resultFileName = fileIdentifiers.get(FileType.RESULT);
 //        DEBUG: check if amount of csls and templates are as expected
 //        Log.log("AmountOfCsls: " + toConvert.getCslFiles().size());
@@ -228,7 +229,7 @@ public class DefaultEntryProcessor implements IEntryProcessor {
 
     private static List<IPartialResult> handleAbortionCausedByMissingRequiredFiles(IEntry failedEntry, int expectedAmountOfPartials) {
         ArrayList<IPartialResult> result = new ArrayList<>();
-        final EntryIdentifier failedEntryIdentifier = failedEntry.getEntryIdentifier();
+        final IIdentifier failedEntryIdentifier = failedEntry.getEntryIdentifier();
         final PartialResultIdentifier errorIdentifier =
                 new PartialResultIdentifier
                         (failedEntryIdentifier, -1337, -1337);

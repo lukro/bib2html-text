@@ -39,7 +39,7 @@ public class DefaultResult implements IResult {
         //Group Results
         Map<PartialResultIdentifier, Collection<IPartialResult>> collectionMap = new HashMap<>();
         partials.forEach(partial -> {
-            final PartialResultIdentifier identifier = partial.getIdentifier();
+            final PartialResultIdentifier identifier = (PartialResultIdentifier) partial.getIdentifier();
             if (collectionMap.containsKey(identifier))
                 collectionMap.get(identifier).add(partial);
             else {

@@ -15,6 +15,9 @@ import java.util.Objects;
 /**
  * @author daan
  *         created on 12/21/16.
+ *  Used in the Client Class to prepare the BibTex files for transmission. This is achieved by first converting
+ *  the files to a list of Strings in createEntryContentList and then building a DefaultEntry object of each String.
+ *  Besides, it adds the respective csl files and templates to each DefaultEntry.
  */
 public enum BibTeXFileSplitter {
     INSTANCE;

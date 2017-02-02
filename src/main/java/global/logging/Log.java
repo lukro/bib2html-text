@@ -8,6 +8,10 @@ import java.io.StringWriter;
 /**
  * @author Maximilian Schirm
  * created 07.12.2016
+ * Singleton Class for logging used throughout the whole project to log different kind of events
+ * It has several LogLevels indicating the severity of the message.
+ * All log messages having at least the specified LogLevel are printed in the output stream
+ * The GUI uses this output stream to print out the messages.
  */
 
 public class Log {

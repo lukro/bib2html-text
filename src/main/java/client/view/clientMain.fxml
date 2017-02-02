@@ -69,7 +69,7 @@
                            <children>
                               <BorderPane layoutX="98.0" layoutY="240.0" prefHeight="716.0" prefWidth="420.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <center>
-                                    <ListView fx:id="tmplFilesListView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                                    <ListView fx:id="templateListView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
                                  </center>
                                  <bottom>
                                     <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">

@@ -23,6 +23,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author daan
  *         created on 11/30/16.
+ *
+ *  Client's main class. Used by the various controller implementations and tests.
  */
 public class Client implements IConnectionPoint, Runnable, Consumer {
 

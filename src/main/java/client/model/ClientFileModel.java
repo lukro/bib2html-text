@@ -13,6 +13,8 @@ import java.util.Objects;
 /**
  * @author daan
  *         created on 11/30/16.
+ * Represents all the files needed for a request. It is used by the Client class and is changed
+ * by the Client Controller, when the user adds the appropriate files.
  */
 public class ClientFileModel {
 

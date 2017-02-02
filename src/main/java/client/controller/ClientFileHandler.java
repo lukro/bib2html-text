@@ -9,6 +9,7 @@ import java.util.Objects;
 /**
  * @author daan
  *         created on 111/30/16.
+ * Used by BibTeXFileSplitter to convert csl files and templates to strings for transmission.
  */
 public final class ClientFileHandler {
 
