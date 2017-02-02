@@ -1,7 +1,6 @@
 package server.modules;
 
 import com.rabbitmq.client.Channel;
-import global.identifiers.QueueNames;
 import global.logging.Log;
 import global.logging.LogLevel;
 import microservice.MicroService;
@@ -20,6 +19,7 @@ import java.util.stream.Collectors;
  */
 public class MicroServiceManager implements IEventListener {
 
+    private static final int MAXIMUM_AUTOMATIC_SERVICES = 4;
     private static MicroServiceManager INSTANCE;
     //Decides whether to use utilisation checking.
     private static boolean USE_LOAD_BALANCING = false;
@@ -91,18 +91,18 @@ public class MicroServiceManager implements IEventListener {
      * @return number of added services. 0, if no new services where added.
      */
     private void checkUtilization() throws IOException {
-//        final int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
-//        Log.log("currentAmountOfTasks: " + currTasks, LogLevel.LOW);
-//        int runningServicesCount = microServices.size();
-//
-//        //To avoid dividing by 0
-//        if (runningServicesCount == 0) {
-//            startMicroService();
-//            runningServicesCount++;
-//        }
-//
-//        if (currTasks / runningServicesCount > MAXIMUM_UTILIZATION)
-//            startMicroService();
+        final int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
+        Log.log("currentAmountOfTasks: " + currTasks, LogLevel.LOW);
+        int runningServicesCount = microServices.size();
+
+        //To avoid dividing by 0
+        if (runningServicesCount == 0) {
+            startMicroService();
+            runningServicesCount++;
+        }
+
+        if (currTasks / runningServicesCount > MAXIMUM_UTILIZATION && runningServicesCount < MAXIMUM_AUTOMATIC_SERVICES)
+            startMicroService();
     }
 
     public Collection<String> getMicroServices() {
@@ -122,18 +122,11 @@ public class MicroServiceManager implements IEventListener {
             startMicroService();
         } else if (toNotify instanceof SwitchUtilisationCheckingEvent) {
             USE_LOAD_BALANCING = ((SwitchUtilisationCheckingEvent) toNotify).isUseChecking();
-        } else if (toNotify instanceof KillAllMicroservicesEvent) {
-            killAllTheZombies();
         }
-    }
-
-    private void killAllTheZombies() {
-        //TODO : KARSTEN, YOUR TURN! DESTROY THEM ALL! YOU ARE MANKINDS LAST HOPE!
-        //...
     }
 
     @Override
     public Set<Class<? extends IEvent>> getEvents() {
-        return new HashSet<>(Arrays.asList(KillAllMicroservicesEvent.class, MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, StartMicroServiceEvent.class, SwitchUtilisationCheckingEvent.class));
+        return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, StartMicroServiceEvent.class, SwitchUtilisationCheckingEvent.class));
     }
 }

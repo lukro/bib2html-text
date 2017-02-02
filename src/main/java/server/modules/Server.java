@@ -53,6 +53,15 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     }
 
     public Server(String hostIP, String serverID) throws IOException, TimeoutException {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                try {
+                    shutdownServer();
+                } catch (IOException | TimeoutException e) {
+                    Log.log("Failed to shutdown Server. ", e);
+                }
+            }
+        });
         //Create connection and channel with new ConnectionFactory
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(hostIP);
@@ -354,7 +363,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
 
     @Override
     public void closeConnection() throws IOException, TimeoutException {
-        channel.close();
         connection.close();
     }
 
@@ -368,6 +376,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
         channel.queueDeclare(callbackQueueName, false, false, false, null);
         channel.queueDeclare(REGISTRATION_QUEUE_NAME, false, false, false, null);
+        clearQueues();
     }
 
     //Empty (i.e. not yet used) methods from interface.
@@ -464,5 +473,12 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         Set<Class<? extends IEvent>> events = new HashSet<>();
         events.addAll(Arrays.asList(RefreshSecretKeysEvent.class, FinishedCollectingResultEvent.class, RequestStoppedEvent.class, ClientBlockRequestEvent.class, MicroServiceConnectedEvent.class, MicroServiceDisconnectionRequestEvent.class));
         return events;
+    }
+
+    private void shutdownServer() throws IOException, TimeoutException {
+        for (String msID : MicroServiceManager.getInstance().getMicroServices()) {
+            sendStopOrderToMicroService(msID);
+        }
+        closeConnection();
     }
 }
