@@ -14,6 +14,7 @@ import microservice.model.processor.IEntryProcessor;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
@@ -41,7 +42,8 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final Channel channel;
 
     private final BasicProperties registrationReplyProps;
-
+    private List<Envelope> currEnvelopes = new ArrayList<>();
+//    private long currDeliveryTag;
     public static void main(String... args) {
         final MicroService createdService;
         try {
@@ -78,6 +80,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         factory.setHost(hostIP);
         this.connection = factory.newConnection();
         this.channel = connection.createChannel();
+        channel.basicQos(5);
         this.registrationReplyProps = new BasicProperties
                 .Builder()
                 .correlationId(microServiceID)
@@ -136,6 +139,9 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         } else if (receivedObject instanceof IRegistrationAck) {
             consumeReceivedTaskQueue(((IRegistrationAck) receivedObject));
         } else if (receivedObject instanceof IEntry) {
+            currEnvelopes.add(envelope);
+//            currDeliveryTag = envelope.getDeliveryTag();
+
             IEntry received = SerializationUtils.deserialize(bytes);
 
             //Process and measure time
@@ -174,6 +180,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         while (isRunning) {
             //microService isRunning
         }
+
         this.closeConnection();
     }
 
@@ -254,7 +261,11 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         isRunning = true;
     }
 
-    private void terminate() {
+    private void terminate() throws IOException {
+        for (Envelope env : currEnvelopes) {
+            channel.basicNack(env.getDeliveryTag(), true, true);
+        }
+//        channel.basicNack(currDeliveryTag, true, true);
         isRunning = false;
     }
 
