@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  */
 public class MicroServiceManager implements IEventListener {
 
-    private static final int MAXIMUM_AUTOMATIC_SERVICES = 4;
+    private static final int MAXIMUM_AUTOMATIC_SERVICES = 3;
     private static MicroServiceManager INSTANCE;
     //Decides whether to use utilisation checking.
     private static boolean USE_LOAD_BALANCING = false;
