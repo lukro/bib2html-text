@@ -376,6 +376,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);
         channel.queueDeclare(callbackQueueName, false, false, false, null);
         channel.queueDeclare(REGISTRATION_QUEUE_NAME, false, false, false, null);
+//        clearQueues();
     }
 
     //Empty (i.e. not yet used) methods from interface.

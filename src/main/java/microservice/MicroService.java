@@ -14,7 +14,6 @@ import microservice.model.processor.IEntryProcessor;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
@@ -42,7 +41,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final Channel channel;
 
     private final BasicProperties registrationReplyProps;
-    private List<Envelope> currEnvelopes = new ArrayList<>();
+//    private List<Envelope> currEnvelopes = new ArrayList<>();
 //    private long currDeliveryTag;
     public static void main(String[] args) {
         final MicroService createdService;
@@ -92,9 +91,15 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             public void run() {
                 //Delete all files left
                 DEFAULT_PROCESSOR.cleanUp();
+                try {
+                    terminate();
+                } catch (IOException | TimeoutException e) {
+                    e.printStackTrace();
+                }
             }
         };
         Runtime.getRuntime().addShutdownHook(new Thread(deathRunner));
+        initConnectionPoint();
     }
 
     @Override
@@ -133,13 +138,17 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
             if (((IStopOrder) receivedObject).getMicroServiceID().equals(microServiceID)) {
                 Log.log("Stopping MicroService", LogLevel.INFO);
                 sendStopOrderAck(basicProperties, replyProps);
-                terminate();
+                try {
+                    terminate();
+                } catch (TimeoutException e) {
+                    Log.log("failed to terminate ms", e);
+                }
                 Log.log("Disconnected MicroService", LogLevel.INFO);
             }
         } else if (receivedObject instanceof IRegistrationAck) {
             consumeReceivedTaskQueue(((IRegistrationAck) receivedObject));
         } else if (receivedObject instanceof IEntry) {
-            currEnvelopes.add(envelope);
+//            currEnvelopes.add(envelope);
 //            currDeliveryTag = envelope.getDeliveryTag();
 
             IEntry received = SerializationUtils.deserialize(bytes);
@@ -170,18 +179,28 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
 
     @Override
     public void run() {
-        try {
-            final String originalThreadName = Thread.currentThread().getName();
-            Thread.currentThread().setName(originalThreadName + " - A MicroService Thread");
-            initConnectionPoint();
-        } catch (IOException e) {
-            Log.log("Failed to init connection point in a MicroService", e);
-        }
         while (isRunning) {
-            //microService isRunning
+            try {
+                consumeIncomingQueues();
+            } catch (IOException e) {
+                Log.log("Failed to consume queues", e);
+            }
         }
 
-        this.closeConnection();
+        System.exit(0);
+
+//        try {
+//            final String originalThreadName = Thread.currentThread().getName();
+//            Thread.currentThread().setName(originalThreadName + " - A MicroService Thread");
+//            initConnectionPoint();
+//        } catch (IOException e) {
+//            Log.log("Failed to init connection point in a MicroService", e);
+//        }
+//        while (isRunning) {
+//            //microService isRunning
+//        }
+//
+//        this.closeConnection();
     }
 
     @Override
@@ -260,12 +279,10 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         isRunning = true;
     }
 
-    private void terminate() throws IOException {
-        for (Envelope env : currEnvelopes) {
-            channel.basicNack(env.getDeliveryTag(), true, true);
-        }
-//        channel.basicNack(currDeliveryTag, true, true);
+    private void terminate() throws IOException, TimeoutException {
+        channel.close();
         isRunning = false;
+//        System.exit(0);
     }
 
 }
