@@ -338,11 +338,11 @@ public class DefaultEntryProcessor implements IEntryProcessor {
     }
 
     public void cleanUp(){
-        deleteBibFile(bibFileName);
-        deleteCslFileIfNecessary(currentCslIndex, cslFileName);
-        deleteResult(resultName);
-        deleteTemplateIfNecessary(currentTemplateIndex, templateName);
-        deleteWrapper(wrapperFileName);
+        if(bibFileName != null) deleteBibFile(bibFileName);
+        if(cslFileName != null) deleteCslFileIfNecessary(currentCslIndex, cslFileName);
+        if(resultName != null) deleteResult(resultName);
+        if(templateName != null) deleteTemplateIfNecessary(currentTemplateIndex, templateName);
+        if(wrapperFileName != null) deleteWrapper(wrapperFileName);
     }
 
 }

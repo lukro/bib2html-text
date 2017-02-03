@@ -44,7 +44,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
     private final BasicProperties registrationReplyProps;
     private List<Envelope> currEnvelopes = new ArrayList<>();
 //    private long currDeliveryTag;
-    public static void main(String... args) {
+    public static void main(String[] args) {
         final MicroService createdService;
         try {
             createdService = (args.length == 0) ? new MicroService() : new MicroService(args[0]);
@@ -193,8 +193,7 @@ public class MicroService implements IConnectionPoint, Runnable, Consumer {
         } catch (IOException | TimeoutException e) {
             Log.log("Failed to close channel/connection from MicroService: " + microServiceID, e);
         } finally {
-//          System.exit(0); Only use when applying the approach of starting MicroServices in MSM.addMicroService() from jar
-            Thread.currentThread().stop();
+          System.exit(0); //TODO Only use when applying the approach of starting MicroServices in MSM.addMicroService() from jar
         }
     }
 

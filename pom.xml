@@ -68,16 +68,10 @@
                 </includes>
             </resource>
             <resource>
-                <directory>src/resources</directory>
+                <directory>src/main/resources</directory>
                 <includes>
                     <include>*.csl</include>
                     <include>*.html</include>
-                </includes>
-            </resource>
-            <resource>
-                <filtering>false</filtering>
-                <directory>src/main/resources</directory>
-                <includes>
                     <include>*.jar</include>
                 </includes>
             </resource>

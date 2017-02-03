@@ -7,6 +7,8 @@ import microservice.MicroService;
 import server.events.*;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,7 +35,8 @@ public class MicroServiceManager implements IEventListener {
     private final Channel channel;
     private final String TASK_QUEUE_NAME;
     static {
-        copyJarToWorkingDir();
+        //TODO : eventually add automatic extraction of microservice.jar from working dir.
+        //copyJarToWorkingDir();
     }
 
     private MicroServiceManager(Channel channel, String taskQueueName) {
@@ -83,14 +86,23 @@ public class MicroServiceManager implements IEventListener {
      */
     private void startMicroService() {
         Log.log("Starting microservice on server", LogLevel.LOW);
+        final String MICROSERVICE_JAR_FILE_NAME = "microservice.jar";
+
+        //Check whether service exists.
+        File serviceJarFile = new File(MICROSERVICE_JAR_FILE_NAME);
+        if(!serviceJarFile.exists()){
+            Log.log("Cannot launch a new MicroService : " + MICROSERVICE_JAR_FILE_NAME + " is missing in current working directory.", LogLevel.SEVERE);
+            return;
+        }
+
+        //Start a new Service in seperate runtime.
         try {
-            String[] cmd = { "java.exe", "-jar", "microservice.jar"};
+            String[] cmd = { "java.exe", "-jar", MICROSERVICE_JAR_FILE_NAME};
             ProcessBuilder processBuilder = new ProcessBuilder(cmd);
             Process process = processBuilder.start();
         } catch (IOException e) {
-            Log.log("Could not start MicroService" + e.getStackTrace());
+            Log.log("Could not start MicroService",e);
         }
-        //MicroService.main("localhost");
     }
 
     /**
