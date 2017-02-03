@@ -25,7 +25,7 @@ public class MicroServiceManager implements IEventListener {
     //The max. # of tasks per service.
     private final static int UTIL_START_DELAY = 1500;
     private final static int UTIL_FREQ = 3000;
-    public final static int MAXIMUM_UTILIZATION = 25;
+    public final static int MAXIMUM_UTILIZATION = 250;
 
     //Key : ID | Value : IP
     private HashMap<String, String> microServices = new HashMap<>();
@@ -115,6 +115,7 @@ public class MicroServiceManager implements IEventListener {
         final int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
         Log.log("currentAmountOfTasks: " + currTasks, LogLevel.LOW);
         int runningServicesCount = microServices.size();
+        Log.log("currently running services: " + runningServicesCount, LogLevel.LOW);
 
         //To avoid dividing by 0
         if (runningServicesCount == 0) {
