@@ -3,12 +3,9 @@ package server.modules;
 import com.rabbitmq.client.Channel;
 import global.logging.Log;
 import global.logging.LogLevel;
-import microservice.MicroService;
 import server.events.*;
 
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,14 +18,14 @@ import java.util.stream.Collectors;
  */
 public class MicroServiceManager implements IEventListener {
 
-    private static final int MAXIMUM_AUTOMATIC_SERVICES = 3;
+    private static final int MAXIMUM_AUTOMATIC_SERVICES = 2;
     private static MicroServiceManager INSTANCE;
     //Decides whether to use utilisation checking.
     private static boolean USE_LOAD_BALANCING = false;
     //The max. # of tasks per service.
     private final static int UTIL_START_DELAY = 1500;
-    private final static int UTIL_FREQ = 500;
-    public final static int MAXIMUM_UTILIZATION = 25;
+    private final static int UTIL_FREQ = 3000;
+    public final static int MAXIMUM_UTILIZATION = 250;
 
     //Key : ID | Value : IP
     private HashMap<String, String> microServices = new HashMap<>();
@@ -48,8 +45,10 @@ public class MicroServiceManager implements IEventListener {
             @Override
             public void run() {
                 try {
-                    if(USE_LOAD_BALANCING) checkUtilization();
-                    Log.log("Utilization Checker Task did another round...", LogLevel.LOW);
+                    if(USE_LOAD_BALANCING) {
+                        checkUtilization();
+                        Log.log("Utilization Checker Task did another round...", LogLevel.LOW);
+                    }
                 } catch (IOException e) {
                     Log.log("Utilization Checker ran into Problems", e);
                 }
@@ -116,6 +115,7 @@ public class MicroServiceManager implements IEventListener {
         final int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
         Log.log("currentAmountOfTasks: " + currTasks, LogLevel.LOW);
         int runningServicesCount = microServices.size();
+        Log.log("currently running services: " + runningServicesCount, LogLevel.LOW);
 
         //To avoid dividing by 0
         if (runningServicesCount == 0) {
