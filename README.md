@@ -27,13 +27,13 @@ MEM : SSD recommended
 4. Configure RabbitMQ to allow communication with required hosts. (see http://www.rabbitmq.com/networking.html)
    For this purpose, setup the rabbitmq.config (/etc/rabbitmq/rabbitmq.config on Linux) on all involved machines
    like this:
-    ```
-        [
-         {rabbit, [
-           {loopback_users, []}
-         ]}
-        ].
-    ```
+```
+    [
+     {rabbit, [
+       {loopback_users, []}
+     ]}
+    ].
+```
 5. Make sure you have the latest version of java installed and set up (java.com/download)
 6. Download jars from /deployment/ directory in this git branch
 
@@ -42,9 +42,9 @@ MEM : SSD recommended
 2. Start the server.jar. Add at least one MicroService. You can do that either by pressing the button or
     starting the microservice.jar on a machine with RabbitMQ installed.
     The command for this is (where 192.168.2.100 is the ip address of the server):
-    ```
-        java -jar microservice.jar 192.168.2.100
-    ```
+```
+    java -jar microservice.jar 192.168.2.100
+```
 3. Insert the secret key(s) into the secretkeys.txt (one line per key). You can also do that later on demand.
    You need to tell the client the secret key for connection. All machines with a valid secret key will be able to
    connect to the server.
