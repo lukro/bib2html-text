@@ -27,24 +27,24 @@ MEM : SSD recommended
 4. Configure RabbitMQ to allow communication with required hosts. (see http://www.rabbitmq.com/networking.html)
    For this purpose, setup the rabbitmq.config (/etc/rabbitmq/rabbitmq.config on Linux) on all involved machines
    like this:
-```
-       [
-         {rabbit, [
-           {loopback_users, []}
-         ]}
-       ].
-```
+    ```
+    [
+     {rabbit, [
+       {loopback_users, []}
+     ]}
+    ].
+    ```
 5. Make sure you have the latest version of java installed and set up (java.com/download)
 6. Download jars from /deployment/ directory in this git branch
 
 ###Setting up the Server
 1. Place 'microservice.jar' in the servers working directory if you intend to start services from the server.
 2. Start the server.jar. Add at least one MicroService. You can do that either by pressing the button or
-starting the microservice.jar on a machine with RabbitMQ installed.
-The command for this is (where 192.168.2.100 is the ip address of the server):
-```
+    starting the microservice.jar on a machine with RabbitMQ installed.
+    The command for this is (where 192.168.2.100 is the ip address of the server):
+    ```
     java -jar microservice.jar 192.168.2.100
-```
+    ```
 3. Insert the secret key(s) into the secretkeys.txt (one line per key). You can also do that later on demand.
    You need to tell the client the secret key for connection. All machines with a valid secret key will be able to
    connect to the server.
@@ -52,7 +52,7 @@ The command for this is (where 192.168.2.100 is the ip address of the server):
 ###Creating a Request on the Client Machine:
 1. Start the client.jar.
 2. Add the necessary files on the left hand side:
-    1. Add on or more BIB files
+    1. Add one or more BIB files
     2. Optionally, you can add some templates and CSL files. If not specified, the standard csl and template is used.
 3. Enter the IP address of the Server on the right hand side and connect to it. If the Server runs on the same machine, you don not have to specify an IP Address.
 4. Set your secret key.
