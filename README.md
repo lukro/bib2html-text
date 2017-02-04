@@ -34,8 +34,8 @@ MEM : SSD recommended
      ]}
     ].
 ```
-5\. Make sure you have the latest version of java installed and set up (java.com/download)
-6\. Download jars from /deployment/ directory in this git branch
+  5\. Make sure you have the latest version of java installed and set up (java.com/download) <br/><br/>
+  6\. Download jars from /deployment/ directory in this git branch
 
 ###Setting up the Server
 1. Place 'microservice.jar' in the servers working directory if you intend to start services from the server.
