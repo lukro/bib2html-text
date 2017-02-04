@@ -4,6 +4,7 @@ import com.rabbitmq.client.AMQP;
 
 /**
  * Created by daan on 1/13/17.
+ * Just a utility class for RabbitMQ properties.
  */
 public final class ConnectionUtils {
 

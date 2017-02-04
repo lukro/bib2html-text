@@ -5,6 +5,7 @@ import java.util.Objects;
 
 /**
  * Created by daan on 1/17/17.
+ * Used to convert Files into Strings in ClientFileHandler and the Server.
  */
 public final class FileUtils {
 
