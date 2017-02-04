@@ -42,9 +42,9 @@ MEM : SSD recommended
 2. Start the server.jar. Add at least one MicroService. You can do that either by pressing the button or
     starting the microservice.jar on a machine with RabbitMQ installed.
     The command for this is (where 192.168.2.100 is the ip address of the server):
-```
-    java -jar microservice.jar 192.168.2.100
-```
+    ```
+        java -jar microservice.jar 192.168.2.100
+    ```
 3. Insert the secret key(s) into the secretkeys.txt (one line per key). You can also do that later on demand.
    You need to tell the client the secret key for connection. All machines with a valid secret key will be able to
    connect to the server.
