@@ -28,11 +28,11 @@ MEM : SSD recommended
    For this purpose, setup the rabbitmq.config (/etc/rabbitmq/rabbitmq.config on Linux) on all involved machines
    like this:
 ```
-    [
-     {rabbit, [
-       {loopback_users, []}
-     ]}
-    ].
+        [
+         {rabbit, [
+           {loopback_users, []}
+         ]}
+        ].
 ```
 5. Make sure you have the latest version of java installed and set up (java.com/download)
 6. Download jars from /deployment/ directory in this git branch
