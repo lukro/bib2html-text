@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  */
 public class MicroServiceManager implements IEventListener {
 
-    private static final int MAXIMUM_AUTOMATIC_SERVICES = 2;
+    private static final int MAXIMUM_AUTOMATIC_SERVICES = 4;
     private static MicroServiceManager INSTANCE;
     //Decides whether to use utilisation checking.
     private static boolean USE_LOAD_BALANCING = false;
@@ -29,6 +29,7 @@ public class MicroServiceManager implements IEventListener {
 
     //Key : ID | Value : IP
     private HashMap<String, String> microServices = new HashMap<>();
+    private int runningServicesCount;
     private final Channel channel;
     private final String TASK_QUEUE_NAME;
     static {
@@ -37,6 +38,7 @@ public class MicroServiceManager implements IEventListener {
     }
 
     private MicroServiceManager(Channel channel, String taskQueueName) {
+        this.runningServicesCount = 0;
         this.channel = channel;
         this.TASK_QUEUE_NAME = taskQueueName;
         EventManager.getInstance().registerListener(this);
@@ -114,7 +116,6 @@ public class MicroServiceManager implements IEventListener {
     private void checkUtilization() throws IOException {
         final int currTasks = channel.queueDeclarePassive(TASK_QUEUE_NAME).getMessageCount();
         Log.log("currentAmountOfTasks: " + currTasks, LogLevel.LOW);
-        int runningServicesCount = microServices.size();
         Log.log("currently running services: " + runningServicesCount, LogLevel.LOW);
 
         //To avoid dividing by 0
@@ -123,8 +124,10 @@ public class MicroServiceManager implements IEventListener {
             runningServicesCount++;
         }
 
-        if (currTasks / runningServicesCount > MAXIMUM_UTILIZATION)
+        if (currTasks / runningServicesCount > MAXIMUM_UTILIZATION && !(runningServicesCount > MAXIMUM_AUTOMATIC_SERVICES)) {
+            runningServicesCount++;
             startMicroService();
+        }
     }
 
     public Collection<String> getMicroServices() {
