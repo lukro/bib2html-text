@@ -34,7 +34,7 @@ Screen resolution of at least 1280*720 recommended.
      ]}
     ].
 ```
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5\. Make sure you have the latest version of java installed and set up (http://java.com/download) <br/><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5\. Make sure you have the latest version of java installed and set up (https://java.com/download)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6\. Download jars from /deployment/ directory in this git branch
 
 ###Setting up the Server
