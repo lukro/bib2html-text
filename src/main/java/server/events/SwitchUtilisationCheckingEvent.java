@@ -2,6 +2,7 @@ package server.events;
 
 /**
  * Created by Maximilian on 19.01.2017.
+ * Fired when the Utilisation Checking is enabled or disabled on the GUI.
  */
 public class SwitchUtilisationCheckingEvent implements IEvent{
 

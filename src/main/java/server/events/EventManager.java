@@ -6,6 +6,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/*
+*Part of the Server. Manages all Listeners.
+*/
+
 public class EventManager {
 
     private final static EventManager INSTANCE = new EventManager();
