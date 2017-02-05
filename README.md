@@ -34,8 +34,8 @@ Screen resolution of at least 1280*720 recommended.
      ]}
     ].
 ```
-        5\. Make sure you have the latest version of java installed and set up (http://java.com/download) <br/><br/>
-        6\. Download jars from /deployment/ directory in this git branch
+      5\. Make sure you have the latest version of java installed and set up (http://java.com/download) <br/><br/>
+      6\. Download jars from /deployment/ directory in this git branch
 
 ###Setting up the Server
 1. Place 'microservice.jar' in the servers working directory if you intend to start services from the server.
@@ -45,9 +45,9 @@ Screen resolution of at least 1280*720 recommended.
 ```
     java -jar microservice.jar 192.168.2.100
 ```
-        3\. Insert the secret key(s) into the secretkeys.txt (one line per key). You can also do that later on demand.
-        You need to tell the client the secret key for connection. All machines with a valid secret key will be able to
-        connect to the server.
+      3\. Insert the secret key(s) into the secretkeys.txt (one line per key). You can also do that later on demand.
+      You need to tell the client the secret key for connection. All machines with a valid secret key will be able to
+      connect to the server.
 
 ### Creating a Request on the Client Machine
 1. Start the client.jar.
