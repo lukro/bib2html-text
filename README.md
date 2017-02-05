@@ -46,8 +46,8 @@ Screen resolution of at least 1280*720 recommended.
     java -jar microservice.jar 192.168.2.100
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3\. Insert the secret key(s) into the secretkeys.txt (one line per key). You can also do that later on demand.
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;You need to tell the client the secret key for connection. All machines with a valid secret key will be able to
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;connect to the server.
+You need to tell the client the secret key for connection. All machines with a valid secret key will be able to
+connect to the server.
 
 ### Creating a Request on the Client Machine
 1. Start the client.jar.
