@@ -371,7 +371,7 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     public void declareQueues() throws IOException {
         //outgoing queues
         channel.exchangeDeclare(STOP_EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
-        channel.exchangeDeclare(CLIENT_CALLBACK_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
+//        channel.exchangeDeclare(CLIENT_CALLBACK_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
         channel.queueDeclare(TASK_QUEUE_NAME, false, false, false, null);
         //incoming queues
         channel.queueDeclare(CLIENT_REQUEST_QUEUE_NAME, false, false, false, null);

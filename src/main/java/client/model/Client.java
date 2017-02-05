@@ -191,8 +191,8 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         //incoming queues
         channel.queueDeclare(callbackQueueName, false, false, false, null);
 
-        channel.exchangeDeclare(CLIENT_CALLBACK_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
-        channel.queueBind(callbackQueueName, CLIENT_CALLBACK_EXCHANGE_NAME, clientID);
+//        channel.exchangeDeclare(CLIENT_CALLBACK_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
+//        channel.queueBind(callbackQueueName, CLIENT_CALLBACK_EXCHANGE_NAME, clientID);
     }
 
     @Override
