@@ -43,9 +43,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     private Collection<String> blacklistedClients = new ArrayList<>();
     private Collection<String> validSecretKeys = new ArrayList<>();
 
-    private boolean shuttingDown = false;
-    private int numberOfClosedServicesOnShutdown = 0;
-
 
     public Server() throws IOException, TimeoutException {
         this("localhost");
@@ -162,9 +159,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
             Log.log("Received Registration Request!");
             handleReceivedRegistrationRequest((IRegistrationRequest) deliveredObject, basicProperties);
         } else if (deliveredObject instanceof IStopOrderAck) {
-            if (shuttingDown) {
-                numberOfClosedServicesOnShutdown++;
-            }
             String idToRemove = ((IStopOrderAck) deliveredObject).getStoppedMicroServiceID();
             EventManager.getInstance().publishEvent(new MicroServiceDisconnectedEvent(idToRemove));
         }
@@ -483,17 +477,10 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
     }
 
     private void shutdownServer() throws IOException, TimeoutException {
-        int currRunningServices = MicroServiceManager.getInstance().getMicroServices().size();
         for (String msID : MicroServiceManager.getInstance().getMicroServices()) {
             sendStopOrderToMicroService(msID);
         }
-
-//        while (numberOfClosedServicesOnShutdown < currRunningServices) {
-//
-//        }
         clearQueues();
         closeConnection();
-        shuttingDown = true;
-
     }
 }
