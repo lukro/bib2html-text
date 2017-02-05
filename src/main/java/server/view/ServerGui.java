@@ -13,6 +13,8 @@ import javafx.stage.Stage;
 
 public class ServerGui extends Application{
 
+    private static final String WINDOW_TITLE = "MinoTeX Server 1.0.0";
+
     public static void main(String[] args){
         launch(args);
     }
@@ -26,7 +28,7 @@ public class ServerGui extends Application{
         Pane root = loader.load();
         Scene scene = new Scene(root, 1280, 720);
         primaryStage.setScene(scene);
-        primaryStage.setTitle("bib2hmtl-text Server 0.0.1");
+        primaryStage.setTitle(WINDOW_TITLE);
         primaryStage.show();
     }
 }

@@ -13,6 +13,8 @@ import javafx.stage.Stage;
 
 public class ClientGui extends Application {
 
+    private static final String WINDOW_TITLE = "MinoTeX Client 1.0.0";
+
     public static void main(String[] args){
         launch(args);
     }
@@ -26,7 +28,7 @@ public class ClientGui extends Application {
         Pane root = loader.load();
         Scene scene = new Scene(root, 1280, 720);
         primaryStage.setScene(scene);
-        primaryStage.setTitle("bib2hmtl-text Client 0.9.1");
+        primaryStage.setTitle(WINDOW_TITLE);
         primaryStage.show();
     }
 
