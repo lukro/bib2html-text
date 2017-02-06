@@ -156,6 +156,9 @@ public class MicroServiceManager implements IEventListener {
         return new HashSet<>(Arrays.asList(MicroServiceConnectedEvent.class, MicroServiceDisconnectedEvent.class, StartMicroServiceEvent.class, SwitchUtilisationCheckingEvent.class));
     }
 
+    /**
+     * For future purposes
+     */
     public static void copyJarToWorkingDir() {
         InputStream stream = null;
         OutputStream resStreamOut = null;
