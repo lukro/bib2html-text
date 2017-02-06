@@ -102,10 +102,15 @@ public class ClientController {
     public void connectToServerButtonPressed() {
         String serverAdress = serverAdressTextField.getText();
         Log.log("Connecting to server @" + serverAdress);
-        if (client.connectToHost(serverAdress))
-            Log.log("Successfully connected to Host!", LogLevel.INFO);
-        else
-            Log.log("Failed to connect to that Host!", LogLevel.WARNING);
+        try {
+            if (client.connectToHost(serverAdress))
+				Log.log("Successfully connected to Host!", LogLevel.INFO);
+			else
+				Log.log("Failed to connect to that Host!", LogLevel.WARNING);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML

@@ -55,7 +55,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     }
 
     public Client(String hostIP, String clientID) throws IOException {
-        connectToHost(hostIP);
+        this.hostIP = hostIP;
         this.clientID = clientID;
         this.callbackQueueName = clientID;
         this.clientFileModel = new ClientFileModel(this.clientID);
@@ -70,7 +70,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void run() {
         try {
-            initConnectionPoint();
+            connectToHost(hostIP);
         } catch (IOException e) {
             Log.log("failed to consume incoming queues in client.run()", e);
         }
@@ -200,7 +200,13 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
         return hostIP;
     }
 
-    public boolean connectToHost(String hostIP) {
+    public boolean connectToHost(String hostIP) throws IOException {
+        try {
+            channel.close();
+        }
+        catch (TimeoutException e) {
+            Log.log("Failed to close local channel",e);
+        }
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(hostIP);
         try {
@@ -216,6 +222,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
             return false;
         }
         this.hostIP = hostIP;
+        initConnectionPoint();
         return true;
     }
 
