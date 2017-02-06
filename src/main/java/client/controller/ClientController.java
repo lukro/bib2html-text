@@ -109,7 +109,7 @@ public class ClientController {
 				Log.log("Failed to connect to that Host!", LogLevel.WARNING);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            Log.log("Some error initializing connectionpoint", e);
         }
     }
 

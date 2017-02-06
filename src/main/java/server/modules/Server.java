@@ -135,7 +135,6 @@ public class Server implements IConnectionPoint, Runnable, Consumer, IEventListe
         Log.log("ClientID from CBI: " + clientCBI.basicProperties.getCorrelationId(), LogLevel.LOW);
         try {
             channel.basicPublish("", clientCBI.basicProperties.getReplyTo(), clientCBI.replyProperties, SerializationUtils.serialize(toNotify.getResult()));
-//            channel.basicPublish(CLIENT_CALLBACK_EXCHANGE_NAME, clientID, null, SerializationUtils.serialize(toNotify.getResult()));
             Log.log("Finished result. Published to :" + clientID);
         } catch (IOException e) {
             Log.log("COULD NOT RETURN RESULT TO CLIENT", LogLevel.SEVERE);
