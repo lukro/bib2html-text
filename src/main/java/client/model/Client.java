@@ -201,12 +201,12 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     }
 
     public boolean connectToHost(String hostIP) throws IOException {
-        try {
-            channel.close();
-        }
-        catch (TimeoutException e) {
-            Log.log("Failed to close local channel",e);
-        }
+//        try {
+//            channel.close();
+//        }
+//        catch (TimeoutException e) {
+//            Log.log("Failed to close local channel",e);
+//        }
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(hostIP);
         try {
