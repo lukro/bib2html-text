@@ -124,7 +124,7 @@ public class MicroServiceManager implements IEventListener {
             runningServicesCount++;
         }
 
-        if (currTasks / runningServicesCount > MAXIMUM_UTILIZATION && !(runningServicesCount > MAXIMUM_AUTOMATIC_SERVICES)) {
+        if (currTasks / runningServicesCount > MAXIMUM_UTILIZATION && !(runningServicesCount >= MAXIMUM_AUTOMATIC_SERVICES)) {
             runningServicesCount++;
             startMicroService();
         }
@@ -142,6 +142,7 @@ public class MicroServiceManager implements IEventListener {
             microServices.put(connectedServiceID, connectedServiceIP);
         } else if (toNotify instanceof MicroServiceDisconnectedEvent) {
             String disconnectedServiceID = ((MicroServiceDisconnectedEvent) toNotify).getDisconnectedSvcID();
+            runningServicesCount--;
             microServices.remove(disconnectedServiceID);
         } else if (toNotify instanceof StartMicroServiceEvent) {
             startMicroService();
