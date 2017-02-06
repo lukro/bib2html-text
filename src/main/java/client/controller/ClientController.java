@@ -32,6 +32,8 @@ public class ClientController {
     public ClientController() {
         try {
             client = new Client();
+            Thread clientThread = new Thread(client);
+            clientThread.start();
         } catch (IOException e) {
             Log.log("Failed to initialize Client instance", e);
             System.exit(1);

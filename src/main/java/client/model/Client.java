@@ -65,27 +65,21 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
                 .replyTo(callbackQueueName)
                 .build();
         this.outputDirectory = "";
-        initConnectionPoint();
     }
 
     @Override
     public void run() {
         try {
-            consumeIncomingQueues();
+            initConnectionPoint();
         } catch (IOException e) {
             Log.log("failed to consume incoming queues in client.run()", e);
         }
     }
 
-    @Override
-    public void consumeIncomingQueues() throws IOException {
-        channel.basicConsume(callbackQueueName, true, this);
-    }
-
     private long timeStart = 0;
+
     private long clientRequestSize = 0;
     private final double AMOUNT_OF_SECS = 59;
-
     public void sendClientRequest() throws IOException {
         //time measuring starts before request creation
         //timeStart = System.currentTimeMillis();
@@ -148,7 +142,7 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 //        Log.log("timeTakenFullMinsInSec: " + timeTakenFullMinsInSecs);
         int timeTakenSecDifference = ((Double) (timeTakenSecs - timeTakenFullMinsInSecs)).intValue();
         Log.log("TIME TAKEN: " + timeTakenFullMins + " min " + timeTakenSecDifference + " sec");
-        int workingLoadLimitXSecs = ((Double) ((double) clientRequestSize / (double) timeTakenSecs * AMOUNT_OF_SECS)).intValue();
+        int workingLoadLimitXSecs = ((Double) ((double) clientRequestSize / timeTakenSecs * AMOUNT_OF_SECS)).intValue();
         Log.log("WORKING LOAD LIMIT: " + workingLoadLimitXSecs + " entries in " + AMOUNT_OF_SECS + " secs. ");
     }
 
@@ -181,7 +175,8 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
     @Override
     public void initConnectionPoint() throws IOException {
         declareQueues();
-        run();
+        consumeIncomingQueues();
+        Log.log("initialised the connection point");
     }
 
     @Override
@@ -193,6 +188,11 @@ public class Client implements IConnectionPoint, Runnable, Consumer {
 
 //        channel.exchangeDeclare(CLIENT_CALLBACK_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
 //        channel.queueBind(callbackQueueName, CLIENT_CALLBACK_EXCHANGE_NAME, clientID);
+    }
+
+    @Override
+    public void consumeIncomingQueues() throws IOException {
+        channel.basicConsume(callbackQueueName, true, this);
     }
 
     @Override
