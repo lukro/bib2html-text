@@ -1,4 +1,6 @@
 # bib2html-text
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flukro%2Fbib2html-text.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flukro%2Fbib2html-text?ref=badge_shield)
+
 Converts a set of .bib-files by use of one or more .csl-file(s) to HTML or simple text. 'bib2html-text' is a client-server-application using RabbitMQ for task-management.
 The conversion is done by scalable MicroServices. They can run either on the same machine as the server or on a seperate machine
 Likewise, the client can run on the same machine as the server.
@@ -62,3 +64,6 @@ connect to the server.
 - It is not recommended to run too many services on a single machine, since they are very CPU intensive (see Requirements).
 - You can blacklist a client by putting its IP address in the file blacklist.txt which is created in the directory
 of the server.jar after running for the first time.
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flukro%2Fbib2html-text.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Flukro%2Fbib2html-text?ref=badge_large)
